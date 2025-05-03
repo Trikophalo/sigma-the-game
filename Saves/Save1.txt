@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kartenspiel</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif; /* Behalte eine lesbare Schriftart für Text */
+            background-color: #222;
+            color: #fff;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #ffcc00;
+        }
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .stats-container {
+            display: flex;
+            justify-content: space-between;
+            background-color: #333;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px; /* Kleinere Schrift für mehr Platz */
+        }
+        .stats-column {
+             display: flex;
+             flex-direction: column;
+             gap: 5px; /* Abstand zwischen den Stats */
+        }
+
+        .enemy-container {
+            background-color: #3a2b2b;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .enemy-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #ff6b6b;
+        }
+        .health-bar {
+            height: 20px;
+            background-color: #444;
+            border-radius: 10px;
+            margin: 10px 0;
+            overflow: hidden;
+            width: 80%;
+        }
+        .health-fill {
+            height: 100%;
+            background-color: #ff6b6b;
+            transition: width 0.5s;
+        }
+        .player-area {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .player-image {
+            width: 80px;
+            height: 80px;
+            background-color: #444; /* Platzhalterfarbe */
+            background-size: contain; /* Passt das Bild an, ohne es zu beschneiden */
+            background-repeat: no-repeat;
+            background-position: center;
+            border: 2px solid #6bff6b;
+            border-radius: 8px;
+            image-rendering: pixelated; /* Sorgt für Pixel-Look bei Skalierung */
+            flex-shrink: 0; /* Verhindert Schrumpfen */
+        }
+        .player-stats {
+            background-color: #2b3a2f;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: left; /* Linksbündig für bessere Lesbarkeit */
+            position: relative;
+            flex-grow: 1; /* Nimmt verfügbaren Platz ein */
+        }
+        .player-health-bar {
+            height: 20px;
+            background-color: #444;
+            border-radius: 10px;
+            margin: 5px 0; /* Weniger Margin */
+            overflow: hidden;
+            width: 100%;
+        }
+        .player-health-fill {
+            height: 100%;
+            background-color: #6bff6b;
+            transition: width 0.5s;
+        }
+        .mana-bar {
+            height: 15px;
+            background-color: #444;
+            border-radius: 10px;
+            margin: 5px 0; /* Weniger Margin */
+            overflow: hidden;
+            width: 100%;
+        }
+        .mana-fill {
+            height: 100%;
+            background-color: #6b8fff;
+            transition: width 0.5s;
+        }
+        .monster-image {
+            width: 120px;
+            height: 120px;
+            margin: 10px auto;
+            background-size: contain; /* Wichtig für Pixel Art */
+            background-position: center;
+            background-repeat: no-repeat; /* Kein Kacheln */
+            border-radius: 5px; /* Weniger rund für Pixel-Look */
+            border: 3px solid #ff6b6b;
+            box-shadow: 0 0 15px rgba(255, 107, 107, 0.5);
+            transition: transform 0.3s;
+            image-rendering: pixelated; /* Wichtig für Pixel-Look */
+            image-rendering: -moz-crisp-edges; /* Firefox */
+            image-rendering: crisp-edges; /* Standard */
+        }
+        .monster-image:hover {
+            transform: scale(1.1);
+        }
+        .card-hand {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            min-height: 190px; /* Platzhalter, damit Layout nicht springt */
+        }
+        .card {
+            width: 120px;
+            height: 180px;
+            background-color: #444;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            border: 1px solid #666;
+        }
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(255, 204, 0, 0.3); /* Hellerer Schatten */
+        }
+        .card-name {
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 5px;
+            color: #ffcc00;
+            font-size: 14px;
+        }
+        .card-icon {
+            font-size: 28px;
+            text-align: center;
+            margin: 10px 0;
+        }
+        .card-description {
+            font-size: 11px; /* Etwas kleiner */
+            text-align: center;
+            flex-grow: 1;
+            color: #ccc; /* Etwas heller */
+        }
+        .card-power {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 5px;
+            color: #ffcc00;
+        }
+        .card-mana {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 25px;
+            height: 25px;
+            background-color: #6b8fff;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 14px;
+            border: 1px solid #fff; /* Kleiner Rand */
+        }
+        .card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            border-color: #555; /* Dunklerer Rand für deaktiviert */
+        }
+        .card.disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        button {
+            background-color: #ffcc00;
+            color: #222;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        button:hover:not(:disabled) { /* Hover nur wenn nicht deaktiviert */
+            background-color: #ffd633;
+            transform: translateY(-2px); /* Kleiner Hover-Effekt */
+        }
+        button:disabled {
+            background-color: #666;
+            cursor: not-allowed;
+            transform: none; /* Kein Effekt wenn deaktiviert */
+        }
+         /* Spezieller Stil für Mana Boost Button */
+        #manaBoostBtn {
+            background-color: #6b8fff; /* Blau wie Mana */
+            color: #fff;
+        }
+         #manaBoostBtn:hover:not(:disabled) {
+             background-color: #8caaff;
+         }
+
+        .message-log {
+            height: 150px;
+            background-color: #333;
+            border-radius: 8px;
+            padding: 10px;
+            overflow-y: auto;
+            margin-top: 20px;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        .message {
+            margin-bottom: 5px;
+        }
+        .message.player { color: #7fdbff; }
+        .message.enemy { color: #ff6b6b; }
+        .message.system { color: #ffcc00; }
+        .message.xp { color: #aaffaa; font-style: italic; } /* XP Nachrichten hervorheben */
+        .message.mana { color: #aaaaff; font-style: italic; } /* Mana Nachrichten hervorheben */
+
+        .upgrade-container {
+            background-color: rgba(0, 0, 0, 0.8);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            padding: 20px;
+        }
+        .upgrade-box {
+            background-color: #333;
+            border-radius: 8px;
+            padding: 30px; /* Mehr Padding */
+            max-width: 600px;
+            width: 100%;
+            border: 2px solid #ffcc00;
+        }
+        .upgrade-title {
+            color: #ffcc00;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .upgrade-options {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .upgrade-option {
+            background-color: #444;
+            border-radius: 8px;
+            padding: 15px;
+            width: calc(50% - 20px); /* Etwas mehr Platz */
+            min-width: 200px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            border: 1px solid #666;
+            display: flex; /* Flexbox für Inhalt */
+            flex-direction: column; /* Inhalt untereinander */
+            align-items: center; /* Zentriert Inhalt */
+            text-align: center; /* Text zentrieren */
+        }
+        .upgrade-option h3 { /* Titel im Upgrade */
+            color: #ffcc00;
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .upgrade-option p { /* Beschreibung im Upgrade */
+            font-size: 13px;
+            color: #ccc;
+            margin-bottom: 0;
+        }
+        .upgrade-option:hover {
+            transform: scale(1.05);
+            background-color: #555;
+            border-color: #ffcc00;
+        }
+
+        .game-over-container { text-align: center; }
+        .highscore {
+            font-size: 24px;
+            color: #ffcc00;
+            margin: 20px 0;
+        }
+
+        /* Animationen */
+        .enemy-animation { transition: transform 0.3s, opacity 0.3s; }
+        .enemy-animation.hit { transform: translateX(10px); }
+        .enemy-animation.defeat { opacity: 0; transform: translateY(-50px) scale(0.8); }
+        .card-animation { transition: transform 0.3s, opacity 0.3s; }
+        .card-animation.played { transform: translateY(-100px) scale(0.5); opacity: 0; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .shake { animation: shake 0.3s; }
+
+        .enemy-info {
+            margin: 10px 0;
+            font-size: 13px; /* Etwas kleiner */
+            color: #ddd;
+            text-align: left;
+            padding: 10px;
+            background-color: rgba(0,0,0,0.2); /* Dunklerer Hintergrund */
+            border-radius: 5px;
+            border-left: 3px solid #ff6b6b;
+            min-height: 40px; /* Mindesthöhe */
+            width: 90%; /* Breite begrenzen */
+        }
+        .monster-traits {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 5px 0 10px 0; /* Mehr Abstand nach unten */
+        }
+        .monster-trait {
+            background-color: #555; /* Etwas heller */
+            border-radius: 10px; /* Runder */
+            padding: 4px 10px; /* Mehr Padding */
+            font-size: 11px; /* Noch kleiner */
+            color: #ffdd55; /* Helleres Gelb */
+            border: 1px solid #777;
+        }
+    </style>
+</head>
+<body>
+    <h1>Pixel Kartenspiel</h1> <div id="gameContainer" class="game-container">
+        <div class="stats-container">
+             <div class="stats-column">
+                 <div>Runde: <span id="round">1</span></div>
+                 <div>Besiegte Gegner: <span id="defeatedEnemies">0</span></div>
+             </div>
+             <div class="stats-column">
+                 <div>Level: <span id="playerLevel">1</span></div>
+                 <div>XP: <span id="playerXP">0</span> / <span id="xpToNextLevel">100</span></div> </div>
+             <div class="stats-column">
+                 <div>Max Mana: <span id="playerMaxMana">10</span></div>
+                 <div>Highscore: <span id="highScoreDisplay">0</span></div> </div>
+        </div>
+
+         <div id="enemyContainer" class="enemy-container enemy-animation">
+             <div class="enemy-name" id="enemyName">Goblin</div>
+             <div class="monster-image" id="monsterImage"></div> <div class="monster-traits" id="monsterTraits"></div>
+             <div>Leben: <span id="enemyHealth">10</span>/<span id="enemyMaxHealth">10</span></div>
+             <div class="health-bar">
+                 <div class="health-fill" id="enemyHealthBar" style="width: 100%;"></div>
+             </div>
+             <div>Angriff: <span id="enemyAttack">2</span></div>
+             <div class="enemy-info" id="enemyInfo"></div>
+         </div>
+
+         <div class="player-area">
+             <div class="player-image" id="playerImage"></div> <div class="player-stats">
+                 <div>Leben: <span id="playerHealth">20</span>/<span id="playerMaxHealth">20</span></div>
+                 <div class="player-health-bar">
+                     <div class="player-health-fill" id="playerHealthBar" style="width: 100%;"></div>
+                 </div>
+                 <div>Mana: <span id="playerMana">10</span>/<span id="playerMaxMana2">10</span></div>
+                 <div class="mana-bar">
+                     <div class="mana-fill" id="playerManaBar" style="width: 100%;"></div>
+                 </div>
+                 <div>Block: <span id="playerBlock">0</span></div>
+             </div>
+         </div>
+
+        <h2>Deine Karten</h2>
+        <div id="cardHand" class="card-hand">
+            </div>
+
+        <div class="action-buttons">
+            <button id="manaBoostBtn">Mana Boost (+5 Mana, Zug Ende)</button> <button id="endTurnBtn">Zug beenden</button>
+        </div>
+
+        <div id="messageLog" class="message-log">
+            </div>
+    </div>
+
+    <div id="upgradeContainer" class="upgrade-container" style="display: none;">
+        <div class="upgrade-box">
+            <h2 class="upgrade-title">Level Up! Wähle ein Upgrade</h2>
+            <div id="upgradeOptions" class="upgrade-options">
+                </div>
+        </div>
+    </div>
+
+    <div id="gameOverContainer" class="game-over-container" style="display: none;">
+        <h2>Game Over!</h2>
+        <div class="highscore">Besiegte Gegner: <span id="finalScore">0</span></div>
+         <div class="highscore">Höchste Runde: <span id="finalRound">0</span></div>
+         <div class="highscore">Endlevel: <span id="finalLevel">0</span></div>
+        <button id="restartBtn">Neues Spiel</button>
+    </div>
+
+    <script>
+        // Spielkonstanten
+        const CARD_TYPES = [
+            // Mana-Kosten angepasst für neues Mana-System
+            { id: 1, name: 'Schwert', icon: '⚔️', description: 'Fügt dem Gegner Schaden zu', power: 4, effect: 'damage', manaCost: 2 },
+            { id: 2, name: 'Schild', icon: '🛡️', description: 'Blockt Schaden in der nächsten Runde', power: 5, effect: 'block', manaCost: 3 },
+            { id: 3, name: 'Heilung', icon: '❤️', description: 'Stellt Leben wieder her', power: 5, effect: 'heal', manaCost: 3 },
+            { id: 4, name: 'Gift', icon: '☠️', description: 'Fügt Gegner über Zeit Schaden zu', power: 2, duration: 3, effect: 'poison', manaCost: 3 }, // Dauer hinzugefügt
+            { id: 5, name: 'Blitz', icon: '⚡', description: 'Verursacht magischen Schaden', power: 6, effect: 'damage', manaCost: 3 },
+            { id: 6, name: 'Großer Schlag', icon: '💥', description: 'Hoher Schaden, hohe Kosten', power: 10, effect: 'damage', manaCost: 4 },
+            { id: 7, name: 'Meditieren', icon: '🧘', description: 'Ziehe eine Karte', power: 1, effect: 'draw', manaCost: 1 },
+            { id: 8, name: 'Vampirbiss', icon: '🧛', description: 'Schaden + Selbstheilung', power: 3, effect: 'lifesteal', manaCost: 3 },
+            { id: 9, name: 'Heiliges Schwert', icon: '✨', description: 'Stärker als jedes Schwert', power: 12, effect: 'damage', manaCost: 7 },
+        ];
+
+        // Beispiel-URLs für Pixel-Art. Ersetze diese durch deine eigenen!
+        const ENEMY_PIXEL_PLACEHOLDERS = {
+            'Goblin': 'images/Goblin.png',
+            'Ork': 'images/Ork.png',
+            'Troll': 'images/Troll.png',
+            'Dämon': 'images/Dämon.png',
+            'Baby Drache': 'images/BabyDrache',
+            'Drache': 'images/Drache.png',
+            'Nekromant': 'images/Nekromant.png',
+            'Riesen  Spinne': 'images/RiesenSpinne.png',
+            'Eiskönig': 'images/Eiskönig.png'
+        };
+         const PLAYER_PIXEL_IMAGE = 'images/Spieler.png'; // Spielerbild
+
+        const ENEMY_TYPES = [
+             // XP-Wert hinzugefügt (basierend auf Level)
+            { name: 'Goblin', health: 12, attack: 3, level: 1, pixelImage: ENEMY_PIXEL_PLACEHOLDERS['Goblin'], description: 'Ein kleiner, nerviger Goblin.', traits: ['Schnell'] },
+            { name: 'Ork', health: 20, attack: 5, level: 2, pixelImage: ENEMY_PIXEL_PLACEHOLDERS['Ork'], description: 'Ein brutaler Ork-Krieger.', traits: ['Stark'] },
+            { name: 'Riesen Spinne', health: 30, attack: 4, level: 5, pixelImage: ENEMY_PIXEL_PLACEHOLDERS['Riesen Spinne'], description: 'Eine Spinne, die Gift spuckt.', traits: ['Giftig', 'Netzwerfer'] },
+            { name: 'Troll', health: 30, attack: 6, level: 3, pixelImage: ENEMY_PIXEL_PLACEHOLDERS['Troll'], description: 'Regeneriert langsam Leben.', traits: ['Regeneration', 'Massiv'] },
+            { name: 'Nekromant', health: 25, attack: 5, level: 4, pixelImage: ENEMY_PIXEL_PLACEHOLDERS['Nekromant'], description: 'Beschwört untote Diener (simuliert durch höheren Angriff).', traits: ['Magisch', 'Untotenbeschwörer'] },
+            { name: 'Eiskönig', health: 33, attack: 6, level: 4, pixelImage: ENEMY_PIXEL_PLACEHOLDERS['Eiskönig'], description: 'Verlangsamt Angriffe (simuliert durch Block).', traits: ['Eisig', 'Elementar'] }, // Könnte spezielle Mechaniken haben
+            { name: 'Dämon', health: 35, attack: 7, level: 5, pixelImage: ENEMY_PIXEL_PLACEHOLDERS['Dämon'], description: 'Feurige Angriffe durchdringen Rüstung teilweise.', traits: ['Feurig', 'Furchtlos'] },
+            { name: 'Baby Drache', health: 40, attack: 8, level: 6, pixelImage: ENEMY_PIXEL_PLACEHOLDERS['Baby Drache'], description: 'Ein neugeborener Drache. Er hat noch nicht sein volles Potential erreicht.', traits: ['Fliegend', 'Feueratem', 'Weise'] },
+            { name: 'Drache', health: 75, attack: 15, level: 10, pixelImage: ENEMY_PIXEL_PLACEHOLDERS['Drache'], description: 'Ein mächtiger Drache mit Feueratem.', traits: ['Fliegend', 'Feueratem', 'Weise'] },
+        ];
+
+        const UPGRADE_TYPES = [
+            { type: 'newCard', title: 'Neue Karte', description: 'Füge deinem Deck eine zufällige neue Karte hinzu' },
+            { type: 'upgradePower', title: 'Kartenstärke +1', description: 'Erhöhe die Stärke einer zufälligen Karte' },
+            { type: 'upgradeHealth', title: 'Max Leben +5', description: 'Erhöhe dein maximales Leben um 5' },
+            { type: 'healFull', title: 'Volle Heilung', description: 'Stelle dein Leben vollständig wieder her' },
+            { type: 'upgradeMana', title: 'Max Mana +1', description: 'Erhöhe dein maximales Mana um 1' }, // Kleineres Mana-Upgrade
+            { type: 'reduceCost', title: 'Kostenreduktion -1', description: 'Reduziere die Manakosten einer zufälligen Karte (Min 1)' },
+            { type: 'removeCard', title: 'Karte entfernen', description: 'Entferne eine zufällige Karte aus deinem Deck' }, // Neue Option
+            { type: 'upgradeBlock', title: 'Blockstärke +1', description: 'Verbessere eine zufällige Block-Karte' } // Neue Option
+        ];
+
+        // XP Konstanten
+        const BASE_XP_TO_LEVEL_UP = 100;
+        const LEVEL_UP_FACTOR = 1.5; // Faktor für exponentielles Wachstum
+        const BASE_ENEMY_XP = 25; // Grund-XP pro Gegnerlevel
+
+        // Spielzustand
+        let state = {}; // Wird in initGame initialisiert
+
+        // DOM-Elemente
+        const roundElem = document.getElementById('round');
+        const defeatedEnemiesElem = document.getElementById('defeatedEnemies');
+        const playerHealthElem = document.getElementById('playerHealth');
+        const playerMaxHealthElem = document.getElementById('playerMaxHealth');
+        const playerHealthBarElem = document.getElementById('playerHealthBar');
+        const playerManaElem = document.getElementById('playerMana');
+        const playerMaxManaElem = document.getElementById('playerMaxMana'); // Top bar
+        const playerMaxManaElem2 = document.getElementById('playerMaxMana2'); // Player stats area
+        const playerManaBarElem = document.getElementById('playerManaBar');
+        const playerBlockElem = document.getElementById('playerBlock');
+        const playerLevelElem = document.getElementById('playerLevel');
+        const playerXPElem = document.getElementById('playerXP'); // XP Element
+        const xpToNextLevelElem = document.getElementById('xpToNextLevel'); // XP Needed Element
+        const enemyNameElem = document.getElementById('enemyName');
+        const enemyHealthElem = document.getElementById('enemyHealth');
+        const enemyMaxHealthElem = document.getElementById('enemyMaxHealth');
+        const enemyHealthBarElem = document.getElementById('enemyHealthBar');
+        const enemyAttackElem = document.getElementById('enemyAttack');
+        const enemyContainerElem = document.getElementById('enemyContainer');
+        const monsterImageElem = document.getElementById('monsterImage');
+        const playerImageElem = document.getElementById('playerImage'); // Player Image Element
+        const enemyInfoElem = document.getElementById('enemyInfo');
+        const monsterTraitsElem = document.getElementById('monsterTraits');
+        const cardHandElem = document.getElementById('cardHand');
+        const endTurnBtn = document.getElementById('endTurnBtn');
+        const manaBoostBtn = document.getElementById('manaBoostBtn'); // Mana Boost Button Element
+        const messageLogElem = document.getElementById('messageLog');
+        const upgradeContainerElem = document.getElementById('upgradeContainer');
+        const upgradeOptionsElem = document.getElementById('upgradeOptions');
+        const gameOverContainerElem = document.getElementById('gameOverContainer');
+        const finalScoreElem = document.getElementById('finalScore');
+        const finalRoundElem = document.getElementById('finalRound');
+        const finalLevelElem = document.getElementById('finalLevel');
+        const restartBtn = document.getElementById('restartBtn');
+        const highScoreDisplayElem = document.getElementById('highScoreDisplay'); // Highscore Anzeige Element
+
+        // Event-Listener
+        endTurnBtn.addEventListener('click', () => endTurn(false)); // False: Normaler Zug
+        manaBoostBtn.addEventListener('click', manaBoost);
+        restartBtn.addEventListener('click', initGame);
+
+        // Hilfsfunktionen
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function shuffleArray(array) {
+            let shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        function logMessage(text, type = 'system') {
+            const message = document.createElement('div');
+            message.className = `message ${type}`;
+            message.textContent = text;
+            messageLogElem.appendChild(message);
+            // Auto-scroll zum neuesten Log
+            messageLogElem.scrollTop = messageLogElem.scrollHeight;
+        }
+
+        // Funktion zur Berechnung der benötigten XP für das nächste Level
+        function calculateXpToNextLevel(level) {
+            return Math.floor(BASE_XP_TO_LEVEL_UP * Math.pow(LEVEL_UP_FACTOR, level - 1));
+        }
+
+        function updateUI() {
+            if (!state || state.gameOver) return; // Frühzeitiger Ausstieg, wenn state nicht bereit ist
+
+            // Update stats
+            roundElem.textContent = state.round;
+            defeatedEnemiesElem.textContent = state.defeatedEnemies;
+            playerHealthElem.textContent = state.playerHealth;
+            playerMaxHealthElem.textContent = state.playerMaxHealth;
+            playerHealthBarElem.style.width = `${Math.max(0, state.playerHealth / state.playerMaxHealth) * 100}%`;
+            playerManaElem.textContent = state.playerMana;
+            playerMaxManaElem.textContent = state.playerMaxMana; // Top bar
+            playerMaxManaElem2.textContent = state.playerMaxMana; // Player stats area
+            playerManaBarElem.style.width = `${(state.playerMana / state.playerMaxMana) * 100}%`;
+            playerBlockElem.textContent = state.playerBlock;
+            playerLevelElem.textContent = state.playerLevel;
+            playerXPElem.textContent = state.playerXP;
+            xpToNextLevelElem.textContent = state.xpToNextLevel;
+            highScoreDisplayElem.textContent = state.highScore;
+
+            // Update enemy
+            enemyNameElem.textContent = state.enemyName;
+            enemyHealthElem.textContent = state.enemyHealth;
+            enemyMaxHealthElem.textContent = state.enemyMaxHealth;
+            enemyHealthBarElem.style.width = `${Math.max(0, state.enemyHealth / state.enemyMaxHealth) * 100}%`;
+            enemyAttackElem.textContent = state.enemyAttack;
+
+            // Update monster appearance (Pixel Art)
+            if (state.enemyPixelImage) {
+                monsterImageElem.style.backgroundImage = `url('${state.enemyPixelImage}')`;
+            } else {
+                 monsterImageElem.style.backgroundImage = 'none'; // Fallback
+                 monsterImageElem.style.backgroundColor = '#555'; // Fallback Farbe
+            }
+             // Update Player Image
+            playerImageElem.style.backgroundImage = `url('${PLAYER_PIXEL_IMAGE}')`;
+
+
+            // Update monster info
+            enemyInfoElem.textContent = state.enemyDescription;
+
+            // Update monster traits
+            monsterTraitsElem.innerHTML = '';
+            (state.enemyTraits || []).forEach(trait => {
+                const traitElem = document.createElement('span');
+                traitElem.className = 'monster-trait';
+                traitElem.textContent = trait;
+                monsterTraitsElem.appendChild(traitElem);
+            });
+             // Füge Poison-Status hinzu, falls vorhanden
+             if (state.enemyPoisonDuration > 0) {
+                 const poisonTrait = document.createElement('span');
+                 poisonTrait.className = 'monster-trait';
+                 poisonTrait.style.color = '#90ee90'; // Grün für Gift
+                 poisonTrait.textContent = `Gift (${state.enemyPoisonDuration} R.)`;
+                 monsterTraitsElem.appendChild(poisonTrait);
+             }
+
+
+            // Update card availability based on mana & disable buttons during animations/enemy turn
+            const turnInProgress = endTurnBtn.disabled; // Prüfen ob Zugende Button deaktiviert ist
+            document.querySelectorAll('.card').forEach(cardElem => {
+                const cardId = parseInt(cardElem.dataset.cardUniqueId); // Verwende unique ID
+                const card = state.hand.find(c => c.uniqueId === cardId);
+
+                if (card && (card.manaCost > state.playerMana || turnInProgress)) {
+                    cardElem.classList.add('disabled');
+                } else {
+                    cardElem.classList.remove('disabled');
+                }
+            });
+            // Auch Mana Boost Button deaktivieren, wenn nicht genug Mana ODER Zug läuft
+            manaBoostBtn.disabled = turnInProgress;
+
+        }
+
+        function createCard(card) {
+            const cardElem = document.createElement('div');
+            cardElem.className = 'card card-animation';
+            cardElem.dataset.cardUniqueId = card.uniqueId; // Eindeutige ID für diese Instanz der Karte
+
+            cardElem.innerHTML = `
+                <div class="card-mana">${card.manaCost}</div>
+                <div class="card-name">${card.name}</div>
+                <div class="card-icon">${card.icon}</div>
+                <div class="card-description">${card.description} ${card.duration ? `(${card.duration} Runden)` : ''}</div>
+                <div class="card-power">${card.effect === 'draw' ? '' : card.power}</div> `;
+
+             // Klick-Logik (wird nur aktiv, wenn nicht disabled)
+            cardElem.addEventListener('click', () => {
+                 // Prüfe erneut, ob spielbar (falls sich Zustand geändert hat)
+                 if (!cardElem.classList.contains('disabled') && !state.gameOver && state.playerMana >= card.manaCost && !endTurnBtn.disabled) {
+                    playCard(card, cardElem);
+                 } else if (state.playerMana < card.manaCost) {
+                     logMessage(`Nicht genug Mana für "${card.name}"!`, 'system');
+                 }
+            });
+
+            return cardElem;
+        }
+
+        function updateHand() {
+            cardHandElem.innerHTML = '';
+            state.hand.forEach(card => {
+                cardHandElem.appendChild(createCard(card));
+            });
+            updateUI(); // UI aktualisieren, um Karten ggf. zu disablen
+        }
+
+        function drawCards(count = 1) {
+             if (state.gameOver) return;
+            logMessage(`Ziehe ${count} Karte(n)...`, 'system');
+            for (let i = 0; i < count; i++) {
+                 // Wenn Ziehstapel leer ist, Mische Ablagestapel neu
+                if (state.drawPile.length === 0) {
+                     if (state.discardPile.length === 0) {
+                         logMessage("Keine Karten mehr zum Ziehen oder Mischen!", 'system');
+                         break; // Nichts mehr zu tun
+                     }
+                    logMessage('Ziehstapel leer. Mische Ablagestapel...', 'system');
+                    state.drawPile = shuffleArray(state.discardPile);
+                    state.discardPile = [];
+                 }
+
+                 // Wenn immer noch leer (passiert nur, wenn auch Ablage leer war), abbrechen
+                 if (state.drawPile.length === 0) break;
+
+                // Karte vom Ziehstapel nehmen und zur Hand hinzufügen
+                const cardInstance = state.drawPile.pop();
+                 state.hand.push(cardInstance);
+                // logMessage(`Du hast "${cardInstance.name}" gezogen.`); // Kann zu viel Spam sein
+            }
+            updateHand();
+        }
+
+        function playCard(card, cardElem) {
+            if (state.gameOver || card.manaCost > state.playerMana || endTurnBtn.disabled) return;
+
+            // Mana abziehen
+            state.playerMana -= card.manaCost;
+
+            logMessage(`Du spielst "${card.name}" für ${card.manaCost} Mana.`, 'player');
+            cardElem.classList.add('played'); // Startet Ausspiel-Animation
+
+            // Karte aus Hand entfernen und zum Ablagestapel hinzufügen
+            state.hand = state.hand.filter(c => c.uniqueId !== card.uniqueId);
+             state.discardPile.push(card); // Zum Ablagestapel
+
+            // Deaktiviere Buttons während der Aktion
+             disableActions();
+
+            setTimeout(() => {
+                // Karteneffekt anwenden
+                let damageDealt = 0; // Für Lifesteal
+                switch (card.effect) {
+                    case 'damage':
+                        damageDealt = card.power;
+                        state.enemyHealth -= damageDealt;
+                        logMessage(`Du fügst ${state.enemyName} ${damageDealt} Schaden zu.`, 'player');
+                        enemyContainerElem.classList.add('shake');
+                        setTimeout(() => enemyContainerElem.classList.remove('shake'), 300);
+                        break;
+                    case 'block':
+                        state.playerBlock += card.power;
+                        logMessage(`Du erhältst ${card.power} Block.`, 'player');
+                        break;
+                    case 'heal':
+                        const healAmount = Math.min(card.power, state.playerMaxHealth - state.playerHealth);
+                        state.playerHealth += healAmount;
+                        logMessage(`Du heilst dich um ${healAmount} Leben.`, 'player');
+                        break;
+                    case 'poison':
+                        state.enemyPoisonAmount = card.power; // Stärke des Gifts
+                        state.enemyPoisonDuration += card.duration; // Dauer addieren/setzen
+                        logMessage(`${state.enemyName} ist nun für ${state.enemyPoisonDuration} Runden vergiftet (Stärke ${card.power}).`, 'player');
+                        break;
+                    case 'draw':
+                         logMessage('Du ziehst eine zusätzliche Karte.', 'player');
+                         drawCards(card.power); // Power bestimmt, wie viele Karten gezogen werden
+                         break;
+                     case 'lifesteal':
+                         damageDealt = card.power;
+                         state.enemyHealth -= damageDealt;
+                         const lifeStolen = Math.min(damageDealt, state.playerMaxHealth - state.playerHealth);
+                         state.playerHealth += lifeStolen;
+                         logMessage(`Du fügst ${state.enemyName} ${damageDealt} Schaden zu und heilst ${lifeStolen} Leben.`, 'player');
+                         enemyContainerElem.classList.add('shake');
+                         setTimeout(() => enemyContainerElem.classList.remove('shake'), 300);
+                         break;
+                }
+
+                // UI sofort nach Effektanwendung aktualisieren
+                updateUI();
+
+                // Überprüfe, ob der Gegner besiegt wurde
+                if (state.enemyHealth <= 0) {
+                    defeatEnemy();
+                    // Wichtig: Wenn Gegner besiegt, nicht sofort Aktionen wieder aktivieren
+                } else {
+                    // Wenn Gegner nicht besiegt, Aktionen wieder aktivieren
+                     enableActions();
+                    updateHand(); // Hand neu rendern (aktualisiert disabled status)
+                }
+            }, 400); // Warte auf Karten-Animation
+        }
+
+        // Funktion für Mana Boost
+        function manaBoost() {
+             if (state.gameOver || endTurnBtn.disabled) return; // Nicht möglich wenn Spiel vorbei oder Zug läuft
+
+             const manaGained = Math.min(5, state.playerMaxMana - state.playerMana);
+             state.playerMana += manaGained;
+             logMessage(`Mana Boost! Du erhältst ${manaGained} Mana und beendest den Zug.`, 'mana');
+
+             updateUI(); // Mana anzeigen
+             endTurn(true); // Zug sofort beenden, true signalisiert Mana Boost
+        }
+
+         // Funktionen zum Deaktivieren/Aktivieren von Spieleraktionen
+         function disableActions() {
+             endTurnBtn.disabled = true;
+             manaBoostBtn.disabled = true;
+             document.querySelectorAll('.card').forEach(c => c.classList.add('disabled'));
+         }
+         function enableActions() {
+             if (state.gameOver) return; // Nicht aktivieren wenn Spiel vorbei
+             endTurnBtn.disabled = false;
+             manaBoostBtn.disabled = false;
+             updateUI(); // Aktualisiert auch Karten-Status
+         }
+
+
+        function endTurn(fromManaBoost = false) {
+            if (state.gameOver || endTurnBtn.disabled && !fromManaBoost) return; // Verhindert Doppel-Klick etc.
+
+             disableActions(); // Aktionen während des gegnerischen Zugs deaktivieren
+
+             // 1. Spieler-Zug Ende Aktionen (Gift, Block Reset etc.)
+             logMessage(`Dein Zug endet.`, 'system');
+             state.playerBlock = 0; // Block zurücksetzen am Ende des eigenen Zuges
+
+             // 2. Gegnerische Aktionen (Gift-Schaden, Angriff)
+             setTimeout(() => {
+                 // Gift-Effekt anwenden (vor dem Angriff)
+                 if (state.enemyPoisonDuration > 0) {
+                     const poisonDamage = state.enemyPoisonAmount;
+                     state.enemyHealth -= poisonDamage;
+                     state.enemyPoisonDuration--;
+                     logMessage(`${state.enemyName} erleidet ${poisonDamage} Giftschaden (${state.enemyPoisonDuration} Runden verbleibend).`, 'enemy');
+
+                     // Überprüfe, ob der Gegner durch Gift besiegt wurde
+                     if (state.enemyHealth <= 0) {
+                         updateUI(); // UI aktualisieren bevor Gegner besiegt wird
+                         defeatEnemy();
+                         return; // Kein Gegnerangriff mehr nötig
+                     }
+                 }
+
+                 // Gegner greift an
+                 let damageToPlayer = state.enemyAttack;
+                 logMessage(`${state.enemyName} greift dich für ${state.enemyAttack} Schaden an.`, 'enemy');
+
+                 // Block wird jetzt VOR dem Schaden angewendet (typischer)
+                 if (state.playerBlock > 0) {
+                     const blockedDamage = Math.min(state.playerBlock, damageToPlayer);
+                     damageToPlayer -= blockedDamage;
+                     // state.playerBlock -= blockedDamage; // Block verfällt nach Anwendung
+                     logMessage(`Du blockst ${blockedDamage} Schaden!`, 'player');
+                 }
+
+
+                 if (damageToPlayer > 0) {
+                     state.playerHealth -= damageToPlayer;
+                     document.querySelector('.player-stats').classList.add('shake'); // Spieler wird getroffen
+                     setTimeout(() => document.querySelector('.player-stats').classList.remove('shake'), 300);
+                     logMessage(`Du erleidest ${damageToPlayer} Schaden.`, 'system');
+                 }
+
+                 // Überprüfe Game Over
+                 if (state.playerHealth <= 0) {
+                     updateUI(); // Zeige 0 HP an
+                     gameOver();
+                     return;
+                 }
+
+                 // 3. Nächste Runde Vorbereitung
+                 state.round++;
+
+                 // Mana für die neue Runde auffüllen (+1, es sei denn Mana Boost wurde genutzt)
+                 if (!fromManaBoost) {
+                     const manaRegen = 1;
+                     state.playerMana = Math.min(state.playerMaxMana, state.playerMana + manaRegen);
+                      logMessage(`Du regenerierst ${manaRegen} Mana.`, 'mana');
+                 }
+
+
+                 // Karten ablegen und neue ziehen (normalerweise 5 Karten)
+                 state.discardPile.push(...state.hand); // Alle Handkarten auf Ablagestapel
+                 state.hand = [];
+                 drawCards(5); // Ziehe 5 Karten für die neue Runde
+
+                 logMessage(`Runde ${state.round} beginnt!`, 'system');
+                 enableActions(); // Aktionen für den neuen Zug aktivieren
+                 updateUI(); // UI für die neue Runde aktualisieren
+
+             }, 700); // Kurze Pause für Lesbarkeit
+        }
+
+        function defeatEnemy() {
+            const defeatedEnemyLevel = state.enemyLevel; // Level für XP merken
+             const defeatedEnemyName = state.enemyName; // Namen für Log merken
+
+            logMessage(`Du hast ${defeatedEnemyName} (Level ${defeatedEnemyLevel}) besiegt!`, 'system');
+            enemyContainerElem.classList.add('defeat');
+
+             // XP Vergabe
+             const xpGained = BASE_ENEMY_XP * defeatedEnemyLevel;
+             state.playerXP += xpGained;
+             logMessage(`Du erhältst ${xpGained} XP!`, 'xp');
+             state.defeatedEnemies++;
+             state.highScore = Math.max(state.highScore, state.defeatedEnemies); // Highscore aktualisieren
+
+            // Reset enemy poison status on defeat
+            state.enemyPoisonAmount = 0;
+            state.enemyPoisonDuration = 0;
+
+            // Verzögerung für die Animation & Level-Up Check
+            setTimeout(() => {
+                enemyContainerElem.classList.remove('defeat'); // Reset Animation Class
+
+                // Level Up Check (kann mehrfach passieren)
+                let leveledUp = false;
+                while (state.playerXP >= state.xpToNextLevel) {
+                    state.playerXP -= state.xpToNextLevel; // XP abziehen
+                    state.playerLevel++;
+                    state.xpToNextLevel = calculateXpToNextLevel(state.playerLevel); // XP für nächstes Level berechnen
+                    logMessage(`Level Up! Du bist jetzt Level ${state.playerLevel}.`, 'system');
+                    leveledUp = true;
+                    // Trigger upgrade screen only after the loop
+                }
+
+                if (leveledUp) {
+                    showUpgradeOptions(); // Zeige Upgrades erst nach allen Level-Ups
+                } else {
+                     // Wenn kein Level Up, direkt nächsten Gegner spawnen
+                     spawnEnemy();
+                     // Nach Spawn und vor nächstem Zug: +1 Mana als Belohnung? (Optional)
+                      const manaReward = 1;
+                      state.playerMana = Math.min(state.playerMaxMana, state.playerMana + manaReward);
+                      logMessage(`Bonus: +${manaReward} Mana für den Sieg!`, 'mana');
+                     enableActions(); // Aktionen wieder erlauben
+                     updateUI(); // UI aktualisieren
+                 }
+
+
+            }, 1000); // Wartezeit für Todesanimation
+        }
+
+        function levelUp() {
+             // Diese Funktion wird jetzt indirekt durch den XP Check in defeatEnemy ausgelöst
+             // Zeige Upgrade-Optionen an (wird in defeatEnemy aufgerufen)
+             // Die Logik zum XP-Reset und Neuberechnung ist jetzt in defeatEnemy
+        }
+
+        function showUpgradeOptions() {
+            disableActions(); // Keine Aktionen während Upgrade-Wahl
+             // Wähle 3 zufällige, unterschiedliche Upgrades aus
+             const shuffledUpgrades = shuffleArray([...UPGRADE_TYPES]);
+             let availableUpgrades = [];
+             let upgradeCount = 0;
+             for(let upgrade of shuffledUpgrades) {
+                 // Logik um bestimmte Upgrades zu vermeiden wenn nicht sinnvoll
+                 if (upgrade.type === 'removeCard' && state.deck.length <= 5) continue; // Nicht entfernen wenn Deck zu klein
+                 if (upgrade.type === 'upgradePower' && !state.deck.some(card => card.effect === 'damage' || card.effect === 'lifesteal')) continue; // Kein Power-Up wenn keine Schadenskarten
+                 if (upgrade.type === 'upgradeBlock' && !state.deck.some(card => card.effect === 'block')) continue; // Kein Block-Up wenn keine Blockkarten
+                 if (upgrade.type === 'reduceCost' && !state.deck.some(card => card.manaCost > 1)) continue; // Kein Reduce wenn alle Karten 1 Mana kosten
+
+                 availableUpgrades.push(upgrade);
+                 upgradeCount++;
+                 if (upgradeCount >= 3) break;
+             }
+             // Fallback, falls nicht genug gültige Upgrades gefunden wurden (selten)
+             while (availableUpgrades.length < 3 && availableUpgrades.length < UPGRADE_TYPES.length) {
+                 const fallback = UPGRADE_TYPES.find(u => !availableUpgrades.includes(u));
+                 if(fallback) availableUpgrades.push(fallback);
+                 else break; // Sollte nicht passieren
+             }
+
+
+            upgradeOptionsElem.innerHTML = '';
+
+            availableUpgrades.forEach(upgrade => {
+                const upgradeElem = document.createElement('div');
+                upgradeElem.className = 'upgrade-option';
+                upgradeElem.innerHTML = `<h3>${upgrade.title}</h3><p>${upgrade.description}</p>`;
+                upgradeElem.onclick = () => applyUpgrade(upgrade.type);
+                upgradeOptionsElem.appendChild(upgradeElem);
+            });
+
+            upgradeContainerElem.style.display = 'flex'; // Zeige Container
+        }
+
+        function applyUpgrade(type) {
+            logMessage(`Upgrade gewählt: ${UPGRADE_TYPES.find(u => u.type === type)?.title}`, 'system');
+            switch (type) {
+                case 'newCard':
+                     const availableToAdd = CARD_TYPES.filter(ct => !state.deck.some(d => d.id === ct.id)); // Nur Karten, die noch nicht im Deck sind? Oder Duplikate erlauben? Hier: Duplikate erlaubt
+                     if (CARD_TYPES.length > 0) { // Sicherstellen, dass es Karten gibt
+                         const newCardBase = CARD_TYPES[getRandomInt(0, CARD_TYPES.length - 1)];
+                         const newCardInstance = { ...newCardBase, uniqueId: Date.now() + Math.random() }; // Eindeutige ID
+                         state.deck.push(newCardInstance);
+                         logMessage(`Karte "${newCardInstance.name}" zum Deck hinzugefügt.`, 'system');
+                     }
+                    break;
+                case 'upgradePower':
+                     const powerUpCards = state.deck.filter(card => card.effect === 'damage' || card.effect === 'lifesteal');
+                     if (powerUpCards.length > 0) {
+                         const cardToUpgrade = powerUpCards[getRandomInt(0, powerUpCards.length - 1)];
+                         cardToUpgrade.power += 1;
+                         logMessage(`Karte "${cardToUpgrade.name}" hat jetzt ${cardToUpgrade.power} Stärke.`, 'system');
+                     } else {
+                          logMessage("Keine passende Karte für Power-Upgrade gefunden.", 'system');
+                          // Optional: Alternativ-Belohnung geben? z.B. Mana
+                     }
+                    break;
+                 case 'upgradeBlock':
+                     const blockUpCards = state.deck.filter(card => card.effect === 'block');
+                     if (blockUpCards.length > 0) {
+                         const cardToUpgrade = blockUpCards[getRandomInt(0, blockUpCards.length - 1)];
+                         cardToUpgrade.power += 1; // Block Power erhöhen
+                         logMessage(`Karte "${cardToUpgrade.name}" hat jetzt ${cardToUpgrade.power} Block.`, 'system');
+                     } else {
+                          logMessage("Keine passende Karte für Block-Upgrade gefunden.", 'system');
+                     }
+                     break;
+                case 'upgradeHealth':
+                    state.playerMaxHealth += 5;
+                    state.playerHealth += 5; // Auch direkt heilen
+                    logMessage(`Maximales Leben auf ${state.playerMaxHealth} erhöht.`, 'system');
+                    break;
+                case 'healFull':
+                    state.playerHealth = state.playerMaxHealth;
+                    logMessage(`Vollständig geheilt!`, 'system');
+                    break;
+                case 'upgradeMana':
+                    state.playerMaxMana += 1;
+                    state.playerMana += 1; // Direkt auch Mana geben
+                    logMessage(`Maximales Mana auf ${state.playerMaxMana} erhöht.`, 'system');
+                    break;
+                case 'reduceCost':
+                     const costReduceCards = state.deck.filter(card => card.manaCost > 1);
+                     if (costReduceCards.length > 0) {
+                         const cardToUpgrade = costReduceCards[getRandomInt(0, costReduceCards.length - 1)];
+                         cardToUpgrade.manaCost = Math.max(1, cardToUpgrade.manaCost - 1); // Kosten reduzieren, Minimum 1
+                         logMessage(`Karte "${cardToUpgrade.name}" kostet jetzt ${cardToUpgrade.manaCost} Mana.`, 'system');
+                     } else {
+                         logMessage("Keine passende Karte für Kostenreduktion gefunden.", 'system');
+                     }
+                    break;
+                 case 'removeCard':
+                     if (state.deck.length > 0) {
+                         const indexToRemove = getRandomInt(0, state.deck.length - 1);
+                         const removedCard = state.deck.splice(indexToRemove, 1)[0];
+                         logMessage(`Karte "${removedCard.name}" aus dem Deck entfernt.`, 'system');
+                     }
+                     break;
+            }
+
+            upgradeContainerElem.style.display = 'none'; // Verstecke Container
+             spawnEnemy(); // Nächsten Gegner spawnen NACH dem Upgrade
+             enableActions(); // Aktionen wieder erlauben
+             updateUI(); // UI aktualisieren
+        }
+
+
+        function spawnEnemy() {
+             if (state.gameOver) return;
+            // Wähle einen Gegner basierend auf der Runde oder dem Spielerlevel
+            // Einfache Logik: Schwerere Gegner kommen später
+             const difficultyFactor = Math.min(ENEMY_TYPES.length - 1, Math.floor(state.round / 3) + Math.floor(state.playerLevel / 2));
+             const possibleEnemies = ENEMY_TYPES.filter(e => e.level <= difficultyFactor + 1); // Gegner bis leicht über dem Faktor
+             const enemyType = possibleEnemies.length > 0
+                 ? possibleEnemies[getRandomInt(0, possibleEnemies.length - 1)]
+                 : ENEMY_TYPES[getRandomInt(0, ENEMY_TYPES.length - 1)]; // Fallback falls Filter leer
+
+             // Skaliere Gegner leicht basierend auf Runde/Level (optional)
+             const healthMultiplier = 1 + (state.round * 0.02) + (state.playerLevel * 0.05);
+             const attackMultiplier = 1 + (state.round * 0.01) + (state.playerLevel * 0.03);
+
+            state.enemyName = enemyType.name;
+            state.enemyMaxHealth = Math.floor(enemyType.health * healthMultiplier);
+            state.enemyHealth = state.enemyMaxHealth;
+            state.enemyAttack = Math.floor(enemyType.attack * attackMultiplier);
+            state.enemyLevel = enemyType.level;
+             state.enemyPixelImage = enemyType.pixelImage; // Pixel Image
+            state.enemyDescription = enemyType.description;
+            state.enemyTraits = enemyType.traits ? [...enemyType.traits] : []; // Kopie der Traits
+             state.enemyPoisonAmount = 0; // Reset Gift Status für neuen Gegner
+             state.enemyPoisonDuration = 0;
+
+            logMessage(`Ein ${state.enemyName} (Level ${state.enemyLevel}) erscheint!`, 'enemy');
+            updateUI();
+        }
+
+        function gameOver() {
+            state.gameOver = true;
+             disableActions(); // Alle Aktionen sperren
+            logMessage('Game Over!', 'system');
+            finalScoreElem.textContent = state.defeatedEnemies;
+             finalRoundElem.textContent = state.round;
+             finalLevelElem.textContent = state.playerLevel;
+            gameOverContainerElem.style.display = 'block'; // Zeige Game Over Screen
+            document.getElementById('gameContainer').style.display = 'none'; // Verstecke Spielbereich
+
+             // Highscore speichern (optional, hier nur im State)
+             state.highScore = Math.max(state.highScore, state.defeatedEnemies);
+             // Optional: In localStorage speichern
+             // localStorage.setItem('cardGameHighScore', state.highScore);
+        }
+
+        function initGame() {
+            // Reset state
+            state = {
+                playerHealth: 50, // Start mit mehr Leben?
+                playerMaxHealth: 50,
+                playerMana: 5, // Start Mana
+                playerMaxMana: 5, // Start Max Mana
+                playerBlock: 0,
+                playerLevel: 1,
+                 playerXP: 0,
+                 xpToNextLevel: calculateXpToNextLevel(1), // XP für Level 2 berechnen
+                round: 1,
+                defeatedEnemies: 0,
+                 deck: [], // Das gesamte Deck des Spielers
+                 drawPile: [], // Karten, die gezogen werden können
+                 hand: [], // Aktuelle Handkarten
+                 discardPile: [], // Abgelegte Karten
+                enemyHealth: 0,
+                enemyMaxHealth: 0,
+                enemyAttack: 0,
+                enemyName: '',
+                enemyLevel: 0,
+                 enemyPixelImage: '',
+                 enemyDescription: '',
+                 enemyTraits: [],
+                 enemyPoisonAmount: 0, // Aktueller Giftschaden pro Runde
+                 enemyPoisonDuration: 0, // Verbleibende Runden Gift
+                gameOver: false,
+                highScore: parseInt(localStorage.getItem('cardGameHighScore') || '0') // Lade Highscore oder 0
+                 // removed playedCards counter as discardPile is used now
+            };
+
+            // Erstelle Startdeck
+            const startCardIds = [1, 1, 2, 2, 3]; // 2x Schwert, 2x Schild, 1x Heilung
+            state.deck = startCardIds.map(id => {
+                 const cardBase = CARD_TYPES.find(c => c.id === id);
+                 return { ...cardBase, uniqueId: Date.now() + Math.random() + id }; // Eindeutige ID pro Karte
+             });
+
+             // Mische das Deck und lege es als Ziehstapel bereit
+             state.drawPile = shuffleArray([...state.deck]);
+             state.discardPile = [];
+             state.hand = [];
+
+
+            // UI zurücksetzen
+            messageLogElem.innerHTML = '<div class="message system">Neues Spiel gestartet!</div>';
+            gameOverContainerElem.style.display = 'none';
+            upgradeContainerElem.style.display = 'none';
+            document.getElementById('gameContainer').style.display = 'flex'; // Spielbereich anzeigen
+
+            // Ersten Gegner spawnen
+            spawnEnemy();
+
+            // Starthand ziehen (z.B. 5 Karten)
+             drawCards(5);
+
+             // Initial UI Update
+             enableActions(); // Buttons aktivieren
+             updateUI();
+        }
+
+        // Spiel beim Laden initialisieren
+        initGame();
+
+    </script>
+</body>
+</html>

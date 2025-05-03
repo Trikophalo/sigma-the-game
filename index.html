@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sigma The Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #111;
+      color: white;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    .menu-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #111;
+      gap: 20px;
+    }
+
+    input[type="text"] {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: none;
+      outline: none;
+    }
+
+    .passive-selection {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .passive-option {
+      background-color: #222;
+      padding: 15px;
+      border-radius: 8px;
+      border: 2px solid #555;
+      width: 200px;
+      cursor: pointer;
+    }
+
+    .passive-option.locked {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    .passive-option.active {
+      border-color: gold;
+      box-shadow: 0 0 10px gold;
+    }
+
+    button {
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+      background-color: gold;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="menu-container" id="mainMenu">
+    <h1>Sigma The Game</h1>
+    <input type="text" id="playerNameInput" placeholder="Spielername eingeben" />
+    <h3>Wähle eine passive Fähigkeit:</h3>
+    <div class="passive-selection">
+      <div class="passive-option active" data-passive="swordfighter">
+        <strong>Schwertkämpfer</strong>
+        <p>Schwert macht +2 Schaden</p>
+      </div>
+      <div class="passive-option locked" data-passive="goldboy">
+        <strong>Goldjunge</strong>
+        <p>Starte mit 1000 Gold</p>
+        <em>Freigeschaltet nach Sieg über Nekromant</em>
+      </div>
+      <div class="passive-option locked" data-passive="dragonscale">
+        <strong>Drachenschuppen</strong>
+        <p>Immun gegen Statuseffekte</p>
+        <em>Freigeschaltet nach Sieg über Drache</em>
+      </div>
+    </div>
+    <button onclick="startGame()">Neues Spiel starten</button>
+  </div>
+
+  <script>
+    let selectedPassive = 'swordfighter';
+  
+    // Passiven-Auswahl
+    document.querySelectorAll('.passive-option').forEach(elem => {
+      elem.addEventListener('click', () => {
+        if (elem.classList.contains('locked')) return;
+        document.querySelectorAll('.passive-option').forEach(e => e.classList.remove('active'));
+        elem.classList.add('active');
+        selectedPassive = elem.dataset.passive;
+      });
+    });
+  
+    // Spiel starten
+    function startGame() {
+      const playerName = document.getElementById('playerNameInput').value.trim() || 'Spieler';
+      localStorage.setItem('playerName', playerName);
+      localStorage.setItem('selectedPassive', selectedPassive);
+      window.location.href = 'spiel.html';
+    }
+  
+    // Freischaltungen prüfen und anzeigen
+    function checkUnlocks() {
+      const goldboy = document.querySelector('[data-passive="goldboy"]');
+      const dragonscale = document.querySelector('[data-passive="dragonscale"]');
+  
+      if (localStorage.getItem('unlockedGoldboy') === 'true') {
+        goldboy.classList.remove('locked');
+        if (!goldboy.querySelector('.new-badge')) {
+          const badge = document.createElement('div');
+          badge.className = 'new-badge';
+          badge.textContent = 'NEU!';
+          badge.style.color = 'gold';
+          badge.style.fontWeight = 'bold';
+          badge.style.marginTop = '5px';
+          goldboy.appendChild(badge);
+        }
+      }
+  
+      if (localStorage.getItem('unlockedDragonscale') === 'true') {
+        dragonscale.classList.remove('locked');
+        if (!dragonscale.querySelector('.new-badge')) {
+          const badge = document.createElement('div');
+          badge.className = 'new-badge';
+          badge.textContent = 'NEU!';
+          badge.style.color = 'gold';
+          badge.style.fontWeight = 'bold';
+          badge.style.marginTop = '5px';
+          dragonscale.appendChild(badge);
+        }
+      }
+    }
+  
+    // Auf beiden Events prüfen (auch nach Rückkehr aus dem Spiel)
+    window.addEventListener('DOMContentLoaded', checkUnlocks);
+    window.addEventListener('pageshow', checkUnlocks);
+  </script>
+  
+  
+</body>
+</html>
