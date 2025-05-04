@@ -773,7 +773,7 @@
                 <div id="cardHand" class="card-hand"></div>
                 
                 <div class="action-buttons-vertical">
-                    <button id="manaBoostBtn">Mana Boost (Volles Mana & Zug Ende)</button>
+                    <button id="manaBoostBtn">Mana Boost (Volles Mana, Zug Ende)</button>
                     <button id="endTurnBtn">Zug beenden!</button>
                 </div>
             </div>
@@ -811,8 +811,8 @@
         // --- Spielkonstanten ---
         const CARD_TYPES = [
             // ... (deine Kartendefinitionen bleiben hier unverändert) ...
-                 { id: 1, name: 'Schwert', icon: '⚔️', description: 'Ein treuer Begleiter.', power: 5, effect: 'damage', manaCost: 2, weight: 12, tags: ['sword'] },
-                 { id: 2, name: 'Schild', icon: '🛡️', description: 'Erhalte 5 Block', power: 5, effect: 'block', manaCost: 2, weight: 3 },
+                 { id: 1, name: 'Schwert', icon: '⚔️', description: 'Ein treuer Begleiter.', power: 5, effect: 'damage', manaCost: 2, weight: 13, tags: ['sword'] },
+                 { id: 2, name: 'Schild', icon: '🛡️', description: 'Erhalte 5 Block', power: 5, effect: 'block', manaCost: 2, weight: 2 },
                  { id: 3, name: 'Heilung', icon: '❤️', description: 'Heilt 6 Leben', power: 6, effect: 'heal', manaCost: 3, weight: 2 },
                  { id: 4, name: 'Gift', icon: '☠️', description: 'Vergiftet (2 Schaden, 3 Rd.) Falls bereit Vergitet mache 3 Schaden', power: 2, duration: 3, effect: 'poison', manaCost: 3, weight: 1 },
                  { id: 5, name: 'Blitz', icon: '⚡', description: 'Fügt 7 Schaden zu', power: 7, effect: 'damage', manaCost: 4, weight: 2 },
@@ -981,13 +981,16 @@
             let newCard = {
                 ...cardType,
                 uniqueId: cardUniqueCounter,
+                basePower: cardType.power, // merken, falls Schwertbonus dazukommt
                 tags: cardType.tags || []
             };
 
             // Bonus anwenden, falls es ein Schwert ist
             if ((newCard.name === 'Schwert' || newCard.tags.includes('sword')) && typeof newCard.power === 'number') {
-                newCard.power += state.player.swordBonus || 0;
+                // Nur Basiswert setzen, KEIN zusätzlicher Bonus!
+                newCard.basePower = newCard.power; // neuer Standardwert
             }
+
 
             return newCard;
         }
@@ -1319,17 +1322,19 @@
                 ${card.icon.endsWith('.png') ? `<img src="${card.icon}" class="card-icon-image" alt="${card.name}">` : card.icon}
                 </div>
                 <div class="card-description">${card.description}</div>
-               <div class="card-power ${
+           <div class="card-power ${
                 (card.effect !== 'damage' && card.effect !== 'block' && card.effect !== 'heal' && card.effect !== 'lifesteal' && card.effect !== 'poison') ? 'hidden-power' : ''
-                }" title="${
+            }" title="${
                 card.name === 'Schwert' && state.player?.swordBonus ? `+${state.player.swordBonus} durch Schwertkämpfer` : ''
-                }">
-                ${
-                    (card.effect === 'damage' || card.effect === 'block' || card.effect === 'heal' || card.effect === 'lifesteal' || card.effect === 'poison')
-                    ? card.power
-                    : ''
-                }
-                </div>
+            }">
+            ${
+                (card.effect === 'damage' || card.effect === 'block' || card.effect === 'heal' || card.effect === 'lifesteal' || card.effect === 'poison')
+                ? (card.name === 'Schwert' && state.player?.swordBonus
+                ? (typeof card.basePower === 'number' ? card.basePower + state.player.swordBonus : card.power)
+                : card.power)
+                : ''
+            }
+            </div>
             `;
     
             // Klick-Listener hinzufügen, um die Karte zu spielen
@@ -1504,10 +1509,10 @@
 
 
     
-        function executeCardEffect(card) {
+function executeCardEffect(card) {
     switch (card.effect) {
         case 'damage':
-        let damageDealt = card.power;
+                    let damageDealt = (typeof card.basePower === 'number' ? card.basePower : card.power);
             if (card.name === 'Schwert' && state.player.swordBonus) {
                 damageDealt += state.player.swordBonus;
             }
