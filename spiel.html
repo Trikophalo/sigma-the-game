@@ -2963,7 +2963,7 @@ function executeCardEffect(card) {
                 };
 
                 // Bei jedem 3. Level zuerst Shop, dann Upgrade
-                if (state.player.level % 2 === 0) {
+                if (state.player.level % 3 === 0) {
                     promptShopQuestion(showUpgradeAfterDelay);
                 } else {
                     showUpgradeAfterDelay();
