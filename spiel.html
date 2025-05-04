@@ -690,6 +690,20 @@
             z-index: 1001;
         }
 
+        .card-hand-action-wrapper {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            align-items: flex-start;
+            margin-top: 10px;
+        }
+
+        .action-buttons-vertical {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
 
     </style>
 </head>
@@ -754,13 +768,16 @@
 
         <div class="card-hand-container">
             <h2>Deine Karten (<span id="currentHandSize">0</span>/<span id="maxHandSizeDisplay2">5</span>)</h2>
-            <div id="cardHand" class="card-hand">
+            
+            <div class="card-hand-action-wrapper">
+                <div id="cardHand" class="card-hand"></div>
+                
+                <div class="action-buttons-vertical">
+                    <button id="manaBoostBtn">Mana Boost (Volles Mana, Zug Ende)</button>
+                    <button id="endTurnBtn">Zug beenden</button>
                 </div>
-        </div>
-
-        <div class="action-buttons">
-            <button id="manaBoostBtn">Mana Boost (Volles Mana, Zug Ende)</button> <button id="endTurnBtn">Zug beenden</button>
-        </div>
+            </div>
+        </div>        
 
         <div id="messageLog" class="message-log">
             </div>
@@ -819,7 +836,7 @@
                 'Dämon': IMAGE_FOLDER + 'Demon.png', // Umlaut vermieden
                 'Baby Drache': IMAGE_FOLDER + 'BabyDrache.png', // Leerzeichen vermieden
                 'Nekromant': IMAGE_FOLDER + 'Nekromant.png', // Umlaut vermieden
-                'Riesen Spinne': IMAGE_FOLDER + 'RiesenSpinne.png', // Leerzeichen vermieden
+                'Riesen Spinne': IMAGE_FOLDER + 'Spinne.png', // Leerzeichen vermieden
                 'Eiskönig': IMAGE_FOLDER + 'Eiskönig.png', // Umlaut vermieden
                 'Drache': IMAGE_FOLDER + 'Drache.png'
         };
@@ -2111,12 +2128,19 @@
                 case 'upgradeSwordPower':
                     let swordsUpgraded = 0;
                     for (let card of state.player.deck) {
-                        const isSword = (card.name === 'Schwert' || (card.tags && card.tags.includes('sword')));
-                        if (isSword && typeof card.power === 'number') {
+                        const isSword =
+                            card.name === 'Schwert' ||
+                            (Array.isArray(card.tags) && card.tags.includes('sword'));
+
+                        if (isSword) {
+                            if (typeof card.power !== 'number') {
+                                card.power = 5; // Standardwert für Schwert, falls fehlend
+                            }
                             card.power += 2;
                             swordsUpgraded++;
                         }
                     }
+
                     if (swordsUpgraded > 0) {
                         logMessage(`Alle ${swordsUpgraded} Schwerter im Deck wurden um +2 verstärkt.`, 'system');
                     } else {
