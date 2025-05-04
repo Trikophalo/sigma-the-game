@@ -3160,25 +3160,6 @@ function executeCardEffect(card) {
                 // Gegnername aufbereitet (falls noch vorhanden)
                 const enemyName = state.currentEnemy?.name?.trim().toLowerCase();
 
-                // 🔓 Passiven freischalten – doppelt sicher
-                if (enemyName === 'nekromant') {
-                    try {
-                        localStorage.setItem('unlockedGoldboy', 'true');
-                        console.log('✅ Passive "Goldjunge" freigeschaltet im Game Over');
-                    } catch (e) {
-                        console.warn('⚠️ Freischaltung "Goldjunge" fehlgeschlagen:', e);
-                    }
-                }
-
-                if (enemyName === 'drache') {
-                    try {
-                        localStorage.setItem('unlockedDragonscale', 'true');
-                        console.log('✅ Passive "Drachenschuppen" freigeschaltet im Game Over');
-                    } catch (e) {
-                        console.warn('⚠️ Freischaltung "Drachenschuppen" fehlgeschlagen:', e);
-                    }
-                }
-
                 // Highscore prüfen und speichern
                 if (state.defeatedEnemies > state.highScore) {
                     state.highScore = state.defeatedEnemies;
