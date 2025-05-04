@@ -788,19 +788,19 @@
         // --- Spielkonstanten ---
         const CARD_TYPES = [
             // ... (deine Kartendefinitionen bleiben hier unverändert) ...
-                 { id: 1, name: 'Schwert', icon: '⚔️', description: 'Ein treuer Begleiter.', power: 5, effect: 'damage', manaCost: 1, weight: 10, tags: ['sword'] },
-                 { id: 2, name: 'Schild', icon: '🛡️', description: 'Erhalte 5 Block', power: 5, effect: 'block', manaCost: 1, weight: 3 },
-                 { id: 3, name: 'Heilung', icon: '❤️', description: 'Heilt 6 Leben', power: 6, effect: 'heal', manaCost: 2, weight: 2 },
-                 { id: 4, name: 'Gift', icon: '☠️', description: 'Vergiftet (2 Schaden, 3 Rd.) Falls bereit Vergitet mache 3 Schaden', power: 2, duration: 3, effect: 'poison', manaCost: 2, weight: 1 },
-                 { id: 5, name: 'Blitz', icon: '⚡', description: 'Fügt 7 Schaden zu', power: 7, effect: 'damage', manaCost: 2, weight: 2 },
-                 { id: 6, name: 'Großer Schlag', icon: '💥', description: 'Fügt 12 Schaden zu', power: 12, effect: 'damage', manaCost: 2, weight: 2 },
+                 { id: 1, name: 'Schwert', icon: '⚔️', description: 'Ein treuer Begleiter.', power: 5, effect: 'damage', manaCost: 2, weight: 10, tags: ['sword'] },
+                 { id: 2, name: 'Schild', icon: '🛡️', description: 'Erhalte 5 Block', power: 5, effect: 'block', manaCost: 2, weight: 3 },
+                 { id: 3, name: 'Heilung', icon: '❤️', description: 'Heilt 6 Leben', power: 6, effect: 'heal', manaCost: 3, weight: 2 },
+                 { id: 4, name: 'Gift', icon: '☠️', description: 'Vergiftet (2 Schaden, 3 Rd.) Falls bereit Vergitet mache 3 Schaden', power: 2, duration: 3, effect: 'poison', manaCost: 3, weight: 1 },
+                 { id: 5, name: 'Blitz', icon: '⚡', description: 'Fügt 7 Schaden zu', power: 7, effect: 'damage', manaCost: 4, weight: 2 },
+                 { id: 6, name: 'Großer Schlag', icon: '💥', description: 'Fügt 12 Schaden zu', power: 12, effect: 'damage', manaCost: 4, weight: 2 },
                  { id: 7, name: 'Meditieren', icon: '🧘', description: 'Ziehe 1 Karte', power: 1, effect: 'draw', manaCost: 0, weight: 1 },
-                 { id: 8, name: 'Vampirbiss', icon: '🧛', description: '5 Schaden, heilt 5', power: 5, healAmount: 5, effect: 'lifesteal', manaCost: 2, weight: 2 }, // Direkte Heilung statt %
+                 { id: 8, name: 'Vampirbiss', icon: '🧛', description: '5 Schaden, heilt 5', power: 5, healAmount: 5, effect: 'lifesteal', manaCost: 4, weight: 2 }, // Direkte Heilung statt %
                  { id: 9, name: 'Manatrank', icon: '🧪', description: 'Erhalte 2 Mana', power: 2, effect: 'gain_mana', manaCost: 0, weight: 3 },
-                 { id: 10, name: 'Fokus', icon: '🎯', description: 'Ziehe 2 Karten', power: 2, effect: 'draw', manaCost: 1, weight: 2 },
-                 { id: 11, name: 'Heilige Macht', icon: '✨', description: 'Fügt 22 Schaden zu', power: 22, effect: 'damage', manaCost: 3, weight: 1 },
-                 { id: 12, name: 'Genesung', icon: '💖', description: 'Heilt 15 Leben', power: 15, effect: 'heal', manaCost: 3, weight: 1 },
-                 {id: 13, name: 'Feuerpfeil', icon: '🔥', description: 'Fügt 10 Schaden zu. 50% Chance auf Verbrennung (5 Schaden für 2 Runden).', power: 10, effect: 'firearrow', manaCost: 3, weight: 1},
+                 { id: 10, name: 'Fokus', icon: '🎯', description: 'Ziehe 2 Karten', power: 2, effect: 'draw', manaCost: 2, weight: 2 },
+                 { id: 11, name: 'Heilige Macht', icon: '✨', description: 'Fügt 22 Schaden zu', power: 22, effect: 'damage', manaCost: 6, weight: 1 },
+                 { id: 12, name: 'Genesung', icon: '💖', description: 'Heilt 15 Leben', power: 15, effect: 'heal', manaCost: 6, weight: 1 },
+                 {id: 13, name: 'Feuerpfeil', icon: '🔥', description: 'Fügt 10 Schaden zu. 50% Chance auf Verbrennung (5 Schaden für 2 Runden).', power: 10, effect: 'firearrow', manaCost: 5, weight: 1},
         ];
     
         // --- Bildpfade ---
@@ -822,15 +822,15 @@
         // --- Gegnertypen ---
         const ENEMY_TYPES = [
             // ... (deine Gegnertypen bleiben hier unverändert) ...
-                { name: 'Goblin', health: 20, attack: 5, levelMin: 1, levelMax: 2, xp: 35, gold: 10, pixelImageKey: 'Goblin', description: 'Ein kleiner, flinker Goblin.', traits: ['Keine Fähigkeit'] },
-                { name: 'Ork', health: 35, attack: 5, levelMin: 2, levelMax: 4, xp: 50, gold: 25, pixelImageKey: 'Ork', description: 'Ein brutaler Ork-Krieger.', traits: ['Stark'] },
-                { name: 'Riesen Spinne', health: 30, attack: 6, levelMin: 3, levelMax: 5, xp: 45, gold: 40, pixelImageKey: 'Riesen Spinne', description: 'Spuckt lähmendes Gift.', traits: ['Giftig'] }, // 'Netzwerfer' Effekt muss implementiert werden
-                { name: 'Troll', health: 50, attack: 8, levelMin: 4, levelMax: 6, xp: 70, gold: 50, pixelImageKey: 'Troll', description: 'Regeneriert 3 Leben pro Runde.', traits: ['Regeneration', 'Massiv'], regen: 3 }, // Regeneration implementiert
-                { name: 'Nekromant', health: 40, attack: 7, levelMin: 5, levelMax: 7, xp: 80, gold: 60, pixelImageKey: 'Nekromant', description: 'Schwächt dich oder ruft Diener.', traits: ['Untotenbeschwörer'] }, // Effekte müssen implementiert werden
-                { name: 'Eiskönig', health: 60, attack: 9, levelMin: 6, levelMax: 8, xp: 100, gold: 75, pixelImageKey: 'Eiskönig', description: 'Verlangsamt dich mit Kälte.', traits: ['Eis-Elementar', 'Frost-Aura'] }, // Effekte müssen implementiert werden
-                { name: 'Dämon', health: 70, attack: 10, levelMin: 7, levelMax: 9, xp: 120, gold: 90, pixelImageKey: 'Dämon', description: 'Feuer und Schatten. Resistent.', traits: ['Höllen Krallen', 'Regeneration'], regen: 3 }, // Effekte müssen implementiert werden
-                { name: 'Baby Drache', health: 80, attack: 11, levelMin: 8, levelMax: 10, xp: 150, gold: 120, pixelImageKey: 'Baby Drache', description: 'Speit Feuerstöße.', traits: ['Verspielt', 'Feueratem'] }, // Effekte müssen implementiert werden
-                { name: 'Drache', health: 120, attack: 14, levelMin: 10, levelMax: 12, xp: 250, gold: 200, pixelImageKey: 'Drache', description: 'Ein mächtiger, alter Drache.', traits: ['Feueratem', 'Fliegend', 'Gepanzerte Schuppen'] }, // Effekte müssen implementiert werden
+                { name: 'Goblin', health: 20, attack: 5, levelMin: 1, levelMax: 2, xp: 35, gold: 50, pixelImageKey: 'Goblin', description: 'Ein kleiner, flinker Goblin.', traits: ['Keine Fähigkeit'] },
+                { name: 'Ork', health: 35, attack: 5, levelMin: 2, levelMax: 4, xp: 50, gold: 65, pixelImageKey: 'Ork', description: 'Ein brutaler Ork-Krieger.', traits: ['Stark'] },
+                { name: 'Riesen Spinne', health: 30, attack: 6, levelMin: 3, levelMax: 5, xp: 45, gold: 80, pixelImageKey: 'Riesen Spinne', description: 'Spuckt lähmendes Gift.', traits: ['Giftig'] }, // 'Netzwerfer' Effekt muss implementiert werden
+                { name: 'Troll', health: 50, attack: 8, levelMin: 4, levelMax: 6, xp: 70, gold: 100, pixelImageKey: 'Troll', description: 'Regeneriert 3 Leben pro Runde.', traits: ['Regeneration', 'Massiv'], regen: 3 }, // Regeneration implementiert
+                { name: 'Nekromant', health: 40, attack: 7, levelMin: 5, levelMax: 7, xp: 80, gold: 120, pixelImageKey: 'Nekromant', description: 'Schwächt dich oder ruft Diener.', traits: ['Untotenbeschwörer'] }, // Effekte müssen implementiert werden
+                { name: 'Eiskönig', health: 60, attack: 9, levelMin: 6, levelMax: 8, xp: 100, gold: 200, pixelImageKey: 'Eiskönig', description: 'Verlangsamt dich mit Kälte.', traits: ['Eis-Elementar', 'Frost-Aura'] }, // Effekte müssen implementiert werden
+                { name: 'Dämon', health: 70, attack: 10, levelMin: 7, levelMax: 9, xp: 120, gold: 250, pixelImageKey: 'Dämon', description: 'Feuer und Schatten. Resistent.', traits: ['Höllen Krallen', 'Regeneration'], regen: 3 }, // Effekte müssen implementiert werden
+                { name: 'Baby Drache', health: 80, attack: 11, levelMin: 8, levelMax: 10, xp: 150, gold: 300, pixelImageKey: 'Baby Drache', description: 'Speit Feuerstöße.', traits: ['Verspielt', 'Feueratem'] }, // Effekte müssen implementiert werden
+                { name: 'Drache', health: 120, attack: 14, levelMin: 10, levelMax: 12, xp: 250, gold: 400, pixelImageKey: 'Drache', description: 'Ein mächtiger, alter Drache.', traits: ['Feueratem', 'Fliegend', 'Gepanzerte Schuppen'] }, // Effekte müssen implementiert werden
         ];
     
         // --- Upgrade-Typen ---
@@ -998,13 +998,13 @@
                     xpToNextLevel: BASE_XP_TO_LEVEL_UP,
                     maxHealth: 50,
                     health: 50,
-                    maxMana: 5,
-                    mana: 5,
+                    maxMana: 10,
+                    mana: 10,
                     block: 0,
                     deck: [],
                     hand: [],
                     discardPile: [],
-                    maxHandSize: 3,
+                    maxHandSize: 5,
                     lifestealFlat: 0,
                     gold: 0, // 💰 Start-Gold
                     statusEffects: [] // Für zukünftige Effekte
