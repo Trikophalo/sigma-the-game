@@ -1538,7 +1538,7 @@ h2 {
                  { id: 2, name: 'Schild', icon: '🛡️', description: 'Erhalte 5 Block', power: 5, effect: 'block', manaCost: 2, weight: 2 },
                  { id: 3, name: 'Heilung', icon: '❤️', description: 'Heilt 8 Leben', power: 8, effect: 'heal', manaCost: 3, weight: 2 },
                  { id: 4, name: 'Gift', icon: '☠️', description: 'Vergiftet (2 Schaden, 3 Rd.) Falls bereit Vergitet mache 3 Schaden', power: 2, duration: 3, effect: 'poison', manaCost: 2, weight: 1 },
-                 { id: 5, name: 'Blitz', icon: '⚡', description: 'Fügt 10 Schaden zu', power: 10, effect: 'damage', manaCost: 4, weight: 2 },
+                 { id: 5, name: 'Blitz', icon: '⚡', description: 'Fügt 12 Schaden zu', power: 12, effect: 'damage', manaCost: 4, weight: 2 },
                  { id: 6, name: 'Großer Schlag', icon: '💥', description: 'Fügt 15 Schaden zu', power: 15, effect: 'damage', manaCost: 4, weight: 2 },
                  { id: 7, name: 'Meditieren', icon: '🧘', description: 'Ziehe 1 Karte', power: 1, effect: 'draw', manaCost: 0, weight: 1 },
                  { id: 8, name: 'Vampirbiss', icon: '🧛', description: '8 Schaden, heilt 8', power: 8, healAmount: 8, effect: 'lifesteal', manaCost: 4, weight: 2 }, // Direkte Heilung statt %
@@ -1579,9 +1579,9 @@ h2 {
                 { name: 'Nekromant', health: 40, attack: 7, levelMin: 6, levelMax: 10, xp: 80, gold: 120, pixelImageKey: 'Nekromant', description: 'Schwächt dich oder ruft Diener.', traits: ['Untotenbeschwörer'] }, // Effekte müssen implementiert werden
                 { name: 'Eiskönig', health: 60, attack: 9, levelMin: 7, levelMax: 12, xp: 100, gold: 200, pixelImageKey: 'Eiskönig', description: 'Verlangsamt dich mit Kälte.', traits: ['Eis-Elementar', 'Frost-Aura'] }, // Effekte müssen implementiert werden
                 { name: 'Baby Drache', health: 60, attack: 11, levelMin: 8, levelMax: 13, xp: 120, gold: 300, pixelImageKey: 'Baby Drache', description: 'Speit Feuerstöße.', traits: ['Verspielt', 'Feueratem'] }, // Effekte müssen implementiert werden
-                { name: 'Dracula', health: 70, attack: 7, levelMin: 9, levelMax: 14, xp: 150, gold: 350, pixelImageKey: 'Dracula', description: 'Dein Blut macht ihn stärker.', traits: ['Vamp', 'Stark'] }, // Effekte müssen implementiert werden
-                { name: 'Dämon', health: 75, attack: 10, levelMin: 10, levelMax: 14, xp: 150, gold: 400, pixelImageKey: 'Dämon', description: 'Feuer und Schatten. Resistent.', traits: ['Höllen Krallen', 'Regeneration'], regen: 3 }, // Effekte müssen implementiert werden
-                { name: 'Erzengel', health: 100, attack: 12, levelMin: 10, levelMax: 16, xp: 200, gold: 450, pixelImageKey: 'Erzengel', description: 'Ein mächtiger gefallener Engel.', traits: ['Segen', 'Fliegend'] }, // Effekte müssen implementiert werden
+                { name: 'Dracula', health: 70, attack: 10, levelMin: 9, levelMax: 14, xp: 150, gold: 350, pixelImageKey: 'Dracula', description: 'Dein Blut macht ihn stärker.', traits: ['Vamp', 'Stark'] }, // Effekte müssen implementiert werden
+                { name: 'Dämon', health: 75, attack: 10, levelMin: 10, levelMax: 14, xp: 150, gold: 450, pixelImageKey: 'Dämon', description: 'Feuer und Schatten. Resistent.', traits: ['Höllen Krallen', 'Regeneration'], regen: 3 }, // Effekte müssen implementiert werden
+                { name: 'Erzengel', health: 100, attack: 12, levelMin: 10, levelMax: 16, xp: 200, gold: 550, pixelImageKey: 'Erzengel', description: 'Ein mächtiger gefallener Engel.', traits: ['Segen', 'Fliegend'] }, // Effekte müssen implementiert werden
                 { name: 'Drache', health: 140, attack: 15, levelMin: 15, levelMax: 20, xp: 250, gold: 600, pixelImageKey: 'Drache', description: 'Ein mächtiger, alter Drache.', traits: ['Feueratem', 'Fliegend', 'Gepanzerte Schuppen'] }, // Effekte müssen implementiert werden
         ];
     
@@ -2868,6 +2868,7 @@ function executeCardEffect(card) {
              state.turnInProgress = false;
              updateCardAvailability(); // Aktiviert spielbare Karten/Buttons
              updateEnemyUI();
+             updatePlayerItemIcons();
              updatePlayerStatusDisplay();
     
         }
