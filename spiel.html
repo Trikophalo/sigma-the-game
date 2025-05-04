@@ -975,14 +975,23 @@
 
     
         // Funktion zum Erstellen einer eindeutigen Karteninstanz
-        function createCardInstance(cardType) {
+                function createCardInstance(cardType) {
             cardUniqueCounter++;
-            return {
+
+            let newCard = {
                 ...cardType,
                 uniqueId: cardUniqueCounter,
-                tags: cardType.tags || [] // ← falls nicht vorhanden, leeres Array setzen
+                tags: cardType.tags || []
             };
+
+            // Bonus anwenden, falls es ein Schwert ist
+            if ((newCard.name === 'Schwert' || newCard.tags.includes('sword')) && typeof newCard.power === 'number') {
+                newCard.power += state.player.swordBonus || 0;
+            }
+
+            return newCard;
         }
+
 
     
          // Funktion zum Loggen von Nachrichten im Spiel
@@ -1030,7 +1039,8 @@
                     maxHandSize: 5,
                     lifestealFlat: 0,
                     gold: 0, // 💰 Start-Gold
-                    statusEffects: [] // Für zukünftige Effekte
+                    statusEffects: [], // Für zukünftige Effekte
+                    swordBonus: 0
                 },
                 currentEnemy: null,
                 gameOver: false,
@@ -2126,28 +2136,22 @@
              // --- HIER DIE LOGIK FÜR JEDEN UPGRADE-TYP EINFÜGEN ---
               switch(upgrade.type) {
                 case 'upgradeSwordPower':
+                    state.player.swordBonus = (state.player.swordBonus || 0) + 2;
                     let swordsUpgraded = 0;
                     for (let card of state.player.deck) {
-                        const isSword =
-                            card.name === 'Schwert' ||
-                            (Array.isArray(card.tags) && card.tags.includes('sword'));
-
-                        if (isSword) {
-                            if (typeof card.power !== 'number') {
-                                card.power = 5; // Standardwert für Schwert, falls fehlend
-                            }
+                        const isSword = (card.name === 'Schwert' || (card.tags && card.tags.includes('sword')));
+                        if (isSword && typeof card.power === 'number') {
                             card.power += 2;
                             swordsUpgraded++;
                         }
                     }
-
                     if (swordsUpgraded > 0) {
-                        logMessage(`Alle ${swordsUpgraded} Schwerter im Deck wurden um +2 verstärkt.`, 'system');
+                        logMessage(`Alle ${swordsUpgraded} vorhandenen Schwerter im Deck wurden um +2 verstärkt.`, 'system');
                     } else {
-                        logMessage(`Keine Schwerter gefunden.`, 'system');
+                        logMessage(`Keine vorhandenen Schwerter im Deck – Bonus gilt für neue.`, 'system');
                     }
                     break;
-                    case 'newCardSpecific':
+              case 'newCardSpecific':
                     showCardChoice(getThreeUniqueNewCards()); // ✅ Lösung
                     return; // ganz wichtig, damit der Bildschirm nicht sofort verschwindet
                 case 'newCard':
