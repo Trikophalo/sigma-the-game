@@ -773,7 +773,7 @@
                 <div id="cardHand" class="card-hand"></div>
                 
                 <div class="action-buttons-vertical">
-                    <button id="manaBoostBtn">Mana Boost (Volles Mana, Zug Ende)</button>
+                    <button id="manaBoostBtn">Mana Boost (Volles Mana & Zug Ende)</button>
                     <button id="endTurnBtn">Zug beenden!</button>
                 </div>
             </div>
@@ -1326,7 +1326,7 @@
                 }">
                 ${
                     (card.effect === 'damage' || card.effect === 'block' || card.effect === 'heal' || card.effect === 'lifesteal' || card.effect === 'poison')
-                    ? (card.name === 'Schwert' && state.player?.swordBonus ? card.power + state.player.swordBonus : card.power)
+                    ? card.power
                     : ''
                 }
                 </div>
@@ -2145,11 +2145,20 @@
                             swordsUpgraded++;
                         }
                     }
+
                     if (swordsUpgraded > 0) {
                         logMessage(`Alle ${swordsUpgraded} vorhandenen Schwerter im Deck wurden um +2 verstärkt.`, 'system');
                     } else {
                         logMessage(`Keine vorhandenen Schwerter im Deck – Bonus gilt für neue.`, 'system');
                     }
+
+                    // 👇 Hand neu ziehen
+                    state.player.discardPile.push(...state.player.hand);
+                    state.player.hand = [];
+                    drawCards(state.player.maxHandSize);
+                    updateUIDisplay();
+                    updateHandUI();
+
                     break;
               case 'newCardSpecific':
                     showCardChoice(getThreeUniqueNewCards()); // ✅ Lösung
