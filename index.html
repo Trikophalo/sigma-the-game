@@ -5,153 +5,624 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sigma The Game</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@400;700&display=swap');
+    
+    :root {
+      --main-bg: #0c0c14;
+      --card-bg: #1a1a24;
+      --accent-color: #ffce00;
+      --accent-glow: rgba(255, 206, 0, 0.6);
+      --hover-glow: rgba(255, 206, 0, 0.3);
+      --text-primary: #ffffff;
+      --text-secondary: #aaaaaa;
+      --locked-color: #444444;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      transition: all 0.3s ease;
+    }
+    
     body {
-      font-family: Arial, sans-serif;
-      background-color: #111;
-      color: white;
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #0c0c14 0%, #151530 100%);
+      color: var(--text-primary);
       text-align: center;
       margin: 0;
       padding: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
     }
-
+    
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        radial-gradient(circle at 20% 30%, rgba(37, 37, 135, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(45, 40, 125, 0.1) 0%, transparent 50%);
+      pointer-events: none;
+    }
+    
     .menu-container {
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      background-color: #111;
-      gap: 20px;
+      min-height: 100vh;
+      padding: 40px 20px;
+      gap: 30px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    h1 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 48px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      margin-bottom: 10px;
+      text-shadow: 0 0 15px rgba(255, 206, 0, 0.5),
+                   0 0 30px rgba(255, 206, 0, 0.2);
+      animation: title-glow 3s infinite alternate;
+      background: linear-gradient(to right, #fff, var(--accent-color), #fff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      position: relative;
+    }
+    
+    h3 {
+      font-family: 'Orbitron', sans-serif;
+      margin-bottom: 5px;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--text-primary);
+      opacity: 0;
+      animation: fade-in 0.8s forwards 0.5s;
     }
 
     input[type="text"] {
-      padding: 10px;
+      padding: 12px 20px;
       font-size: 16px;
-      border-radius: 5px;
-      border: none;
+      width: 300px;
+      max-width: 90%;
+      border-radius: 30px;
+      border: 2px solid transparent;
+      background-color: rgba(255, 255, 255, 0.08);
+      color: var(--text-primary);
+      text-align: center;
       outline: none;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      transform: translateY(20px);
+      opacity: 0;
+      animation: slide-up 0.8s forwards 0.3s;
     }
-
+    
+    input[type="text"]:focus {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 15px var(--accent-glow);
+    }
+    
+    input[type="text"]::placeholder {
+      color: var(--text-secondary);
+      opacity: 0.7;
+    }
+    
     .passive-selection {
       display: flex;
-      gap: 20px;
+      gap: 25px;
       justify-content: center;
       flex-wrap: wrap;
+      margin: 10px 0 30px;
+      perspective: 1000px;
+      opacity: 0;
+      animation: fade-in 0.8s forwards 0.7s;
     }
-
+    
     .passive-option {
-      background-color: #222;
-      padding: 15px;
-      border-radius: 8px;
-      border: 2px solid #555;
-      width: 200px;
+      background: linear-gradient(145deg, var(--card-bg), #232335);
+      padding: 22px 18px;
+      border-radius: 12px;
+      border: 2px solid #333344;
+      width: 220px;
       cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 7px 20px rgba(0, 0, 0, 0.3);
+      transform: translateZ(0);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
-
+    
+    .passive-option:hover:not(.locked) {
+      transform: translateY(-10px) scale(1.03);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4), 0 0 15px var(--hover-glow);
+      border-color: rgba(255, 206, 0, 0.4);
+    }
+    
+    .passive-option::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      opacity: 0;
+      transform: scale(0.5);
+      transition: all 0.6s ease;
+      z-index: -1;
+    }
+    
+    .passive-option:hover:not(.locked)::before {
+      opacity: 0.15;
+      transform: scale(1);
+    }
+    
     .passive-option.locked {
-      opacity: 0.5;
+      opacity: 0.6;
+      background: linear-gradient(145deg, #1a1a24, #252530);
+      border-color: var(--locked-color);
       pointer-events: none;
+      filter: grayscale(50%);
     }
-
+    
     .passive-option.active {
-      border-color: gold;
-      box-shadow: 0 0 10px gold;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 20px var(--accent-glow);
+      transform: translateY(-5px);
     }
-
-    button {
-      padding: 12px 24px;
-      font-size: 16px;
-      border-radius: 6px;
-      border: none;
-      background-color: gold;
+    
+    .passive-option.active:hover {
+      transform: translateY(-10px) scale(1.03);
+    }
+    
+    .passive-option strong {
+      display: block;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 18px;
+      margin-bottom: 8px;
+      color: var(--accent-color);
+      position: relative;
+      transform: translateZ(10px);
+    }
+    
+    .passive-option p {
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 10px;
+      color: var(--text-primary);
+      transform: translateZ(5px);
+    }
+    
+    .passive-option em {
+      display: block;
+      font-size: 12px;
+      font-style: italic;
+      color: var(--text-secondary);
+      margin-top: 8px;
+      transform: translateZ(5px);
+    }
+    
+    .new-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: var(--accent-color);
       color: black;
+      padding: 3px 8px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: bold;
+      transform: rotate(15deg);
+      animation: pulse 1.5s infinite alternate;
+    }
+    
+    button {
+      padding: 14px 34px;
+      font-size: 18px;
+      font-family: 'Orbitron', sans-serif;
+      letter-spacing: 1px;
+      border-radius: 30px;
+      border: none;
+      background: linear-gradient(135deg, var(--accent-color), #ffa200);
+      color: #111;
       font-weight: bold;
       cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 206, 0, 0.4);
+      transform: translateY(20px);
+      opacity: 0;
+      animation: slide-up 0.8s forwards 0.9s;
+    }
+    
+    button::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      transform: translate(-100px, -100px) scale(0.1);
+    }
+    
+    button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(255, 206, 0, 0.6);
+    }
+    
+    button:active {
+      transform: translateY(2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    button:hover::before {
+      opacity: 0.3;
+      transform: translate(100px, 100px) scale(3);
+      transition: transform 1s ease, opacity 0.4s ease;
+    }
+    
+    @keyframes title-glow {
+      0%, 20% {
+        text-shadow: 0 0 15px rgba(255, 206, 0, 0.5),
+                     0 0 30px rgba(255, 206, 0, 0.2);
+      }
+      80%, 100% {
+        text-shadow: 0 0 20px rgba(255, 206, 0, 0.7),
+                     0 0 40px rgba(255, 206, 0, 0.4),
+                     0 0 60px rgba(255, 206, 0, 0.2);
+      }
+    }
+    
+    @keyframes slide-up {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes fade-in {
+      to {
+        opacity: 1;
+      }
+    }
+    
+    @keyframes pulse {
+      0% {
+        transform: scale(1) rotate(15deg);
+      }
+      100% {
+        transform: scale(1.1) rotate(15deg);
+      }
+    }
+    
+    .particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .particle {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      background: var(--accent-color);
+      border-radius: 50%;
+      opacity: 0.2;
+      animation: float 20s linear infinite;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(0) translateX(0) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.5;
+      }
+      90% {
+        opacity: 0.5;
+      }
+      100% {
+        transform: translateY(-800px) translateX(100px) rotate(360deg);
+        opacity: 0;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .passive-selection {
+        gap: 15px;
+      }
+      
+      .passive-option {
+        width: 180px;
+        padding: 15px;
+      }
+      
+      h1 {
+        font-size: 36px;
+      }
+      
+      button {
+        padding: 12px 28px;
+        font-size: 16px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .passive-option {
+        width: 90%;
+        max-width: 280px;
+      }
     }
   </style>
 </head>
 <body>
+  <div class="particles" id="particles"></div>
+  
   <div class="menu-container" id="mainMenu">
-    <h1>Sigma The Game</h1>
-    <input type="text" id="playerNameInput" placeholder="Spielername eingeben" />
-    <h3>Wähle eine passive Fähigkeit:</h3>
+    <h1>SIGMA THE GAME</h1>
+    <input type="text" id="playerNameInput" placeholder="Spielername eingeben" autocomplete="off" />
+    <h3>Wähle eine passive Fähigkeit</h3>
+
     <div class="passive-selection">
       <div class="passive-option active" data-passive="swordfighter">
         <strong>Schwertkämpfer</strong>
         <p>Schwert macht +2 Schaden</p>
       </div>
+
+      <div class="passive-option" data-passive="shieldmaster">
+        <strong>Schildmeister</strong>
+        <p>Jede Runde +5 Schild.<br/>Schwerter machen -1 Schaden.</p>
+      </div>
+      
+      <div class="passive-option" data-passive="martyr">
+        <strong>Märtyrer</strong>
+        <p>Bonus-Schaden je mehr Leben dir fehlt.</p>
+      </div>      
+
       <div class="passive-option locked" data-passive="goldboy">
         <strong>Goldjunge</strong>
         <p>Starte mit 1000 Gold</p>
         <em>Freigeschaltet nach Sieg über Nekromant</em>
       </div>
+
       <div class="passive-option locked" data-passive="dragonscale">
         <strong>Drachenschuppen</strong>
-        <p>Immun gegen Statuseffekte</p>
+        <p>Immun gegen Statuseffekte. Verbrenne Gegner zu 10%.</p>
         <em>Freigeschaltet nach Sieg über Drache</em>
       </div>
     </div>
-    <button onclick="startGame()">Neues Spiel starten</button>
+
+    <button onclick="startGame()" id="startButton">Neues Spiel starten</button>
   </div>
 
   <script>
     let selectedPassive = 'swordfighter';
-  
-    // Passiven-Auswahl
-    document.querySelectorAll('.passive-option').forEach(elem => {
-      elem.addEventListener('click', () => {
-        if (elem.classList.contains('locked')) return;
-        document.querySelectorAll('.passive-option').forEach(e => e.classList.remove('active'));
-        elem.classList.add('active');
-        selectedPassive = elem.dataset.passive;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Partikel erstellen
+      const particlesContainer = document.getElementById('particles');
+      for (let i = 0; i < 30; i++) {
+        createParticle(particlesContainer);
+      }
+
+      const passiveOptions = document.querySelectorAll('.passive-option');
+
+      // Aktuelle Auswahl auslesen, falls schon vorhanden
+      const initiallySelected = document.querySelector('.passive-option.active');
+      if (initiallySelected && !initiallySelected.classList.contains('locked')) {
+        selectedPassive = initiallySelected.dataset.passive;
+      }
+
+      // Audio-Effekte erstellen
+      const hoverSound = new Audio();
+      hoverSound.volume = 0.2;
+      
+      const clickSound = new Audio();
+      clickSound.volume = 0.3;
+      
+      try {
+        hoverSound.src = "data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAAAwAAAbAAkJCQkJCQkJCQkJCQkJCQwMDAwMDAwMDAwMDAwMDAwMD////////////////////////////////////////AAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAYBAAAAAAAAAbAwljdpJQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/+MYxAANmAZYeUAAAP1Tjs7jgEEYhEIQgEesXP/6P/KBgYHuCAJRJIv/xTD//yYf/1AgZeD/5h8G5hDf/8IP8MOA+D+W43UEDBB4DgBAEAwD/+MYxA8OUjo2eVgYA4wfggBAIBgMHgT+I4YPAcBwJ/lQMHgOD8gcQIAQdguAZJZbWtb2SILYvA8DgGDwGBF5XAcB4w5/y5WCNkZnLFZUyj3LU2pmHipeCDfcjGXVmG7GHL38Zf/7lz/+MYxAsNkAI4KUMwAhzVnVz/1qvuCPYzS7qW/uJ3Vx7KqtVdxGrV+zJHdS/FarYxip1qpKrYzfL20aF2uohtrK8VnXRXK3TTTKHblSpJpqFJNM0ykmmYaKSaaiYjO3///N0L//Bs7//+MYxBAK0Hm8KUEQAQLg6Kh4MFEimMVMU1JiMS7tmrJf/UuXNG7dq1a89tbXrfzTdI2dKXcvT9O4VnRdGkbdTGjZJMtp+W2pISEhISEhISGWOyybf///5YyQkJCB4wSEhISVJW0e/+MYxCENKIHxmgmEjhNyMrIxjIwwI8JUpG7cgZFOilqRpUiMjtaf+SKcJlfK3///+lS3//+WTv///////pIxO////+UkEgkEgkZBIJBIJPR+dBKOjo6Ojo4Pnzo6Ojo6Ojo6Ojo6OgAA";
+        clickSound.src = "data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA/+M4wAAAAAAAAAAAAEluZm8AAAAPAAAAAwAAAUdRp6enp6enp6enp6enp6fIyMjIyMjIyMjIyMjIyMjI6urq6urq6urq6urq6urq6v////////////////////////////////8AAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAUZAAAAAAAAARdR/pkxAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/+MYxAAMOF5IeUAQADCAQCgNHjx48ePHj7+IJRI0ePHjx48ff4gkaXGQJMeTDjyZMmTBgwYMGDBgwYJGlxo0uNLly48mTJk4iCRpce//fvyZMmDABA0aNL/JEETBgwYME//liIJGl8Q1GP/f/+MYxBUOKF4cGZCMAEqNLjRo0aXGlxpf/3/6XGjRoy5wY+XOMP0zYCBAg89TU59amWYMtJM9SX7yCQJ337zOlpaWlpaWknfvvvvvvvvvvgQFBQUFBQUAAAAAAAAAAAAAlT//ffeSwLhS/+MYxBkIAAJkGYEQAC/Z2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ";
+      } catch(e) {
+        console.error("Audio-Effekte konnten nicht geladen werden:", e);
+      }
+
+      // Passiven-Auswahl aktivieren
+      passiveOptions.forEach(option => {
+        option.addEventListener('mouseover', () => {
+          if (option.classList.contains('locked')) return;
+          try { hoverSound.play(); } catch(e) {}
+          
+          const allCards = document.querySelectorAll('.passive-option');
+          allCards.forEach(card => {
+            if (card !== option && !card.classList.contains('active')) {
+              card.style.transform = 'scale(0.95)';
+              card.style.opacity = '0.7';
+            }
+          });
+        });
+
+        option.addEventListener('mouseout', () => {
+          const allCards = document.querySelectorAll('.passive-option');
+          allCards.forEach(card => {
+            if (!card.classList.contains('active')) {
+              card.style.transform = '';
+              card.style.opacity = '';
+            }
+          });
+        });
+
+        option.addEventListener('click', () => {
+          if (option.classList.contains('locked')) return;
+          
+          try { clickSound.play(); } catch(e) {}
+
+          passiveOptions.forEach(el => {
+            el.classList.remove('active');
+            el.style.transform = '';
+            el.style.opacity = '';
+          });
+          
+          option.classList.add('active');
+          selectedPassive = option.dataset.passive;
+          
+          // Visueller Effekt beim Klick
+          const ripple = document.createElement('div');
+          ripple.style.position = 'absolute';
+          ripple.style.width = '5px';
+          ripple.style.height = '5px';
+          ripple.style.borderRadius = '50%';
+          ripple.style.backgroundColor = 'rgba(255, 206, 0, 0.7)';
+          ripple.style.top = '50%';
+          ripple.style.left = '50%';
+          ripple.style.transform = 'translate(-50%, -50%)';
+          ripple.style.animation = 'ripple 0.7s linear';
+          
+          option.appendChild(ripple);
+          
+          setTimeout(() => {
+            option.removeChild(ripple);
+          }, 700);
+          
+          console.log("🧠 Ausgewählte Passive:", selectedPassive);
+        });
       });
+
+      // Neues Spiel starten mit Animation
+      window.startGame = function() {
+        const nameInput = document.getElementById('playerNameInput');
+        const playerName = nameInput?.value.trim() || 'Spieler';
+
+        localStorage.setItem('playerName', playerName);
+        localStorage.setItem('selectedPassive', selectedPassive);
+
+        console.log("🎮 Spielername:", playerName);
+        console.log("🔒 Gespeicherte Passive:", selectedPassive);
+
+        // Animation beim Start
+        const menuContainer = document.getElementById('mainMenu');
+        menuContainer.style.opacity = '0';
+        menuContainer.style.transform = 'scale(1.1)';
+        
+        try { clickSound.play(); } catch(e) {}
+
+        setTimeout(() => {
+          window.location.href = 'spiel.html';
+        }, 800);
+      };
+
+      // Tastatur-Event für Enter-Taste
+      document.getElementById('playerNameInput').addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+          startGame();
+        }
+      });
+
+      // Button Animation hinzufügen
+      const startButton = document.getElementById('startButton');
+      startButton.addEventListener('mousemove', function(e) {
+        const x = e.pageX - this.offsetLeft;
+        const y = e.pageY - this.offsetTop;
+        
+        this.style.setProperty('--x', x + 'px');
+        this.style.setProperty('--y', y + 'px');
+      });
+
+      // Freigeschaltete Passiven anzeigen
+      function unlockPassive(passiveId) {
+        const elem = document.querySelector(`[data-passive="${passiveId}"]`);
+        if (!elem) return;
+
+        elem.classList.remove('locked');
+
+        if (!elem.querySelector('.new-badge')) {
+          const badge = document.createElement('div');
+          badge.className = 'new-badge';
+          badge.textContent = 'NEU!';
+          elem.appendChild(badge);
+        }
+      }
+
+      // Unlock-Status prüfen
+      if (localStorage.getItem('unlockedGoldboy') === 'true') unlockPassive('goldboy');
+      if (localStorage.getItem('unlockedDragonscale') === 'true') unlockPassive('dragonscale');
     });
-  
-    // Spiel starten
-    function startGame() {
-      const playerName = document.getElementById('playerNameInput').value.trim() || 'Spieler';
-      localStorage.setItem('playerName', playerName);
-      localStorage.setItem('selectedPassive', selectedPassive);
-      window.location.href = 'spiel.html';
+
+    // Funktion zum Erstellen von Partikeln
+    function createParticle(container) {
+      const particle = document.createElement('div');
+      particle.classList.add('particle');
+      
+      // Zufällige Position, Größe und Verzögerung
+      const size = Math.random() * 3 + 1;
+      const posX = Math.random() * window.innerWidth;
+      const posY = Math.random() * window.innerHeight + window.innerHeight;
+      const delay = Math.random() * 20;
+      const duration = Math.random() * 10 + 15;
+      const brightness = Math.random() * 80 + 20;
+      
+      particle.style.width = `${size}px`;
+      particle.style.height = `${size}px`;
+      particle.style.left = `${posX}px`;
+      particle.style.top = `${posY}px`;
+      particle.style.opacity = Math.random() * 0.3;
+      particle.style.animationDuration = `${duration}s`;
+      particle.style.animationDelay = `${delay}s`;
+      particle.style.filter = `brightness(${brightness}%)`;
+      
+      container.appendChild(particle);
+      
+      // Partikel nach Animation neu erstellen
+      setTimeout(() => {
+        container.removeChild(particle);
+        createParticle(container);
+      }, (delay + duration) * 1000);
     }
-  
-    // Freischaltungen prüfen und anzeigen
-    function checkUnlocks() {
-      const goldboy = document.querySelector('[data-passive="goldboy"]');
-      const dragonscale = document.querySelector('[data-passive="dragonscale"]');
-  
-      if (localStorage.getItem('unlockedGoldboy') === 'true') {
-        goldboy.classList.remove('locked');
-        if (!goldboy.querySelector('.new-badge')) {
-          const badge = document.createElement('div');
-          badge.className = 'new-badge';
-          badge.textContent = 'NEU!';
-          badge.style.color = 'gold';
-          badge.style.fontWeight = 'bold';
-          badge.style.marginTop = '5px';
-          goldboy.appendChild(badge);
+
+    // Stelle sicher, dass wir auch Partikel erstellen, wenn DOMContentLoaded bereits ausgelöst wurde
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      const particlesContainer = document.getElementById('particles');
+      if (particlesContainer) {
+        for (let i = 0; i < 30; i++) {
+          createParticle(particlesContainer);
         }
       }
-  
-      if (localStorage.getItem('unlockedDragonscale') === 'true') {
-        dragonscale.classList.remove('locked');
-        if (!dragonscale.querySelector('.new-badge')) {
-          const badge = document.createElement('div');
-          badge.className = 'new-badge';
-          badge.textContent = 'NEU!';
-          badge.style.color = 'gold';
-          badge.style.fontWeight = 'bold';
-          badge.style.marginTop = '5px';
-          dragonscale.appendChild(badge);
+    }
+
+    // Style-Element für die Ripple-Animation erstellen
+    const styleElement = document.createElement('style');
+    styleElement.textContent = `
+      @keyframes ripple {
+        0% {
+          width: 5px;
+          height: 5px;
+          opacity: 1;
+        }
+        100% {
+          width: 300px;
+          height: 300px;
+          opacity: 0;
         }
       }
-    }
-  
-    // Auf beiden Events prüfen (auch nach Rückkehr aus dem Spiel)
-    window.addEventListener('DOMContentLoaded', checkUnlocks);
-    window.addEventListener('pageshow', checkUnlocks);
+    `;
+    document.head.appendChild(styleElement);
   </script>
-  
-  
 </body>
 </html>

@@ -5,706 +5,1409 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sigma The Game</title>
     <style>
-        /* Global Styles */
+        /* --- Google Font Import --- */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+    
+        /* --- Global Styles --- */
         :root {
-            --bg-color: #222;
-            --text-color: #fff;
-            --primary-color: #ffcc00; /* Gold/Gelb */
-            --secondary-color: #6b8fff; /* Mana Blau */
-            --accent-color: #ff6b6b; /* Enemy Rot */
-            --player-color: #6bff6b; /* Player Grün */
-            --card-bg: #3a3a3a; /* Dunkleres Grau für Karten */
-            --rare-color: #cc66ff; /* Lila für seltene Upgrades */
-        }
+    /* Core Colors */
+    --bg-color: #1a1a24;
+    --text-color: #f0f0f5;
+    --primary-color: #ffcc00; /* Gold */
+    --secondary-color: #4a90ff; /* Mana Blue - slightly more vibrant */
+    --accent-color: #ff5252; /* Enemy Red - more saturated */
+    --player-color: #50e050; /* Player Green - more natural */
+    --card-bg: #2d2d3d; /* Darker card background with a hint of blue */
+    --rare-color: #d966ff; /* Purple for rare upgrades - more vivid */
+    
+    /* UI Element Colors */
+    --ui-dark: #252532;
+    --ui-medium: #35354a;
+    --ui-light: #45455a;
+    --ui-highlight: rgba(255, 255, 255, 0.1);
+    
+    /* Status Effect Colors */
+    --poison-color: #9c27b0;
+    --heal-color: #66bb6a;
+    --block-color: #29b6f6;
+    
+    /* Card Rarities */
+    --common-glow: rgba(255, 255, 255, 0.4);
+    --uncommon-glow: rgba(30, 255, 0, 0.5);
+    --rare-glow: rgba(0, 112, 221, 0.5);
+    --epic-glow: rgba(163, 53, 238, 0.6);
+    --legendary-glow: rgba(255, 128, 0, 0.6);
+    
+    /* Animation Speeds */
+    --anim-fast: 0.2s;
+    --anim-medium: 0.5s;
+    --anim-slow: 1s;
+    
+    /* Dimensions */
+    --card-width: 140px;
+    --card-height: 210px;
+    --border-radius: 12px;
+}
 
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            max-width: 900px; /* Etwas breiter für das neue Layout */
-            margin: 10px auto; /* Weniger Rand oben/unten */
-            padding: 15px;
-        }
-        h1, h2 {
-            text-align: center;
-            color: var(--primary-color);
-            margin-bottom: 10px;
-        }
-        h2 {
-            margin-top: 20px;
-            font-size: 1.3em;
-        }
+/* Base Elements */
+body {
+    font-family: 'Segoe UI', 'Roboto', sans-serif;
+    color: var(--text-color);
+    max-width: 900px;
+    margin: 10px auto;
+    padding: 15px;
+    overflow-x: hidden;
+    background-color: var(--bg-color);
+    position: relative;
+    
+    /* Animated Background */
+    background: 
+        radial-gradient(circle at 20% 30%, rgba(60, 60, 120, 0.15) 0%, transparent 60%),
+        radial-gradient(circle at 80% 70%, rgba(100, 25, 80, 0.1) 0%, transparent 60%),
+        linear-gradient(135deg, #151520, #1d1d2b, #151520, #252535);
+    background-size: 400% 400%;
+    animation: gradientShift 35s ease infinite;
+}
 
-        /* Layout Container */
-        .game-container {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .stats-container {
-            display: flex;
-            justify-content: space-around; /* Gleichmäßiger verteilt */
-            background-color: #333;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 12px; /* Kleiner */
-            border: 1px solid #555;
-            flex-wrap: wrap; /* Umbruch bei schmalen Bildschirmen */
-            gap: 10px;
-        }
-        .stats-column {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            align-items: center; /* Zentriert */
-        }
+/* Star particles in background */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(1px 1px at 50px 100px, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0)),
+        radial-gradient(1px 1px at 150px 300px, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0)),
+        radial-gradient(1px 1px at 300px 50px, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0)),
+        radial-gradient(1px 1px at 400px 250px, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0)),
+        radial-gradient(1px 1px at 500px 100px, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0)),
+        radial-gradient(1px 1px at 50% 80%, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0)),
+        radial-gradient(2px 2px at 70% 90%, rgba(255, 204, 0, 0.5), rgba(255, 204, 0, 0)),
+        radial-gradient(2px 2px at 30% 20%, rgba(255, 204, 0, 0.5), rgba(255, 204, 0, 0));
+    pointer-events: none;
+    z-index: -1;
+}
 
-        /* --- NEUES LAYOUT: Battle Area --- */
-        .battle-area {
-            display: flex;
-            justify-content: space-between; /* Platz zwischen Spieler & Gegner */
-            align-items: flex-start; /* Oben ausrichten */
-            gap: 20px; /* Abstand zwischen Spieler & Gegner */
-            margin-top: 15px;
-            margin-bottom: 15px;
-        }
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
 
-        /* --- ANGEPASST: Player Display (Teil der Battle Area) --- */
-        .player-display {
-            flex: 1; /* Nimmt verfügbaren Platz ein */
-            background-color: #2b3a2f;
-            padding: 15px;
-            border-radius: 12px;
-            border: 1px solid var(--player-color);
-            box-shadow: 0 0 10px rgba(107, 255, 107, 0.3);
-            display: flex;
-            flex-direction: column;
-            align-items: center; /* Zentriert Inhalte */
-            min-width: 200px; /* Mindestbreite */
-        }
+/* Typography */
+h1, h2 {
+    text-align: center;
+    color: var(--primary-color);
+    text-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+}
 
-        .player-name {
-             font-size: 22px;
-             font-weight: bold;
-             margin-bottom: 10px;
-             color: var(--player-color);
-        }
-        /* 💰 Gold-Anzeige */
-        .player-gold {
-            font-size: 14px;
-            margin-bottom: 8px;
-            color: gold;
-            font-weight: bold;
-        }
-        .player-image {
-            width: 100px; /* Angepasste Größe */
-            height: 100px; /* Angepasste Größe */
-            background-color: #444;
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            border: 2px solid var(--player-color);
-            border-radius: 8px;
-            image-rendering: pixelated;
-            margin-bottom: 10px; /* Abstand nach unten */
-        }
-        .player-stats {
-             width: 90%; /* Breite der Stats innerhalb der Box */
-             text-align: left;
-        }
+h1 {
+    font-size: 2.2em;
+}
 
-        /* --- ANGEPASST: Enemy Container (Teil der Battle Area) --- */
-        .enemy-container {
-            flex: 1; /* Nimmt verfügbaren Platz ein */
-            background-color: #3a2b2b;
-            padding: 15px;
-            border-radius: 12px;
-            border: 1px solid var(--accent-color);
-            box-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
-            display: flex;
-            flex-direction: column;
-            align-items: center; /* Zentriert Inhalte */
-            min-width: 200px; /* Mindestbreite */
-            position: relative; /* Für Animationen */
-        }
-         .enemy-name {
-            font-size: 22px; /* Angepasste Größe */
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: var(--accent-color);
-        }
-        .monster-image {
-            width: 100px; /* Angepasste Größe */
-            height: 100px; /* Angepasste Größe */
-            margin-bottom: 10px; /* Abstand nach unten */
-            background-size: contain;
-            background-position: center;
-            background-repeat: no-repeat;
-            border-radius: 8px;
-            border: 3px solid var(--accent-color);
-            box-shadow: 0 0 10px rgba(255, 107, 107, 0.4);
-            transition: transform 0.3s;
-            image-rendering: pixelated;
-            image-rendering: -moz-crisp-edges;
-            image-rendering: crisp-edges;
-        }
-         .monster-image:hover {
-            transform: scale(1.05); /* Leichter Hover */
-        }
-        .enemy-stats-display { /* Container für HP, Attack etc. */
-             width: 90%;
-             text-align: left;
-        }
-        .enemy-info {
-            margin-top: 10px; /* Abstand nach oben */
-            font-size: 12px; /* Kleiner */
-            color: #ddd;
-            text-align: center; /* Zentriert Beschreibung */
-            padding: 8px;
-            background-color: rgba(0,0,0,0.2);
-            border-radius: 5px;
-            width: 90%;
-            min-height: 30px;
-        }
-        .monster-traits {
-            display: flex;
-            gap: 5px;
-            justify-content: center;
-            margin-top: 8px;
-            flex-wrap: wrap; /* Umbruch bei vielen Traits */
-        }
-        .monster-trait {
-            background-color: #666;
-            border-radius: 10px;
-            padding: 3px 8px;
-            font-size: 10px; /* Kleiner */
-            color: var(--primary-color);
-            border: 1px solid #888;
-            box-shadow: inset 0 0 2px rgba(0,0,0,0.5);
-        }
+h2 {
+    margin-top: 20px;
+    font-size: 1.5em;
+}
 
+/* Main Container */
+.game-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    background-color: rgba(29, 29, 40, 0.75);
+    padding: 20px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
 
-        /* Health & Mana Bars (gemeinsam genutzt) */
-        .health-bar, .mana-bar {
-            height: 18px; /* Einheitliche Höhe */
-            background-color: #555;
-            border-radius: 9px;
-            margin: 4px 0;
-            overflow: hidden;
-            width: 100%;
-            border: 1px solid #222;
-        }
-        .health-fill { /* Gilt für Spieler & Gegner */
-            height: 100%;
-            transition: width 0.5s ease-out;
-        }
-        #playerHealthBar .health-fill { /* Spieler HP Farbe */
-             background: linear-gradient(to right, var(--player-color), #a0ffa0);
-        }
-        #enemyHealthBar .health-fill { /* Gegner HP Farbe */
-             background: linear-gradient(to right, var(--accent-color), #ff8f8f);
-        }
-         .mana-fill {
-            height: 100%;
-            background: linear-gradient(to right, var(--secondary-color), #90aaff);
-            transition: width 0.5s ease-out;
-        }
-        /* Stat Text (Leben, Mana, Block, Angriff) */
-        .stat-text {
-            font-size: 13px;
-            margin-top: 5px;
-        }
+.game-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(to right, 
+                               transparent, 
+                               rgba(255, 204, 0, 0.5), 
+                               transparent);
+    opacity: 0.7;
+}
 
+/* Stats Container */
+.stats-container {
+    display: flex;
+    justify-content: space-around;
+    background-color: var(--ui-dark);
+    padding: 10px 15px;
+    border-radius: 10px;
+    font-size: 13px;
+    border: 1px solid var(--ui-light);
+    flex-wrap: wrap;
+    gap: 12px;
+    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.2);
+}
 
-        /* Hand Cards Area */
-         .card-hand-container {
-            margin-bottom: 15px;
-         }
-        .card-hand {
-            display: flex;
-            justify-content: center;
-            gap: 10px; /* Weniger Abstand */
-            flex-wrap: wrap;
-            min-height: 240px; /* Etwas kleiner */
-            padding: 10px 0;
-            background-color: rgba(0,0,0,0.1);
-            border-radius: 8px;
-            border: 1px dashed #555; /* Gestrichelter Rand */
-        }
+.stats-column {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+    position: relative;
+}
 
-        /* Card Styling */
-        .card {
-            width: 130px; /* Kleiner */
-            height: 200px; /* Kleiner */
-            background: linear-gradient(135deg, #4a4a4a, var(--card-bg));
-            border-radius: 10px;
-            display: flex;
-            flex-direction: column;
-            padding: 10px;
-            cursor: pointer;
-            transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
-            position: relative;
-            border: 1px solid #777;
-            box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
-            overflow: hidden;
-        }
-        .card:hover {
-            transform: translateY(-10px) scale(1.05); /* Angepasster Hover */
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-            border-color: var(--primary-color);
-        }
-        .card-mana {
-            position: absolute;
-            top: 6px;
-            right: 6px;
-            width: 26px; /* Kleiner */
-            height: 26px; /* Kleiner */
-            background-color: var(--secondary-color);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            font-size: 14px; /* Kleiner */
-            border: 1.5px solid #fff; /* Dünnerer Rand */
-            box-shadow: 0 0 4px rgba(0,0,0,0.4);
-            z-index: 1;
-        }
-        .card-name {
-            font-weight: bold;
-            text-align: center;
-            margin-top: 20px; /* Platz für Mana */
-            margin-bottom: 6px;
-            color: var(--primary-color);
-            font-size: 14px; /* Kleiner */
-        }
-        .card-icon {
-            font-size: 35px; /* Kleiner */
-            text-align: center;
-            margin: 8px 0;
-            flex-shrink: 0;
-            height: 40px; /* Feste Höhe */
-        }
+.stats-column::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 2px;
+    background: var(--primary-color);
+    transition: width var(--anim-medium) ease;
+}
+
+.stats-column:hover::after {
+    width: 100%;
+}
+
+/* Battle Area */
+.battle-area {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 25px;
+    margin: 20px 0;
+    position: relative;
+}
+
+/* Add a decorative line between player and enemy */
+.battle-area::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(to right, 
+                               transparent, 
+                               rgba(255, 255, 255, 0.3), 
+                               transparent);
+    transform: translateY(-50%);
+    opacity: 0.5;
+}
+
+/* Player Display */
+.player-display {
+    flex: 1;
+    background: linear-gradient(to bottom, 
+                              rgba(37, 58, 41, 0.9), 
+                              rgba(37, 58, 41, 0.7));
+    padding: 18px;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--player-color);
+    box-shadow: 0 0 15px rgba(80, 224, 80, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 220px;
+    transition: all var(--anim-medium) ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.player-display::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(ellipse at center, 
+                               rgba(80, 224, 80, 0.1), 
+                               transparent 70%);
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.player-display:hover {
+    box-shadow: 0 0 20px rgba(80, 224, 80, 0.5);
+    transform: translateY(-3px);
+}
+
+.player-name {
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: var(--player-color);
+    letter-spacing: 1px;
+    text-shadow: 0 0 5px rgba(80, 224, 80, 0.5);
+}
+
+.player-gold {
+    font-size: 15px;
+    margin-bottom: 10px;
+    color: gold;
+    font-weight: bold;
+    text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.player-image {
+    width: 110px;
+    height: 110px;
+    background-color: rgba(0, 0, 0, 0.2);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    border: 3px solid var(--player-color);
+    border-radius: var(--border-radius);
+    image-rendering: pixelated;
+    margin-bottom: 12px;
+    transition: all var(--anim-medium) ease;
+    box-shadow: 0 0 15px rgba(80, 224, 80, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.player-image::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+        to right,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    transform: skewX(-25deg);
+    animation: shimmer 5s infinite;
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    50% { left: 150%; }
+    100% { left: 150%; }
+}
+
+.player-image.is-active {
+    animation: playerPulse 3s ease-in-out infinite, gentleBob 4s ease-in-out infinite;
+}
+
+@keyframes playerPulse {
+    0%, 100% { box-shadow: 0 0 15px rgba(80, 224, 80, 0.2); }
+    50% { box-shadow: 0 0 25px rgba(80, 224, 80, 0.6); }
+}
+
+.player-stats {
+    width: 92%;
+    text-align: left;
+}
+
+/* Enemy Container */
+.enemy-container {
+    flex: 1;
+    background: linear-gradient(to bottom, 
+                              rgba(58, 37, 37, 0.9), 
+                              rgba(58, 37, 37, 0.7));
+    padding: 18px;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--accent-color);
+    box-shadow: 0 0 15px rgba(255, 82, 82, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 220px;
+    position: relative;
+    transition: all var(--anim-medium) ease;
+    overflow: hidden;
+}
+
+.enemy-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(ellipse at center, 
+                               rgba(255, 82, 82, 0.1), 
+                               transparent 70%);
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.enemy-container:hover {
+    box-shadow: 0 0 20px rgba(255, 82, 82, 0.5);
+    transform: translateY(-3px);
+}
+
+.enemy-name {
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: var(--accent-color);
+    letter-spacing: 1px;
+    text-shadow: 0 0 5px rgba(255, 82, 82, 0.5);
+}
+
+.monster-image {
+    width: 110px;
+    height: 110px;
+    margin-bottom: 12px;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: var(--border-radius);
+    border: 3px solid var(--accent-color);
+    box-shadow: 0 0 15px rgba(255, 82, 82, 0.2);
+    transition: transform var(--anim-medium);
+    image-rendering: pixelated;
+    position: relative;
+    overflow: hidden;
+}
+
+.monster-image::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+        to right,
+        transparent,
+        rgba(255, 255, 255, 0.15),
+        transparent
+    );
+    transform: skewX(-25deg);
+    animation: shimmer 6s infinite;
+}
+
+.monster-image:hover {
+    transform: scale(1.05) rotate(2deg);
+}
+
+.monster-image.is-active {
+    animation: enemyPulse 3s ease-in-out infinite, gentleEnemyBob 4s ease-in-out infinite;
+}
+
+@keyframes enemyPulse {
+    0%, 100% { box-shadow: 0 0 15px rgba(255, 82, 82, 0.2); }
+    50% { box-shadow: 0 0 25px rgba(255, 82, 82, 0.6); }
+}
+
+@keyframes gentleEnemyBob {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-5px) rotate(2deg); }
+}
+
+.enemy-stats-display {
+    width: 92%;
+    text-align: left;
+}
+
+.enemy-info {
+    margin-top: 12px;
+    font-size: 12px;
+    color: #eee;
+    text-align: center;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.25);
+    border-radius: 8px;
+    width: 92%;
+    min-height: 30px;
+    border: 1px solid rgba(255, 82, 82, 0.2);
+}
+
+/* Monster Traits */
+.monster-traits {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.monster-trait {
+    background-color: rgba(60, 60, 60, 0.6);
+    border-radius: 10px;
+    padding: 4px 9px;
+    font-size: 11px;
+    color: var(--primary-color);
+    border: 1px solid rgba(255, 204, 0, 0.3);
+    box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.5);
+    position: relative;
+    cursor: help;
+    transition: all var(--anim-fast) ease;
+}
+
+.monster-trait:hover {
+    background-color: rgba(80, 80, 80, 0.7);
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+.monster-trait:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 130%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.9);
+    color: #fff;
+    padding: 8px 10px;
+    border-radius: 6px;
+    white-space: normal;
+    text-align: center;
+    font-size: 11px;
+    width: max-content;
+    max-width: 200px;
+    z-index: 1000;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    animation: tooltipFadeIn var(--anim-fast) ease-out;
+}
+
+.monster-trait:hover::before {
+    content: "";
+    position: absolute;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: rgba(0, 0, 0, 0.9) transparent transparent transparent;
+    z-index: 1001;
+    animation: tooltipFadeIn var(--anim-fast) ease-out;
+}
+
+@keyframes tooltipFadeIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* Health & Mana Bars */
+.health-bar, .mana-bar {
+    height: 20px;
+    background-color: rgba(50, 50, 60, 0.8);
+    border-radius: 10px;
+    margin: 6px 0;
+    overflow: hidden;
+    width: 100%;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+.health-fill, .mana-fill {
+    height: 100%;
+    transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.health-fill::before, .mana-fill::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0));
+    border-radius: 10px 10px 0 0;
+}
+
+/* Dynamic glow effect on health change */
+@keyframes healthChange {
+    0% { box-shadow: 0 0 12px rgba(255, 200, 0, 0.7); }
+    100% { box-shadow: 0 0 0 rgba(255, 200, 0, 0); }
+}
+
+.health-bar.changed {
+    animation: healthChange 1s ease-out;
+}
+
+#playerHealthBar .health-fill {
+    background: linear-gradient(to right, #3e9c35, var(--player-color));
+    box-shadow: 0 0 8px rgba(80, 224, 80, 0.5);
+}
+
+#enemyHealthBar .health-fill {
+    background: linear-gradient(to right, #c92a2a, var(--accent-color));
+    box-shadow: 0 0 8px rgba(255, 82, 82, 0.5);
+}
+
+.mana-fill {
+    background: linear-gradient(to right, #1a73e8, var(--secondary-color));
+    box-shadow: 0 0 8px rgba(74, 144, 255, 0.5);
+}
+
+/* Animate bar text */
+@keyframes valueChangeUp {
+    0% { transform: translateY(0); opacity: 1; }
+    50% { transform: translateY(-20px); opacity: 0; }
+    51% { transform: translateY(20px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes valueChangeDown {
+    0% { transform: translateY(0); opacity: 1; }
+    50% { transform: translateY(20px); opacity: 0; }
+    51% { transform: translateY(-20px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
+.stat-text {
+    font-size: 13px;
+    margin-top: 6px;
+    transition: all var(--anim-medium) ease;
+}
+
+.stat-text.changed-up {
+    animation: valueChangeUp 0.6s ease-out;
+}
+
+.stat-text.changed-down {
+    animation: valueChangeDown 0.6s ease-out;
+}
+
+/* Enemy Minions */
+.enemy-minions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.minion-box {
+    background: linear-gradient(to bottom, #3d3d3d, #2d2d2d);
+    border: 1px solid #666;
+    border-radius: 8px;
+    padding: 8px;
+    text-align: center;
+    width: 65px;
+    font-size: 11px;
+    color: white;
+    transition: all var(--anim-fast) ease;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.minion-box:hover {
+    transform: translateY(-3px) scale(1.05);
+    border-color: var(--accent-color);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+}
+
+.minion-box::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.2), transparent 70%);
+    opacity: 0;
+    transition: opacity var(--anim-fast) ease;
+    pointer-events: none;
+}
+
+.minion-box:hover::after {
+    opacity: 1;
+}
+
+.minion-image {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 5px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    image-rendering: pixelated;
+    transition: transform var(--anim-fast) ease;
+}
+
+.minion-box:hover .minion-image {
+    transform: scale(1.1) rotate(5deg);
+}
+    
+/* Hand Cards Area */
+.card-hand-container {
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.card-hand {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    min-height: 250px;
+    padding: 15px 0;
+    background-color: rgba(0, 0, 0, 0.15);
+    border-radius: var(--border-radius);
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: visible;
+    perspective: 1000px;
+}
+
+.card-hand::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(ellipse at center, 
+                               rgba(255, 204, 0, 0.05), 
+                               transparent 70%);
+    pointer-events: none;
+}
+
+/* Card Hand Toolbar */
+.card-hand-toolbar {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: -8px;
+    position: relative;
+    z-index: 2;
+}
+
+.card-hand-action-wrapper {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    align-items: flex-start;
+    margin-top: 15px;
+}
+
+/* Card Styling */
+.card {
+    width: var(--card-width);
+    height: var(--card-height);
+    background: linear-gradient(135deg, #383850, var(--card-bg));
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    cursor: pointer;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 3px 6px 12px rgba(0, 0, 0, 0.4), inset 0 0 8px rgba(255, 255, 255, 0.05);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                box-shadow 0.3s ease, 
+                border-color 0.3s ease,
+                opacity 0.3s ease;
+    transform-origin: center bottom;
+    overflow: hidden;
+    z-index: 1;
+}
+
+/* Card inner glow effect */
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, 
+                              rgba(255, 255, 255, 0.1) 0%, 
+                              rgba(255, 255, 255, 0) 50%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* Card hover highlight effect */
+.card::after {
+    content: '';
+    position: absolute;
+    top: -150%;
+    left: -150%;
+    width: 400%;
+    height: 400%;
+    background: radial-gradient(ellipse at center, 
+                              rgba(255, 204, 0, 0.4), transparent 70%);
+    opacity: 0;
+    transition: opacity var(--anim-medium) ease;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.card:hover {
+    transform: translateY(-20px) scale(1.08);
+    box-shadow: 0 15px 25px rgba(0, 0, 0, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.15);
+    border-color: var(--primary-color);
+    z-index: 10;
+}
+
+.card:hover::after {
+    opacity: 0.2;
+}
+
+/* Card position adjustment for fan effect */
+.card-hand .card:nth-child(odd) {
+    transform: rotate(-1deg);
+}
+
+.card-hand .card:nth-child(even) {
+    transform: rotate(1deg);
+}
+
+.card-hand .card:hover {
+    transform: translateY(-20px) scale(1.08) rotate(0deg);
+}
+
+.card-mana {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 30px;
+    height: 30px;
+    background: radial-gradient(circle at center, var(--secondary-color), #2a70df);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 16px;
+    border: 2px solid #fff;
+    box-shadow: 0 0 8px rgba(74, 144, 255, 0.7);
+    z-index: 1;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.card-name {
+    font-weight: bold;
+    text-align: center;
+    margin-top: 22px;
+    margin-bottom: 8px;
+    color: var(--primary-color);
+    font-size: 15px;
+    letter-spacing: 0.5px;
+    text-shadow: 0 0 5px rgba(255, 204, 0, 0.5);
+}
+
+.card-icon {
+    font-size: 38px;
+    text-align: center;
+    margin: 10px 0;
+    flex-shrink: 0;
+    height: 45px;
+}
+
+.card-icon-image {
+    width: 45px;
+    height: 45px;
+    image-rendering: pixelated;
+    display: block;
+    margin: 0 auto;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
+    transition: transform var(--anim-fast) ease;
+}
+
+.card:hover .card-icon-image {
+    transform: scale(1.1) rotate(5deg);
+    filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.7));
+}
         .card-description {
-            font-size: 11px; /* Kleiner */
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            /* Hintergrund: Leicht transparent + Backdrop Filter */
+            background-color: rgba(44, 48, 58, 0.75); /* Angepasst an --card-bg, mit Transparenz */
+            backdrop-filter: blur(5px);              /* Weichzeichner für den Hintergrund */
+            -webkit-backdrop-filter: blur(5px);      /* Für Safari */
+            color: var(--text-color);
+            padding: 12px; /* Etwas mehr Padding */
+            font-size: 0.8em; /* Etwas größer für Lesbarkeit */
+            line-height: 1.4;
             text-align: center;
-            flex-grow: 1;
-            color: #ddd;
-            padding: 3px;
-            line-height: 1.3;
-            overflow: hidden; /* Verhindert Überlaufen */
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7); /* Textschatten für Kontrast */
+            border-top: 1px solid rgba(255, 255, 255, 0.1); /* Sehr subtile obere Linie */
+            border-radius: 0 0 10px 10px; /* Nur untere Ecken abrunden (passend zur Karte) */
+
+            /* Standardmäßig ausblenden */
+            opacity: 0;
+            transform: translateY(20px); /* Startet etwas weiter unten und faded ein */
+            visibility: hidden;
+            pointer-events: none;
+
+            /* Übergang */
+            transition: opacity 0.25s ease-out, transform 0.25s ease-out, visibility 0s linear 0.25s;
+            z-index: 2;
         }
+
         .card-power {
-             text-align: center;
-             font-size: 20px; /* Kleiner */
-             font-weight: bold;
-             margin-top: 6px;
-             color: var(--primary-color);
-             padding: 3px;
-             background-color: rgba(0,0,0,0.2);
-             border-radius: 4px;
-             /* Verstecke Power bei Draw/Gain Mana Karten */
-             visibility: visible;
+           text-align: center;
+           font-size: 1.4em; /* Größer */
+           font-weight: bold;
+           margin-top: auto; /* Schiebt es nach unten */
+           margin-bottom: 10px;
+           color: var(--text-color); /* Standardmäßig weiß */
+           padding: 4px 6px;
+           background-color: rgba(0,0,0,0.3);
+           border-radius: 6px;
+           visibility: visible;
+           align-self: center; /* Zentriert horizontal */
+           min-width: 30px; /* Damit es nicht zu schmal wird */
         }
-         .card-power.hidden-power {
-             visibility: hidden; /* Verstecken statt leeren String */
-         }
+         /* Farben für Power basierend auf Kartentyp (Beispiele) */
+        .card[data-card-type="attack"] .card-power { color: var(--accent-color-lighter); }
+        .card[data-card-type="block"] .card-power { color: #80deea; } /* Türkis */
+        .card[data-card-type="heal"] .card-power { color: var(--player-color-lighter); }
+    
+        .card-power.hidden-power {
+            visibility: hidden;
+        }
         .card.disabled {
-            opacity: 0.5; /* Mehr Transparenz */
+            opacity: 0.5;
             cursor: not-allowed;
-            border-color: #555;
-            background: #444;
-            box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+            border-color: #444;
+            background: linear-gradient(145deg, #555, #3a3a3a);
+            box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3), inset 0 0 10px rgba(0,0,0,0.4);
+            filter: grayscale(80%);
+            transform-style: flat; /* Kein 3D für disabled */
         }
         .card.disabled:hover {
-            transform: none;
-            box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
-            border-color: #555;
+            transform: none; /* Kein Hover-Effekt */
+            box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3), inset 0 0 10px rgba(0,0,0,0.4);
+            border-color: #444;
+        }
+        .card.disabled::before {
+            opacity: 0; /* Kein Glanz */
+        }
+        .card:hover .card-description {
+            opacity: 1;
+            transform: translateY(0); /* auf Endposition fahren */
+            visibility: visible;
+            pointer-events: auto;
+            transition: opacity 0.25s ease-out, transform 0.25s ease-out, visibility 0s linear 0s;
         }
 
-        /* Action Buttons */
-        .action-buttons {
+    
+        /* --- Action Buttons --- */
+         .action-buttons-vertical { /* Wrapper für Buttons neben der Hand */
             display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 20px; /* Weniger Abstand */
+            flex-direction: column;
+            gap: 12px;
+            align-items: center; /* Zentriert Buttons horizontal */
+            padding-top: 20px; /* Vertikaler Abstand von oben */
         }
+    
         button {
-            background-color: var(--primary-color);
-            color: #222;
+            background: linear-gradient(to bottom, var(--primary-color), #d4a106); /* Gold-Gradient */
+            color: #333; /* Dunkler Text für Kontrast */
             border: none;
-            padding: 10px 20px; /* Kleiner */
-            border-radius: 6px;
+            padding: 12px 25px; /* Größer */
+            border-radius: 8px;
             cursor: pointer;
-            font-weight: bold;
-            font-size: 14px; /* Kleiner */
-            transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            font-weight: 600; /* Semibold */
+            font-size: 1em; /* Größer */
+            font-family: 'Poppins', sans-serif; /* Sicherstellen */
+            transition: all 0.2s ease-out;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3), inset 0 -2px 2px rgba(0,0,0,0.2);
+            text-shadow: 0 1px 1px rgba(255, 255, 255, 0.2);
         }
         button:hover:not(:disabled) {
-            background-color: #ffd633;
-            transform: translateY(-1px); /* Weniger Hub */
-            box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+            background: linear-gradient(to bottom, #ffce3a, var(--primary-color)); /* Heller */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4), inset 0 -1px 1px rgba(0,0,0,0.1), 0 0 10px var(--glow-primary); /* Leichter Glow */
+        }
+        button:active:not(:disabled) {
+            transform: translateY(1px); /* Nach unten drücken */
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.3); /* Innerer Schatten */
+            filter: brightness(0.95);
         }
         button:disabled {
-            background-color: #666;
+            background: linear-gradient(to bottom, #777, #555); /* Grau-Gradient */
+            color: #aaa;
             cursor: not-allowed;
             transform: none;
-            box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.4); /* Deutlicher innerer Schatten */
+            text-shadow: none;
+            filter: grayscale(50%);
         }
+    
+        /* Spezielle Button-Farben */
         #manaBoostBtn {
-            background-color: var(--secondary-color);
+            background: linear-gradient(to bottom, #90aaff, #6b8fff);
             color: #fff;
+            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
         }
         #manaBoostBtn:hover:not(:disabled) {
-             background-color: #8caaff;
+            background: linear-gradient(to bottom, #4a79d9, #365fc4); /* kräftiges Dunkelblau */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4),
+                        inset 0 -1px 1px rgba(0, 0, 0, 0.1),
+                        0 0 10px rgba(41, 121, 255, 0.5);
         }
-
-        #manaBoostBtn:disabled {
-            background-color: #555 !important;
-            color: #ccc !important;
+         #manaBoostBtn:disabled {
+            background: linear-gradient(to bottom, #6a7081, #454a59) !important;
+            color: #999 !important;
             cursor: not-allowed;
+            filter: grayscale(70%);
+             box-shadow: inset 0 2px 5px rgba(0,0,0,0.4) !important;
         }
-
-        /* Message Log */
+    
+        /* --- Message Log --- */
         .message-log {
-            height: 120px; /* Kleiner */
-            background-color: #333;
+            height: 130px; /* Etwas höher */
+            background-color: rgba(0,0,0,0.25);
             border-radius: 8px;
-            padding: 10px;
+            padding: 12px 15px; /* Mehr Padding */
             overflow-y: auto;
-            margin-top: 15px;
-            font-size: 12px; /* Kleiner */
-            line-height: 1.4;
-            border: 1px solid #555;
-            box-shadow: inset 0 0 5px rgba(0,0,0,0.3);
+            margin-top: 20px;
+            font-size: 0.8em; /* Etwas kleiner für Log */
+            line-height: 1.5; /* Mehr Zeilenabstand */
+            border: 1px solid var(--border-color);
+            box-shadow: inset 0 1px 4px rgba(0,0,0,0.4);
+            color: var(--text-color-secondary); /* Standardmäßig grau */
         }
-        .message { margin-bottom: 4px; }
-        .message.player { color: #90caf9; }
-        .message.enemy { color: #f48fb1; }
-        .message.system { color: var(--primary-color); }
-        .message.xp { color: #a5d6a7; font-style: italic; }
-        .message.mana { color: #b39ddb; font-style: italic; }
-        .message.lifesteal { color: #ffab91; font-style: italic; }
-        .message.discard { color: #aaaaaa; font-style: italic; }
-        .message.block { color: #80deea; font-style: italic;} /* Türkis für Block */
-        .message.heal { color: #c5e1a5; font-style: italic;} /* Hellgrün für Heilung */
-        .message.poison { color: #ce93d8; font-style: italic;} /* Lila für Gift */
-
-        /* Upgrade Screen */
-        .upgrade-container {
-             display: none; /* Startet versteckt */
-             position: fixed; /* Überlagert alles */
-             top: 0; left: 0; width: 100%; height: 100%;
-             background-color: rgba(0, 0, 0, 0.8); /* Dunkler Hintergrund */
-             z-index: 100;
-             display: flex; /* Wird auf flex geändert zum Anzeigen */
-             justify-content: center;
-             align-items: center;
-             padding: 20px;
+        /* Scrollbar-Styling (Webkit-Browser) */
+        .message-log::-webkit-scrollbar { width: 8px; }
+        .message-log::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 4px; }
+        .message-log::-webkit-scrollbar-thumb { background-color: var(--border-color-light); border-radius: 4px; border: 2px solid transparent; background-clip: content-box; }
+        .message-log::-webkit-scrollbar-thumb:hover { background-color: var(--primary-color); }
+    
+        .message { margin-bottom: 5px; }
+        /* Nachrichtentypen hervorheben */
+        .message.player { color: var(--secondary-color-lighter); } /* Blau für Spieleraktionen */
+        .message.enemy { color: var(--accent-color-lighter); } /* Rot für Gegneraktionen */
+        .message.system { color: var(--primary-color); font-weight: 600; } /* Gold für Systemnachrichten */
+        .message.xp { color: #a5d6a7; } /* Grünlich für XP */
+        .message.mana { color: #b39ddb; } /* Lila für Mana */
+        .message.lifesteal { color: #ffcc80; } /* Orange für Lebensraub */
+        .message.discard { color: #9e9e9e; font-style: italic; } /* Grau für Abwurf */
+        .message.block { color: #80deea; } /* Türkis für Block */
+        .message.heal { color: #c5e1a5; } /* Hellgrün für Heilung */
+        .message.poison { color: #ce93d8; } /* Violett für Gift */
+    
+    
+        /* --- Overlays (Upgrade, Game Over, Shop) --- */
+        .overlay-container {
+            display: none;
         }
-        .upgrade-box {
-            background-color: var(--bg-color);
-            padding: 25px;
-            border-radius: 15px;
-            border: 2px solid var(--primary-color);
-            text-align: center;
-            max-width: 600px;
-            box-shadow: 0 0 25px rgba(255, 204, 0, 0.5);
-        }
-        .upgrade-title {
-             margin-bottom: 20px;
-             color: var(--primary-color);
-        }
-        .upgrade-options {
-             display: flex;
-             gap: 15px;
-             justify-content: center;
-             flex-wrap: wrap; /* Umbruch bei Bedarf */
-        }
-        .upgrade-option {
-             background-color: var(--card-bg);
-             padding: 15px;
-             border-radius: 10px;
-             border: 2px solid #666;
-             cursor: pointer;
-             transition: transform 0.2s, background-color 0.2s, border-color 0.2s;
-             width: 160px; /* Feste Breite für Optionen */
-             min-height: 100px;
-             display: flex;
-             flex-direction: column;
-             justify-content: space-between; /* Titel oben, Beschreibung unten */
-        }
-         .upgrade-option h3 {
-             margin: 0 0 10px 0;
-             font-size: 1em;
-             color: var(--primary-color);
-         }
-         .upgrade-option p {
-             margin: 0;
-             font-size: 0.85em;
-             color: #ccc;
-         }
-         .upgrade-option:hover {
-             transform: scale(1.05);
-             background-color: #555;
-             border-color: var(--primary-color);
-         }
-        .upgrade-option.rare {
-            border-color: var(--rare-color);
-            box-shadow: 0 0 10px rgba(204, 102, 255, 0.4);
-        }
-        .upgrade-option.rare h3 {
-            color: var(--rare-color);
-        }
-        .upgrade-option.rare:hover {
-            border-color: #e08fff;
-            background-color: #503a5a;
-        }
-
-        /* Game Over Screen */
-        .game-over-container {
-            display: none; /* Startet versteckt */
-            position: fixed; /* Überlagert alles */
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.85); /* Dunklerer Hintergrund */
-            z-index: 100;
-             /* display: flex; wird zum Anzeigen gesetzt */
-            flex-direction: column;
+        .overlay-container.visible {
+            display: flex;
             justify-content: center;
             align-items: center;
-            color: var(--text-color);
+        }
+
+        .overlay-box {
+            background-color: var(--card-bg);
+            padding: 30px 40px;
+            border-radius: 15px;
+            border: 1px solid var(--border-color-light);
             text-align: center;
+            max-width: 700px; /* Beispielbreite */
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+            position: relative; /* Für eventuelle Schließen-Buttons */
+
+            /* Leichte Animation beim Erscheinen */
+            transform: scale(0.95);
+            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); /* Etwas "federnder" */
         }
-         .game-over-container h2 {
-             color: var(--accent-color); /* Rot für Game Over */
-             font-size: 2.5em;
-             margin-bottom: 20px;
-         }
-        .highscore {
-             font-size: 1.2em;
-             margin-bottom: 10px;
-             color: #eee;
-         }
-         .highscore span {
-             color: var(--primary-color);
-             font-weight: bold;
-         }
-         #restartBtn {
-             margin-top: 30px;
-             padding: 15px 30px; /* Größerer Button */
-             font-size: 1.1em;
-         }
-
-        /* Animationen */
-        .enemy-animation { transition: transform 0.3s ease-out, opacity 0.3s ease-out; }
-        .enemy-animation.hit { transform: translateX(8px) rotate(1.5deg) scale(1.02); } /* Angepasste Hit-Animation */
-        .enemy-animation.defeat { opacity: 0; transform: translateY(-40px) scale(0.8) rotate(-5deg); }
-        .card-animation { transition: transform 0.3s ease-out, opacity 0.3s ease-out; }
-        .card-animation.played { transform: translateY(-120px) scale(0.4) rotate(10deg); opacity: 0; } /* Angepasste Karten-Animation */
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25%, 75% { transform: translateX(-5px); }
-            50% { transform: translateX(5px); }
+        .overlay-container.visible .overlay-box {
+            transform: scale(1); /* Skaliert auf volle Größe */
         }
-        .shake { animation: shake 0.25s; }
-
-        .player-status {
-            display: flex;
-            justify-content: center;
-            gap: 6px;
-            margin-top: 6px;
-            flex-wrap: wrap;
-            font-size: 11px;
-            color: #fff;
-        }
-
-        .item-icon {
-            width: 24px;
-            height: 24px;
-            image-rendering: pixelated;
-            margin: 0 2px;
-            vertical-align: middle;
-        }
-
-        .player-status .status-effect {
-            background-color: rgba(255, 255, 255, 0.08);
-            padding: 3px 6px;
-            border-radius: 8px;
-            border: 1px solid #444;
-            box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.4);
-        }
-
-                .enemy-minions {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-bottom: 10px;
-        }
-
-        .minion-box {
-            background-color: #2d2d2d;
-            border: 1px solid #aaa;
-            border-radius: 6px;
-            padding: 6px;
+        /* Optional: Schließen-Button für Overlays */
+        .close-overlay-btn {
+            position: absolute;
+            top: 10px; right: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-color);
+            color: var(--text-color-secondary);
+            border-radius: 50%;
+            width: 30px; height: 30px;
+            font-size: 1.2em;
+            line-height: 28px; /* Zentriert das X */
             text-align: center;
-            width: 60px;
-            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            z-index: 101;
+        }
+        .close-overlay-btn:hover {
+            background: var(--accent-color);
             color: white;
+            border-color: var(--accent-color);
+            transform: rotate(90deg);
         }
-
-        .minion-image {
-            width: 32px;
-            height: 32px;
-            margin: auto;
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            image-rendering: pixelated;
-        }
-
-        #shopContainer {
+    
+        /* --- Upgrade Screen --- */
+        .upgrade-container {
+            display: none;
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.85);
-            display: none;
-            flex-direction: column;
-            align-items: center;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 100;
             justify-content: center;
-            padding: 30px;
-            z-index: 999;
-            }
-
-            .shop-item {
-            display: flex;
             align-items: center;
+            padding: 20px;
+        }
+        .upgrade-box { /* Nutzt .overlay-box */
+            border-color: var(--primary-color);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7), 0 0 20px var(--glow-primary);
+            max-width: 700px; /* Breite für Upgrades */
+        }
+        .upgrade-title {
+            margin-bottom: 25px;
+            color: var(--primary-color);
+            font-size: 1.8em;
+        }
+        .upgrade-options {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .upgrade-option {
+            background-color: #3a3f4c; /* Etwas heller als Karten */
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid var(--border-color);
+            cursor: pointer;
+            transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+            width: 180px; /* Feste Breite */
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            text-align: left; /* Besser für Text */
+            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+        }
+         .upgrade-option h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.1em;
+            color: var(--primary-color);
+         }
+         .upgrade-option p {
+            margin: 0;
+            font-size: 0.85em;
+            color: var(--text-color-secondary);
+            line-height: 1.4;
+         }
+         .upgrade-option:hover {
+            transform: translateY(-5px) scale(1.03);
+            background-color: #454a59;
+            border-color: var(--primary-color);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4), 0 0 10px var(--glow-primary);
+         }
+        /* Upgrade Raritäten */
+        .upgrade-option.rare {
+            border-color: var(--rare-color);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.3), 0 0 10px var(--glow-rare);
+        }
+        .upgrade-option.rare h3 { color: var(--rare-color); }
+        .upgrade-option.rare:hover {
+            border-color: var(--rare-color); /* Behält die Farbe bei */
+            background-color: #503a5a; /* Lila-Ton */
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4), 0 0 15px var(--glow-rare);
+        }
+    
+        /* --- Game Over Screen --- */
+        .game-over-container { /* Nutzt .overlay-container */
+            background-color: rgba(50, 10, 10, 0.7); /* Rötlicherer Hintergrund */
+        }
+        .game-over-box { /* Nutzt .overlay-box */
+            border-color: var(--accent-color);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7), 0 0 20px var(--glow-enemy);
+        }
+         .game-over-box h2 {
+            color: var(--accent-color);
+            font-size: 3em; /* Groß */
+            margin-bottom: 25px;
+            text-shadow: 0 0 8px var(--glow-enemy);
+            border: none; /* Keine Unterlinie hier */
+         }
+        .highscore {
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            color: var(--text-color);
+        }
+         .highscore span { /* Highscore Zahl */
+            color: var(--primary-color);
+            font-weight: bold;
+            font-size: 1.2em; /* Größer als der Text */
+            display: inline-block;
+            margin-left: 10px;
+         }
+         #restartBtn {
+            margin-top: 35px;
+            padding: 15px 35px; /* Größerer Button */
+            font-size: 1.2em;
+            background: linear-gradient(to bottom, var(--player-color-lighter), var(--player-color)); /* Grün für Neustart */
+            color: white;
+         }
+         #restartBtn:hover:not(:disabled) {
+            background: linear-gradient(to bottom, #90ee90, var(--player-color-lighter));
+             box-shadow: 0 6px 12px rgba(0,0,0,0.4), inset 0 -1px 1px rgba(0,0,0,0.1), 0 0 10px var(--glow-player);
+         }
+    
+        /* --- Shop Screen --- */
+        #shopContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: none; /* Wird durch JavaScript auf 'flex' gesetzt */
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.5); /* Halbtransparenter Hintergrund */
+            z-index: 9999; /* Sicherstellen, dass es über anderen Elementen liegt */
+            }
+        #shopContainer.visible {
+            display: flex !important;
+            opacity: 1;
+            pointer-events: auto;
+            visibility: visible;
+        }
+
+        .shop-box {
+            border-color: gold;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7), 0 0 20px gold;
+            max-width: 500px; /* früher 800px */
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 25px;
+            }
+         /* Scrollbar für Shop (Webkit) */
+        .shop-box::-webkit-scrollbar { width: 10px; }
+        .shop-box::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 5px; }
+        .shop-box::-webkit-scrollbar-thumb { background-color: var(--border-color-light); border-radius: 5px; border: 2px solid transparent; background-clip: content-box; }
+        .shop-box::-webkit-scrollbar-thumb:hover { background-color: var(--primary-color); }
+    
+        #shopTitle {
+            color: gold; /* Gold für den Shop-Titel */
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-shadow: 0 0 6px gold;
+        }
+        #shopItems {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            }
+        .shop-item {
+            display: flex;
+            flex-direction: column; /* Besser für Inhalt untereinander */
+            align-items: center; /* Zentriert alles */
             background-color: #444;
             border-radius: 12px;
             padding: 15px;
             cursor: pointer;
-            transition: background-color 0.2s;
-            border: 2px solid #666;
-            gap: 20px;
-            max-width: 600px;
-            position: relative;
-            }
-
-            .shop-item:hover {
+            transition: all 0.2s ease;
+            border: 2px solid var(--border-color);
+            gap: 10px; /* Abstand zwischen Elementen */
+            position: relative; /* Für Tooltip */
+            text-align: center; /* Text zentrieren */
+            box-shadow: 0 3px 7px rgba(0,0,0,0.4);
+        }
+        .shop-item:hover {
             background-color: #555;
             border-color: gold;
-            }
-
-            .shop-image {
-            width: 100px;
-            height: 100px;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.5), 0 0 10px gold;
+        }
+         .shop-item.purchased { /* Stil für gekaufte/nicht verfügbare Items */
+            opacity: 0.5;
+            cursor: not-allowed;
+            border-color: #666;
+            filter: grayscale(80%);
+         }
+        .shop-item.purchased:hover {
+            background-color: #444;
+            transform: none;
+            box-shadow: 0 3px 7px rgba(0,0,0,0.4);
+        }
+        .shop-image {
+            width: 80px; /* Kleinere Bilder im Grid */
+            height: 80px;
             image-rendering: pixelated;
             border: 2px solid #aaa;
             border-radius: 8px;
-            }
-
-            .shop-info {
+            margin-bottom: 10px; /* Abstand zum Text */
+        }
+        .shop-info {
             display: flex;
             flex-direction: column;
-            }
-
-            .shop-price {
-            font-size: 18px;
+            align-items: center;
+            gap: 5px;
+        }
+         .shop-item-name {
+            font-weight: 600;
+            font-size: 1.1em;
+            color: var(--text-color);
+         }
+        .shop-item-desc {
+            font-size: 0.8em;
+            color: var(--text-color-secondary);
+            min-height: 30px; /* Platz für kurze Beschreibung */
+        }
+        .shop-price {
+            font-size: 1.2em;
             color: gold;
-            margin-top: 10px;
-            }
-
-            /* Tooltip */
-            .shop-item[data-tooltip]:hover::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            bottom: -60px;
-            left: 0;
-            width: 100%;
-            background: rgba(0,0,0,0.9);
-            color: white;
-            font-size: 12px;
-            padding: 8px;
-            border-radius: 6px;
-            white-space: normal;
-            text-align: center;
-            z-index: 1000;
-            }
-
-            /* Rahmen für gekaufte Items beim Spieler */
-            .item-icon {
-            width: 24px;
-            height: 24px;
-            image-rendering: pixelated;
-            margin: 0 2px;
-            vertical-align: middle;
-            border: 2px solid #6bff6b; /* Spielerfarbe */
-            border-radius: 6px;
-            box-shadow: 0 0 4px rgba(107, 255, 107, 0.6);
-            }
-
-            .card-icon-image {
-            width: 40px;
-            height: 40px;
-            image-rendering: pixelated;
-            display: block;
-            margin: 0 auto;
-            }
-           
-            .monster-trait {
-            position: relative;
-            cursor: help; /* Zeigt ein Fragezeichen-Cursor beim Hovern */
+            margin-top: auto; /* Schiebt Preis nach unten */
+            font-weight: bold;
+        }
+        /* Shop Tooltip (einfacher als Monster Trait) */
+        .shop-item[data-tooltip]:hover::after {
+           content: attr(data-tooltip);
+           position: absolute;
+           bottom: calc(100% + 5px); /* Über dem Item */
+           left: 50%;
+           transform: translateX(-50%);
+           background: rgba(10, 10, 15, 0.95);
+           color: white;
+           font-size: 0.8em;
+           padding: 6px 10px;
+           border-radius: 6px;
+           white-space: normal;
+           text-align: center;
+           z-index: 1001;
+           pointer-events: none;
+           width: max-content;
+           max-width: 200px;
+           opacity: 0;
+           animation: tooltipFadeIn 0.3s ease forwards;
+        }
+        .shop-footer {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        gap: 20px;
         }
 
-        .monster-trait:hover::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            bottom: 120%; /* über dem Element positioniert */
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(0,0,0,0.9);
-            color: #fff;
-            padding: 6px 8px;
-            border-radius: 4px;
-            white-space: normal;
-            text-align: center;
-            font-size: 11px;
-            width: max-content;
-            max-width: 200px;
-            z-index: 1000;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        #skipShopBtn,
+        #closeShopBtn {
+        padding: 10px 20px;
+        font-size: 1em;
+        border-radius: 8px;
+        border: none;
+        background: linear-gradient(to bottom, #888, #666);
+        color: white;
+        cursor: pointer;
+        transition: all 0.2s ease;
         }
 
-        .monster-trait:hover::before {
-            content: "";
-            position: absolute;
-            bottom: 115%; /* kleine Pfeilspitze */
-            left: 50%;
-            transform: translateX(-50%);
-            border-width: 5px;
-            border-style: solid;
-            border-color: rgba(0,0,0,0.9) transparent transparent transparent;
-            z-index: 1001;
+        #skipShopBtn:hover,
+        #closeShopBtn:hover {
+        background: linear-gradient(to bottom, #999, #777);
         }
 
-        .card-hand-action-wrapper {
+
+
+        /* --- Animationen & Effekte --- */
+        .enemy-animation { /* Wird bereits vom enemy-container genutzt */ }
+        .enemy-animation.hit {
+            animation: strongShake 0.35s ease-out; /* Verwendet verbesserte Shake-Animation */
+            filter: brightness(1.4) saturate(1.6);
+        }
+        .enemy-animation.defeat {
+            opacity: 0;
+            transform: translateY(-80px) scale(0.6) rotate(-20deg);
+            transition: transform 0.6s cubic-bezier(0.68, -0.6, 0.27, 1.6), opacity 0.5s ease-out; /* Dynamischere Kurve */
+            filter: grayscale(100%) brightness(0.5); /* Ausgrauen und abdunkeln */
+        }
+        .card-animation { /* Klasse für Karten, die animiert werden (z.B. ziehen) */ }
+        .card-animation.played {
+            transform: translateY(-200px) scale(0.2) rotate(35deg); /* Fliegt weiter weg */
+            opacity: 0;
+            transition: transform 0.5s cubic-bezier(0.4, 0.8, 0.7, 0.2), opacity 0.4s ease-out;
+            /* Wichtig: Animation auf der Karte selbst oder einem Wrapper ausführen */
+        }
+        .player-status .status-effect, .item-icon { /* Animation für neu hinzugefügte Effekte/Items */
+            animation: popIn 0.3s ease-out;
+        }
+    
+        @keyframes strongShake { /* Verbesserter Shake */
+          0% { transform: translate(0, 0) rotate(0); filter: brightness(1.4) saturate(1.6); }
+          15% { transform: translate(-1px, 0) rotate(-0.2deg); }
+          30% { transform: translate(1px, 0) rotate(0.2deg); }
+          45% { transform: translate(-1px, 0) rotate(-0.2deg); }
+          60% { transform: translate(1px, 0) rotate(0.2deg); }
+          75% { transform: translate(-1px, 0) rotate(-0.2deg); }
+          90% { transform: translate(1px, 0) rotate(0.2deg); }
+          100% { transform: translate(0, 0) rotate(0); filter: brightness(1); } /* Filter zurücksetzen */
+        }
+    
+        @keyframes gentleBob {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); } /* Etwas mehr Bewegung */
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.1); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+    
+        /* --- Spieler Status Effekte & Items --- */
+        .player-status {
             display: flex;
             justify-content: center;
-            gap: 20px;
-            align-items: flex-start;
-            margin-top: 10px;
+            align-items: center; /* Vertikal zentrieren */
+            gap: 8px; /* Mehr Abstand */
+            margin-top: 8px;
+            margin-bottom: 10px; /* Abstand zur Stats-Leiste */
+            flex-wrap: wrap;
+            font-size: 0.8em; /* Kleinere Schrift */
+            color: #fff;
+            min-height: 30px; /* Mindesthöhe, damit es nicht springt */
         }
-
-        .action-buttons-vertical {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+        .player-status .status-effect {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 4px 8px;
+            border-radius: 10px; /* Runder */
+            border: 1px solid var(--border-color);
+            box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.4);
+            display: inline-flex; /* Für align-items */
+            align-items: center;
+            gap: 4px;
         }
-
-
+         /* Icons für Status-Effekte (Beispiel) */
+        .status-effect .icon {
+            font-style: normal; /* Damit Emojis nicht kursiv sind */
+            font-size: 1.1em;
+        }
+        .status-effect.buff { color: var(--player-color-lighter); border-color: var(--player-color); }
+        .status-effect.debuff { color: var(--accent-color-lighter); border-color: var(--accent-color); }
+    
+        .item-icon {
+            width: 28px; /* Größer */
+            height: 28px;
+            image-rendering: pixelated;
+            vertical-align: middle;
+            border: 2px solid var(--player-color); /* Spielerfarbe als Standard */
+            border-radius: 6px;
+            box-shadow: 0 0 5px var(--glow-player); /* Leichter Glow */
+            background-color: rgba(0,0,0,0.3); /* Hintergrund, falls Bild transparent */
+            display: inline-block; /* Korrekte Darstellung */
+        }
+    
     </style>
 </head>
 <body>
@@ -729,76 +1432,96 @@
             </div>
         </div>
 
-        <div class="battle-area">
-            <div id="playerDisplay" class="player-display">
-                 <div class="player-name">Spieler</div>
-                 <div class="player-gold">
-                    💰 Gold: <span id="playerGoldDisplay">0</span>
-                </div>                
-                <div class="player-image" id="playerImage"></div>
-                <div class="player-status" id="playerStatusDisplay"></div>
-                <div class="player-stats">
-                    <div class="stat-text">Leben: <span id="playerHealth">50</span>/<span id="playerMaxHealth">50</span></div>
-                    <div class="health-bar" id="playerHealthBar">
-                        <div class="health-fill" style="width: 100%;"></div>
+        <div class="battle-area-wrapper">
+            <div class="battle-area">
+                <!-- Spieleranzeige -->
+                
+                <div id="playerDisplay" class="player-display">
+                    <div class="player-name">Spieler</div>
+                    <div class="player-gold">💰 Gold: <span id="playerGoldDisplay">0</span></div>
+                    <div class="player-image" id="playerImage"></div>
+                    <div class="player-status" id="playerStatusDisplay"></div>
+        
+                    <div class="player-stats">
+                        <div class="stat-text">Leben: <span id="playerHealth">50</span>/<span id="playerMaxHealth">50</span></div>
+                        <div class="health-bar" id="playerHealthBar">
+                            <div class="health-fill" style="width: 100%;"></div>
+                        </div>
+        
+                        <div class="stat-text">Mana: <span id="playerMana">3</span>/<span id="playerMaxMana">3</span></div>
+                        <div class="mana-bar">
+                            <div class="mana-fill" id="playerManaBar" style="width: 100%;"></div>
+                        </div>
+        
+                        <div class="stat-text">🛡 Block: <span id="playerBlock" class="block-value">0</span></div>
                     </div>
-                    <div class="stat-text">Mana: <span id="playerMana">3</span>/<span id="playerMaxMana">3</span></div>
-                    <div class="mana-bar">
-                        <div class="mana-fill" id="playerManaBar" style="width: 100%;"></div>
-                    </div>
-                    <div class="stat-text">Block: <span id="playerBlock">0</span></div>
                 </div>
-            </div>
-
-            <div id="enemyContainer" class="enemy-container enemy-animation">
-                <div class="enemy-name" id="enemyName">Gegner</div>
-                <div class="monster-image" id="monsterImage"></div>
-                <div id="enemyMinions" class="enemy-minions"></div>
-                <div class="monster-traits" id="monsterTraits"></div>
-                 <div class="enemy-stats-display">
-                     <div class="stat-text">Leben: <span id="enemyHealth">10</span>/<span id="enemyMaxHealth">10</span></div>
-                     <div class="health-bar" id="enemyHealthBar">
-                         <div class="health-fill" style="width: 100%;"></div>
-                     </div>
-                     <div class="stat-text">Angriff: <span id="enemyAttack">2</span></div>
-                     </div>
-                 <div class="enemy-info" id="enemyInfo">Infos zum Gegner...</div>
+        
+                <!-- Gegneranzeige -->
+                <div id="enemyContainer" class="enemy-container enemy-animation">
+                    <div class="enemy-name" id="enemyName">Gegner</div>
+                    <div class="monster-image" id="monsterImage"></div>
+                    <div id="enemyMinions" class="enemy-minions"></div>
+                    <div class="monster-traits" id="monsterTraits"></div>
+        
+                    <div class="enemy-stats-display">
+                        <div class="stat-text">Leben: <span id="enemyHealth">10</span>/<span id="enemyMaxHealth">10</span></div>
+                        <div class="health-bar" id="enemyHealthBar">
+                            <div class="health-fill" style="width: 100%;"></div>
+                        </div>
+        
+                        <div class="stat-text">Angriff: <span id="enemyAttack">2</span></div>
+                    </div>
+        
+                    <div class="enemy-info" id="enemyInfo">Infos zum Gegner...</div>
+                </div>
             </div>
         </div>
+        
 
-        <div class="card-hand-container">
-            <h2>Deine Karten (<span id="currentHandSize">0</span>/<span id="maxHandSizeDisplay2">5</span>)</h2>
+        <div class="card-hand-container" style="position: relative;">
             
+            <div class="card-hand-toolbar">
+                <button id="manaBoostBtn">Mana Boost (Volles Mana, Runde zuende)</button>
+                <button id="endTurnBtn">Zug beenden</button>
+              </div>
+        
+            <h2>Deine Karten (<span id="currentHandSize">0</span>/<span id="maxHandSizeDisplay2">5</span>)</h2>         
+        
             <div class="card-hand-action-wrapper">
                 <div id="cardHand" class="card-hand"></div>
-                
-                <div class="action-buttons-vertical">
-                    <button id="manaBoostBtn">Mana Boost (Volles Mana, Zug Ende)</button>
-                    <button id="endTurnBtn">Zug beenden!</button>
-                </div>
             </div>
-        </div>        
+        </div>            
 
         <div id="messageLog" class="message-log">
             </div>
     </div>
 
-    <div id="upgradeContainer" class="upgrade-container" style="display: none;"> <div class="upgrade-box">
-            <h2 class="upgrade-title">Level Up! Wähle ein Upgrade</h2>
-            <div id="upgradeOptions" class="upgrade-options">
+    <div id="upgradeContainer" class="overlay-container upgrade-container">
+        <div class="overlay-box upgrade-box">
+            <h2 class="upgrade-title">Wähle ein Upgrade!</h2>
+            <div class="upgrade-options" id="upgradeOptions">
                 </div>
         </div>
     </div>
+    
+    <div id="shopContainer" class="overlay-container shop-container" style="display: none;">
+        <div class="overlay-box shop-box">
 
-    <div id="shopContainer" class="upgrade-container" style="display: none;">
-        <div class="upgrade-box">
-            <h2 class="upgrade-title">🏪 Shop</h2>
-            <div id="shopItems" class="upgrade-options">
-                <!-- Shop-Items werden dynamisch eingefügt -->
-            </div>
-            <button id="closeShopBtn" style="margin-top: 20px;">Weiter</button>
+          <!-- Shop-Titel -->
+          <h3 id="shopTitle">🛒 Shop: Du hast <span id="shopGoldAmount"></span></h3>
+      
+          <!-- Shop-Item-Bereich -->
+          <div id="shopItems" class="shop-items">
+          </div>
+          <div class="shop-footer">
+            <button id="skipShopBtn">Shop überspringen</button>
+          </div>
+      
+      
         </div>
-    </div>
+      </div>
+      
     
     <div id="gameOverContainer" class="game-over-container" style="display: none;"> <h2>Game Over!</h2>
         <div class="highscore">Besiegte Gegner: <span id="finalScore">0</span></div>
@@ -811,19 +1534,21 @@
         // --- Spielkonstanten ---
         const CARD_TYPES = [
             // ... (deine Kartendefinitionen bleiben hier unverändert) ...
-                 { id: 1, name: 'Schwert', icon: '⚔️', description: 'Ein treuer Begleiter.', power: 5, effect: 'damage', manaCost: 2, weight: 13, tags: ['sword'] },
+                 { id: 1, name: 'Schwert', icon: '⚔️', description: 'Ein einfaches Schwert.', power: 5, effect: 'damage', manaCost: 2, weight: 13, tags: ['sword'] },
                  { id: 2, name: 'Schild', icon: '🛡️', description: 'Erhalte 5 Block', power: 5, effect: 'block', manaCost: 2, weight: 2 },
-                 { id: 3, name: 'Heilung', icon: '❤️', description: 'Heilt 6 Leben', power: 6, effect: 'heal', manaCost: 3, weight: 2 },
-                 { id: 4, name: 'Gift', icon: '☠️', description: 'Vergiftet (2 Schaden, 3 Rd.) Falls bereit Vergitet mache 3 Schaden', power: 2, duration: 3, effect: 'poison', manaCost: 3, weight: 1 },
-                 { id: 5, name: 'Blitz', icon: '⚡', description: 'Fügt 7 Schaden zu', power: 7, effect: 'damage', manaCost: 4, weight: 2 },
-                 { id: 6, name: 'Großer Schlag', icon: '💥', description: 'Fügt 12 Schaden zu', power: 12, effect: 'damage', manaCost: 4, weight: 2 },
+                 { id: 3, name: 'Heilung', icon: '❤️', description: 'Heilt 8 Leben', power: 8, effect: 'heal', manaCost: 3, weight: 2 },
+                 { id: 4, name: 'Gift', icon: '☠️', description: 'Vergiftet (2 Schaden, 3 Rd.) Falls bereit Vergitet mache 3 Schaden', power: 2, duration: 3, effect: 'poison', manaCost: 2, weight: 1 },
+                 { id: 5, name: 'Blitz', icon: '⚡', description: 'Fügt 10 Schaden zu', power: 10, effect: 'damage', manaCost: 4, weight: 2 },
+                 { id: 6, name: 'Großer Schlag', icon: '💥', description: 'Fügt 15 Schaden zu', power: 15, effect: 'damage', manaCost: 4, weight: 2 },
                  { id: 7, name: 'Meditieren', icon: '🧘', description: 'Ziehe 1 Karte', power: 1, effect: 'draw', manaCost: 0, weight: 1 },
-                 { id: 8, name: 'Vampirbiss', icon: '🧛', description: '5 Schaden, heilt 5', power: 5, healAmount: 5, effect: 'lifesteal', manaCost: 4, weight: 2 }, // Direkte Heilung statt %
+                 { id: 8, name: 'Vampirbiss', icon: '🧛', description: '8 Schaden, heilt 8', power: 8, healAmount: 8, effect: 'lifesteal', manaCost: 4, weight: 2 }, // Direkte Heilung statt %
                  { id: 9, name: 'Manatrank', icon: '🧪', description: 'Erhalte 2 Mana', power: 2, effect: 'gain_mana', manaCost: 0, weight: 3 },
                  { id: 10, name: 'Fokus', icon: '🎯', description: 'Ziehe 2 Karten', power: 2, effect: 'draw', manaCost: 2, weight: 2 },
-                 { id: 11, name: 'Heilige Macht', icon: '✨', description: 'Fügt 22 Schaden zu', power: 22, effect: 'damage', manaCost: 6, weight: 1 },
-                 { id: 12, name: 'Genesung', icon: '💖', description: 'Heilt 15 Leben', power: 15, effect: 'heal', manaCost: 6, weight: 1 },
-                 {id: 13, name: 'Feuerpfeil', icon: '🔥', description: 'Fügt 10 Schaden zu. 50% Chance auf Verbrennung (5 Schaden für 2 Runden).', power: 10, effect: 'firearrow', manaCost: 5, weight: 1},
+                 { id: 11, name: 'Heilige Macht', icon: '✨', description: 'Fügt 25 Schaden zu', power: 25, effect: 'damage', manaCost: 6, weight: 1 },
+                 { id: 12, name: 'Genesung', icon: '💖', description: 'Heilt 15 Leben', power: 15, effect: 'heal', manaCost: 5, weight: 1 },
+                 {id: 13, name: 'Feuerpfeil', icon: '🔥', description: 'Fügt 12 Schaden zu. 50% Chance auf Verbrennung (5 Schaden für 2 Runden).', power: 12, effect: 'firearrow', manaCost: 5, weight: 1},
+                 {id: 14, name: 'Gambler’s Luck', icon: '🎲', description: 'Gegner nimmt 5 Schaden und du erhältst 100 Gold. oder Du nimmst 5 Schaden.', power: 5, effect: 'gamble', manaCost: 1, weight: 1}
+
         ];
     
         // --- Bildpfade ---
@@ -838,6 +1563,8 @@
                 'Nekromant': IMAGE_FOLDER + 'Nekromant.png', // Umlaut vermieden
                 'Riesen Spinne': IMAGE_FOLDER + 'Spinne.png', // Leerzeichen vermieden
                 'Eiskönig': IMAGE_FOLDER + 'Eiskönig.png', // Umlaut vermieden
+                'Erzengel': IMAGE_FOLDER + 'Erzengel.png',
+                'Dracula': IMAGE_FOLDER + 'Dracula.png',
                 'Drache': IMAGE_FOLDER + 'Drache.png'
         };
         const PLAYER_PIXEL_IMAGE = IMAGE_FOLDER + 'Spieler.png';
@@ -845,15 +1572,17 @@
         // --- Gegnertypen ---
         const ENEMY_TYPES = [
             // ... (deine Gegnertypen bleiben hier unverändert) ...
-                { name: 'Goblin', health: 20, attack: 5, levelMin: 1, levelMax: 2, xp: 35, gold: 50, pixelImageKey: 'Goblin', description: 'Ein kleiner, flinker Goblin.', traits: ['Keine Fähigkeit'] },
-                { name: 'Ork', health: 35, attack: 5, levelMin: 2, levelMax: 4, xp: 50, gold: 65, pixelImageKey: 'Ork', description: 'Ein brutaler Ork-Krieger.', traits: ['Stark'] },
-                { name: 'Riesen Spinne', health: 30, attack: 6, levelMin: 3, levelMax: 5, xp: 45, gold: 80, pixelImageKey: 'Riesen Spinne', description: 'Spuckt lähmendes Gift.', traits: ['Giftig'] }, // 'Netzwerfer' Effekt muss implementiert werden
+                { name: 'Goblin', health: 20, attack: 5, levelMin: 1, levelMax: 5, xp: 35, gold: 50, pixelImageKey: 'Goblin', description: 'Ein kleiner, flinker Goblin.', traits: ['Keine Fähigkeit'] },
+                { name: 'Ork', health: 35, attack: 5, levelMin: 2, levelMax: 5, xp: 50, gold: 65, pixelImageKey: 'Ork', description: 'Ein brutaler Ork-Krieger.', traits: ['Stark'] },
+                { name: 'Riesen Spinne', health: 30, attack: 6, levelMin: 3, levelMax: 6, xp: 45, gold: 80, pixelImageKey: 'Riesen Spinne', description: 'Spuckt lähmendes Gift.', traits: ['Giftig'] }, // 'Netzwerfer' Effekt muss implementiert werden
                 { name: 'Troll', health: 50, attack: 8, levelMin: 4, levelMax: 6, xp: 70, gold: 100, pixelImageKey: 'Troll', description: 'Regeneriert 3 Leben pro Runde.', traits: ['Regeneration', 'Massiv'], regen: 3 }, // Regeneration implementiert
-                { name: 'Nekromant', health: 40, attack: 7, levelMin: 5, levelMax: 7, xp: 80, gold: 120, pixelImageKey: 'Nekromant', description: 'Schwächt dich oder ruft Diener.', traits: ['Untotenbeschwörer'] }, // Effekte müssen implementiert werden
-                { name: 'Eiskönig', health: 60, attack: 9, levelMin: 6, levelMax: 8, xp: 100, gold: 200, pixelImageKey: 'Eiskönig', description: 'Verlangsamt dich mit Kälte.', traits: ['Eis-Elementar', 'Frost-Aura'] }, // Effekte müssen implementiert werden
-                { name: 'Dämon', health: 70, attack: 10, levelMin: 7, levelMax: 9, xp: 120, gold: 250, pixelImageKey: 'Dämon', description: 'Feuer und Schatten. Resistent.', traits: ['Höllen Krallen', 'Regeneration'], regen: 3 }, // Effekte müssen implementiert werden
-                { name: 'Baby Drache', health: 80, attack: 11, levelMin: 8, levelMax: 10, xp: 150, gold: 300, pixelImageKey: 'Baby Drache', description: 'Speit Feuerstöße.', traits: ['Verspielt', 'Feueratem'] }, // Effekte müssen implementiert werden
-                { name: 'Drache', health: 120, attack: 14, levelMin: 10, levelMax: 12, xp: 250, gold: 400, pixelImageKey: 'Drache', description: 'Ein mächtiger, alter Drache.', traits: ['Feueratem', 'Fliegend', 'Gepanzerte Schuppen'] }, // Effekte müssen implementiert werden
+                { name: 'Nekromant', health: 40, attack: 7, levelMin: 6, levelMax: 10, xp: 80, gold: 120, pixelImageKey: 'Nekromant', description: 'Schwächt dich oder ruft Diener.', traits: ['Untotenbeschwörer'] }, // Effekte müssen implementiert werden
+                { name: 'Eiskönig', health: 60, attack: 9, levelMin: 7, levelMax: 12, xp: 100, gold: 200, pixelImageKey: 'Eiskönig', description: 'Verlangsamt dich mit Kälte.', traits: ['Eis-Elementar', 'Frost-Aura'] }, // Effekte müssen implementiert werden
+                { name: 'Baby Drache', health: 60, attack: 11, levelMin: 8, levelMax: 13, xp: 120, gold: 300, pixelImageKey: 'Baby Drache', description: 'Speit Feuerstöße.', traits: ['Verspielt', 'Feueratem'] }, // Effekte müssen implementiert werden
+                { name: 'Dracula', health: 70, attack: 7, levelMin: 9, levelMax: 14, xp: 150, gold: 350, pixelImageKey: 'Dracula', description: 'Dein Blut macht ihn stärker.', traits: ['Vamp', 'Stark'] }, // Effekte müssen implementiert werden
+                { name: 'Dämon', health: 75, attack: 10, levelMin: 10, levelMax: 14, xp: 150, gold: 400, pixelImageKey: 'Dämon', description: 'Feuer und Schatten. Resistent.', traits: ['Höllen Krallen', 'Regeneration'], regen: 3 }, // Effekte müssen implementiert werden
+                { name: 'Erzengel', health: 100, attack: 12, levelMin: 10, levelMax: 16, xp: 200, gold: 450, pixelImageKey: 'Erzengel', description: 'Ein mächtiger gefallener Engel.', traits: ['Segen', 'Fliegend'] }, // Effekte müssen implementiert werden
+                { name: 'Drache', health: 140, attack: 15, levelMin: 15, levelMax: 20, xp: 250, gold: 600, pixelImageKey: 'Drache', description: 'Ein mächtiger, alter Drache.', traits: ['Feueratem', 'Fliegend', 'Gepanzerte Schuppen'] }, // Effekte müssen implementiert werden
         ];
     
         // --- Upgrade-Typen ---
@@ -969,13 +1698,14 @@
         function getThreeUniqueNewCards() {
             const ownedCardIds = new Set(state.player.deck.map(card => card.id));
             const availableCards = CARD_TYPES.filter(card => !ownedCardIds.has(card.id));
-            shuffleArray(availableCards);
-            return availableCards.slice(0, 3);
-        }
 
+            // Falls es weniger als 3 neue Karten gibt, nimm einfach alle
+            shuffleArray(availableCards);
+            return availableCards.slice(0, Math.min(3, availableCards.length));
+        }
     
         // Funktion zum Erstellen einer eindeutigen Karteninstanz
-                function createCardInstance(cardType) {
+        function createCardInstance(cardType) {
             cardUniqueCounter++;
 
             let newCard = {
@@ -984,6 +1714,11 @@
                 basePower: cardType.power, // merken, falls Schwertbonus dazukommt
                 tags: cardType.tags || []
             };
+
+            const isSword = (cardType.name === 'Schwert' || (cardType.tags && cardType.tags.includes('sword')));
+            if (isSword && state.player.swordPenalty) {
+                newCard.basePower = (cardType.power || 0) - state.player.swordPenalty;
+            }
 
             // Bonus anwenden, falls es ein Schwert ist
             if ((newCard.name === 'Schwert' || newCard.tags.includes('sword')) && typeof newCard.power === 'number') {
@@ -1020,6 +1755,8 @@
             const playerName = localStorage.getItem('playerName') || 'Spieler';
             const selectedPassive = localStorage.getItem('selectedPassive') || 'swordfighter';
 
+            console.log("🧠 Geladene Passive:", selectedPassive);
+
             console.log("Initialisiere Spiel...");
             cardUniqueCounter = 0; // Eindeutige ID zurücksetzen
     
@@ -1051,6 +1788,12 @@
                 highScore: parseInt(localStorage.getItem('pixelKartenspielHighScore') || '0') // Highscore laden
             };
     
+            if (selectedPassive === 'shieldmaster') {
+                state.player.isShieldmaster = true;
+                state.player.block = 5; // Direkt zu Beginn 5 Block
+                logMessage('🛡️ Schildmeister: Du startest mit 5 Block.', 'block');
+                }
+
             // Pasiven
             state.player.name = playerName;
 
@@ -1065,6 +1808,16 @@
 
             case 'dragonscale':
                 state.player.immuneToStatus = true;
+                state.player.hasDragonscale = true;
+                break;
+
+            case 'shieldmaster':
+                state.player.isShieldmaster = true;
+                state.player.swordPenalty = 1;
+                break;
+
+            case 'martyr':
+                state.player.isMartyr = true;
                 break;
             }
 
@@ -1117,10 +1870,13 @@
             state.turnInProgress = false; // Sicherstellen, dass der Spieler agieren kann
     
             console.log("Spiel initialisiert. Aktueller Status:", state);
+            logMessage(`🧠 Aktive Passive: ${selectedPassive}`, 'system');
+
         }
     
         // --- UI Update Funktionen ---
-    
+
+
         // Aktualisiert alle allgemeinen UI-Anzeigen (Stats, Runde etc.)
         function updateUIDisplay() {
             // Spieler Stats
@@ -1165,34 +1921,45 @@
         }
 
         function updatePlayerStatusDisplay() {
-            const container = document.getElementById('playerStatusDisplay');
-            container.innerHTML = ''; // alten Inhalt löschen
+                const container = document.getElementById('playerStatusDisplay');
+                container.innerHTML = ''; // alten Inhalt löschen
 
-            if (!state.player.statusEffects || state.player.statusEffects.length === 0) return;
+                if (state.player.statusEffects?.length > 0) {
+                    state.player.statusEffects.forEach(effect => {
+                        const span = document.createElement('span');
+                        span.classList.add('status-effect');
 
-            state.player.statusEffects.forEach(effect => {
-                const span = document.createElement('span');
-                span.classList.add('status-effect');
+                        switch (effect.type) {
+                            case 'poison':
+                                span.textContent = `☠️ ${effect.power} (${effect.duration})`;
+                                span.style.color = '#ce93d8'; // lila
+                                break;
 
-                switch (effect.type) {
-                    case 'poison':
-                        span.textContent = `☠️ ${effect.power} (${effect.duration})`;
-                        span.style.color = '#ce93d8'; // lila
-                        break;
+                            case 'burn':
+                                span.textContent = `🔥 ${effect.power} (${effect.duration})`;
+                                span.style.color = '#ff7043'; // orange/rot
+                                break;
 
-                    case 'burn':
-                        span.textContent = `🔥 ${effect.power} (${effect.duration})`;
-                        span.style.color = '#ff7043'; // orange/rot
-                        break;
+                            default:
+                                span.textContent = `${effect.type} (${effect.duration})`;
+                        }
 
-                    // Weitere Status-Effekte kannst du hier ergänzen
-                    default:
-                        span.textContent = `${effect.type} (${effect.duration})`;
+                        container.appendChild(span);
+                    });
                 }
 
-                container.appendChild(span);
-            });
-        }
+                // 🔥 Märtyrer-Bonus anzeigen (außerhalb der Schleife!)
+                if (state.player.isMartyr) {
+                    const lostPercent = 1 - (state.player.health / state.player.maxHealth);
+                    const martyrBonus = Math.floor(10 * lostPercent); // Repräsentativer Basiswert, z. B. für 5 Schaden
+                    const span = document.createElement('span');
+                    span.classList.add('status-effect');
+                    span.textContent = `⚔ Märtyrer +${martyrBonus}`;
+                    span.title = `Bonus-Schaden durch fehlendes Leben (${Math.floor(lostPercent * 100)} % verloren)`;
+                    container.appendChild(span);
+                }
+                updateEnemyUI();
+            }
 
     
         function updateEnemyUI() {
@@ -1238,8 +2005,10 @@
                 'Höllen Krallen': '45% Chance auf kritischen Treffer. (Kritischer Treffer = 1,5x Schaden)',
                 'Verspielt': '20% Chance, den Angriff zu verpassen.',
                 'Feueratem': '30% Chance auf Brennen (5 Schaden für 2 Runden).',
-                'Fliegend': '25% Chance, Block zu ignorieren.',
-                'Gepanzerte Schuppen': 'Immun gegen Gift, reduziert Schaden leicht.'
+                'Fliegend': 'Ignoriert Block zu 75%.',
+                'Gepanzerte Schuppen': 'Immun gegen Gift, reduziert Schaden leicht.',
+                'Lebensraub': 'Heilt sich um 50% seine schadens.',
+                'Segen': 'Heilt sich einmal um 50% seiner Leben.'
             };
 
             monsterTraitsElem.innerHTML = '';
@@ -1307,41 +2076,51 @@
             updateCardAvailability(); // Verfügbarkeit nach dem Neuzeichnen prüfen
             // Handgrößenanzeige auch hier aktualisieren
              currentHandSizeElem.textContent = state.player.hand.length;
+             updatePlayerStatusDisplay();
         }
     
         // Erstellt das DOM-Element für eine einzelne Karte
         function createCardElement(card) {
             const cardDiv = document.createElement('div');
             cardDiv.classList.add('card', 'card-animation');
-            cardDiv.dataset.uniqueId = card.uniqueId; // Wichtig für Identifikation
-    
+            cardDiv.dataset.uniqueId = card.uniqueId;
+
+            // Berechnung der tatsächlichen Angriffskraft
+            let calculatedPower = card.basePower ?? card.power; // Falls basePower nicht existiert
+            let powerHint = '';
+
+            if (card.name === 'Schwert') {
+                if (state.player?.swordBonus) {
+                    calculatedPower += state.player.swordBonus;
+                    powerHint += `+${state.player.swordBonus} durch Schwertkämpfer `;
+                }
+                if (state.player?.isShieldmaster) {
+                    calculatedPower -= 1;
+                    powerHint += `-1 durch Schildmeister`;
+                }
+            }
+
             cardDiv.innerHTML = `
                 <div class="card-mana">${card.manaCost}</div>
                 <div class="card-name">${card.name}</div>
                 <div class="card-icon">
-                ${card.icon.endsWith('.png') ? `<img src="${card.icon}" class="card-icon-image" alt="${card.name}">` : card.icon}
+                    ${card.icon.endsWith('.png') ? `<img src="${card.icon}" class="card-icon-image" alt="${card.name}">` : card.icon}
                 </div>
-                <div class="card-description">${card.description}</div>
-           <div class="card-power ${
-                (card.effect !== 'damage' && card.effect !== 'block' && card.effect !== 'heal' && card.effect !== 'lifesteal' && card.effect !== 'poison') ? 'hidden-power' : ''
-            }" title="${
-                card.name === 'Schwert' && state.player?.swordBonus ? `+${state.player.swordBonus} durch Schwertkämpfer` : ''
-            }">
-            ${
-                (card.effect === 'damage' || card.effect === 'block' || card.effect === 'heal' || card.effect === 'lifesteal' || card.effect === 'poison')
-                ? (card.name === 'Schwert' && state.player?.swordBonus
-                ? (typeof card.basePower === 'number' ? card.basePower + state.player.swordBonus : card.power)
-                : card.power)
-                : ''
-            }
-            </div>
+                <div class="card-description">
+                    ${card.description}
+                    ${card.name === 'Schwert' && state.player?.isShieldmaster ? `<br><span style="color:orange;">-1 wegen Schildmeister</span>` : ''}
+                </div>
+                <div class="card-power ${
+                    ['damage', 'block', 'heal', 'lifesteal', 'poison'].includes(card.effect) ? '' : 'hidden-power'
+                }" title="${powerHint.trim()}">
+                    ${['damage', 'block', 'heal', 'lifesteal', 'poison'].includes(card.effect) ? calculatedPower : ''}
+                </div>
             `;
-    
-            // Klick-Listener hinzufügen, um die Karte zu spielen
+
             cardDiv.addEventListener('click', () => playCard(card.uniqueId));
             return cardDiv;
         }
-    
+
     
         // Aktualisiert den 'disabled'-Status der Karten basierend auf Manakosten
         function updateCardAvailability() {
@@ -1512,10 +2291,27 @@
 function executeCardEffect(card) {
     switch (card.effect) {
         case 'damage':
-                    let damageDealt = (typeof card.basePower === 'number' ? card.basePower : card.power);
-            if (card.name === 'Schwert' && state.player.swordBonus) {
-                damageDealt += state.player.swordBonus;
+        let damageDealt = (typeof card.basePower === 'number' ? card.basePower : card.power);
+
+            if (card.name === 'Schwert') {
+                if (state.player.swordBonus) {
+                    damageDealt += state.player.swordBonus;
+                }
+
+                if (state.player.isShieldmaster) {
+                    damageDealt -= 1;
+                    logMessage('⚠️ Schildmeister: Schwert macht 1 weniger Schaden.', 'system');
+                }
             }
+
+            // Märtyrer-Bonus erst jetzt anwenden
+            if (state.player.isMartyr) {
+                const lostPercent = 1 - (state.player.health / state.player.maxHealth);
+                const martyrBonus = Math.floor(damageDealt * lostPercent);
+                damageDealt += martyrBonus;
+                logMessage(`⚔️ Märtyrer: +${martyrBonus} Bonus-Schaden durch erlittenen Schmerz.`, 'system');
+            }
+
             if (state.currentEnemy.minions?.length > 0) {
                 const target = state.currentEnemy.minions[0];
                 target.health -= damageDealt;
@@ -1528,6 +2324,39 @@ function executeCardEffect(card) {
                 state.currentEnemy.health -= damageDealt;
                 logMessage(`${state.currentEnemy.name} erleidet ${damageDealt} Schaden.`, 'enemy');
             }
+
+            // 🪓 Kritischer Treffer durch Katryns Axt
+                if (state.player.critChance && Math.random() < state.player.critChance) {
+                    const critBonus = Math.floor(damageDealt * 0.5);
+                    damageDealt += critBonus;
+                    logMessage(`💥 Kritischer Treffer! Schaden um +${critBonus} erhöht!`, 'player');
+                }
+
+            // 🔥 Drachenschuppen-Effekt: 10% Chance auf Verbrennung
+                if (state.player.hasDragonscale) {
+                    const burnChance = Math.random();
+                    if (burnChance <= 0.10) {
+                        const burnPower = 5;
+                        const burnDuration = 2;
+
+                        const target = state.currentEnemy.minions?.[0] || state.currentEnemy;
+
+                        if (!target.statusEffects) target.statusEffects = [];
+
+                        const alreadyBurning = target.statusEffects.some(e => e.type === 'burn');
+                        if (!alreadyBurning) {
+                            target.statusEffects.push({
+                                type: 'burn',
+                                power: burnPower,
+                                remaining: burnDuration
+                            });
+                            console.log("🔥 Burn-Effekt hinzugefügt:", target.statusEffects);
+                            logMessage(`🔥 Drachenschuppen: ${target.name} wurde verbrannt! (${burnPower} Schaden für ${burnDuration} Runden)`, 'burn');
+                        } else {
+                            console.log("🔥 Gegner brennt bereits. Kein zusätzlicher Burn angewendet.");
+                        }
+                    }
+                }
 
             // Prozentualer Lifesteal (aus Upgrade)
             const percent = state.player.lifestealPercent || 0;
@@ -1543,6 +2372,7 @@ function executeCardEffect(card) {
             enemyContainerElem.classList.add('hit');
             setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
             break;
+
 
         case 'block':
             state.player.block += card.power;
@@ -1582,6 +2412,7 @@ function executeCardEffect(card) {
                     remaining: card.duration
                 });
                 logMessage(`${state.currentEnemy.name} wird vergiftet (${card.power} Schaden für ${card.duration} Runden).`, 'poison');
+                updateEnemyUI();
             }
             break;
 
@@ -1601,7 +2432,7 @@ function executeCardEffect(card) {
             setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
             break;
 
-            case 'firearrow':
+        case 'firearrow':
             let fireDamage = card.power;
 
             // Doppelter Schaden bei Eis-Gegner
@@ -1624,12 +2455,29 @@ function executeCardEffect(card) {
                         power: 5,
                         remaining: 2
                     });
-                    logMessage(`${state.currentEnemy.name} wird verbrannt! (5 Schaden für 2 Runden)`, 'poison');
+                    logMessage(`${state.currentEnemy.name} wird verbrannt! (5 Schaden für 2 Runden)`, 'burn'); // ✅ richtiger Typ
                 } else {
                     logMessage(`${state.currentEnemy.name} ist bereits verbrannt.`, 'system');
+                    updateEnemyUI();
                 }
             }
             break;
+
+        case 'gamble':
+                if (Math.random() < 0.5) {
+                    // Negativer Effekt
+                    state.player.health -= card.power;
+                    logMessage(`💥 Pech gehabt! Du verlierst ${card.power} Leben.`, 'player');
+                } else {
+                    // Positiver Effekt
+                    state.currentEnemy.health -= card.power;
+                    state.player.gold += 100;
+                    logMessage(`🍀 Glück gehabt! Gegner erleidet ${card.power} Schaden und du erhältst 100 Gold.`, 'system');
+                    enemyContainerElem.classList.add('hit');
+                    setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
+                }
+                break;
+
 
 
 
@@ -1741,7 +2589,7 @@ function executeCardEffect(card) {
                 }
 
                 // FLIEGEND – ignoriert Block (25%)
-                if (enemy.traits?.includes('Fliegend') && Math.random() < 0.25) {
+                if (enemy.traits?.includes('Fliegend') && Math.random() < 0.75) {
                     logMessage(`${enemy.name} greift aus der Luft an – dein Block wird ignoriert!`, 'enemy');
                     state.player.block = 0;
                 }
@@ -1831,17 +2679,56 @@ function executeCardEffect(card) {
                     state.player.block -= blockUsed;
                     logMessage(`🛡️ Spieler blockt ${blockUsed} Schaden.`, 'block');
                 }
-
                 if (damageTaken > 0) {
                     state.player.health -= damageTaken;
                     logMessage(`💥 Spieler erleidet ${damageTaken} Schaden.`, 'player');
+
                     playerDisplay.classList.add('shake');
-                    setTimeout(() => playerDisplay.classList.remove('shake'), 250);
+                    updatePlayerStatusDisplay();
+
+                    // Nach Shake-Effekt Statusanzeige aktualisieren
+                    setTimeout(() => {
+                        playerDisplay.classList.remove('shake');
+                    }, 250);
                 } else {
                     logMessage("🧱 Angriff komplett geblockt!", 'block');
                 }
 
                 applyEnemyTraitEffectsAfterAttack(damage);
+
+                if (
+                    damageTaken > 0 &&
+                    state.currentEnemy.traits?.includes('Vamp')
+                ) {
+                    const heal = Math.floor(damageTaken * 0.5);
+                    const maxHealable = state.currentEnemy.maxHealth - state.currentEnemy.health;
+                    const actualHeal = Math.min(heal, maxHealable);
+
+                    if (actualHeal > 0) {
+                        state.currentEnemy.health += actualHeal;
+                        logMessage(`🩸 ${state.currentEnemy.name} saugt ${actualHeal} Leben durch Vamp!`, 'lifesteal');
+                        updateEnemyUI();
+                    }
+                }
+
+                
+              // 🕊 Göttlicher Segen – Erzengel heilt sich einmalig bei unter 50 % Leben
+                if (
+                    state.currentEnemy.name === 'Erzengel' &&
+                    state.currentEnemy.traits.includes('Segen') &&
+                    !state.currentEnemy.hasUsedBlessing &&
+                    state.currentEnemy.health < state.currentEnemy.maxHealth / 2
+                ) {
+                    const missingHealth = state.currentEnemy.maxHealth - state.currentEnemy.health;
+                    const healAmount = Math.floor(missingHealth / 2);
+                    state.currentEnemy.health += healAmount;
+                    state.currentEnemy.hasUsedBlessing = true;
+
+                    logMessage(`🕊 ${state.currentEnemy.name} erhält einen göttlichen Segen!`, 'system');
+                    logMessage(`✨ Heilt ${healAmount} Leben.`, 'heal');
+                    updateEnemyUI();
+                }
+
                 applyEnemyStatusEffectsAfterTurn();
 
                 updateUIDisplay();
@@ -1867,22 +2754,25 @@ function executeCardEffect(card) {
                         totalPoisonDamage += effect.power;
                         effect.remaining -= 1;
                         logMessage(`${state.currentEnemy.name} erleidet ${effect.power} Giftschaden.`, 'poison');
+                    } else if (effect.type === 'burn') {
+                        totalBurnDamage += effect.power;
+                        effect.remaining -= 1;
+                        logMessage(`${state.currentEnemy.name} erleidet ${effect.power} Feuerschaden.`, 'burn');
                     }
                 }
 
-                // Giftschaden und Burn anwenden
+                // Gesamtschaden anwenden
                 if (totalPoisonDamage > 0) {
                     state.currentEnemy.health -= totalPoisonDamage;
                 }
-
                 if (totalBurnDamage > 0) {
-                 state.currentEnemy.health -= totalBurnDamage;
+                    state.currentEnemy.health -= totalBurnDamage;
                 }
 
                 // Abgelaufene Effekte entfernen
                 state.currentEnemy.statusEffects = state.currentEnemy.statusEffects.filter(e => e.remaining > 0);
 
-                // Regeneration (z. B. bei Troll)
+                // Regeneration
                 if (state.currentEnemy.regen && state.currentEnemy.health < state.currentEnemy.maxHealth) {
                     const heal = Math.min(state.currentEnemy.regen, state.currentEnemy.maxHealth - state.currentEnemy.health);
                     if (heal > 0) {
@@ -1893,9 +2783,8 @@ function executeCardEffect(card) {
 
                 updateEnemyUI();
 
-                // Falls der Gegner an Gift stirbt
                 if (state.currentEnemy.health <= 0) {
-                    logMessage(`${state.currentEnemy.name} stirbt an Gift!`, 'poison');
+                    logMessage(`${state.currentEnemy.name} stirbt an Statuseffekten!`, 'system');
                     checkEnemyDefeat();
                 }
             }
@@ -1931,6 +2820,11 @@ function executeCardEffect(card) {
                     logMessage(`Block (${state.player.block}) verschwindet.`, 'block');
                     state.player.block = 0;
                 }
+
+                if (state.player.isShieldmaster) {
+                state.player.block += 5;
+                logMessage('🛡️ Schildmeister: Du erhältst 5 Block.', 'block');
+                }
     
              // 1. Mana auffüllen
              const baseRegen = 1;
@@ -1961,7 +2855,7 @@ function executeCardEffect(card) {
                 }
                 state.player.statusEffects = state.player.statusEffects.filter(e => e.duration > 0);
             }
-
+            updatePlayerStatusDisplay();
     
               // TODO: Spieler-Statuseffekte anwenden (z.B. Gift erleidet Schaden)
     
@@ -1973,6 +2867,8 @@ function executeCardEffect(card) {
              // 5. Spieleraktionen wieder erlauben
              state.turnInProgress = false;
              updateCardAvailability(); // Aktiviert spielbare Karten/Buttons
+             updateEnemyUI();
+             updatePlayerStatusDisplay();
     
         }
     
@@ -2067,7 +2963,7 @@ function executeCardEffect(card) {
                 };
 
                 // Bei jedem 3. Level zuerst Shop, dann Upgrade
-                if (state.player.level % 3 === 0) {
+                if (state.player.level % 2 === 0) {
                     promptShopQuestion(showUpgradeAfterDelay);
                 } else {
                     showUpgradeAfterDelay();
@@ -2140,31 +3036,21 @@ function executeCardEffect(card) {
     
              // --- HIER DIE LOGIK FÜR JEDEN UPGRADE-TYP EINFÜGEN ---
               switch(upgrade.type) {
-                case 'upgradeSwordPower':
+              case 'upgradeSwordPower':
                     state.player.swordBonus = (state.player.swordBonus || 0) + 2;
-                    let swordsUpgraded = 0;
-                    for (let card of state.player.deck) {
-                        const isSword = (card.name === 'Schwert' || (card.tags && card.tags.includes('sword')));
-                        if (isSword && typeof card.power === 'number') {
-                            card.power += 2;
-                            swordsUpgraded++;
-                        }
-                    }
-
-                    if (swordsUpgraded > 0) {
-                        logMessage(`Alle ${swordsUpgraded} vorhandenen Schwerter im Deck wurden um +2 verstärkt.`, 'system');
-                    } else {
-                        logMessage(`Keine vorhandenen Schwerter im Deck – Bonus gilt für neue.`, 'system');
-                    }
-
-                    // 👇 Hand neu ziehen
+                    logMessage(`Schwertbonus dauerhaft auf +${state.player.swordBonus} erhöht.`, 'system');
+                    
+                    // 👇 Optional: Nur zur Klarheit, keine Power-Dopplung
+                    logMessage(`Vorhandene Schwerter behalten ihre Basisstärke. Bonus wird im Kampf berechnet.`, 'system');
+                    
+                    // Hand neu ziehen
                     state.player.discardPile.push(...state.player.hand);
                     state.player.hand = [];
                     drawCards(state.player.maxHandSize);
                     updateUIDisplay();
                     updateHandUI();
-
                     break;
+
               case 'newCardSpecific':
                     showCardChoice(getThreeUniqueNewCards()); // ✅ Lösung
                     return; // ganz wichtig, damit der Bildschirm nicht sofort verschwindet

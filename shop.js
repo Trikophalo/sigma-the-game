@@ -87,52 +87,61 @@ const SHOP_ITEMS = [
         afterShopCallback = callback || null;
         showShopItems();
     }
+
+    document.getElementById('skipShopBtn').onclick = () => {
+      closeShop();
+  };  
     
-    // Shop-UI anzeigen
     function showShopItems() {
-        shopContainer.innerHTML = '<h2>Shop: Wähle ein Item</h2>';
+      const shopItems = document.getElementById('shopItems');
+      shopItems.innerHTML = ''; // Nur Item-Bereich leeren
+
+      document.getElementById('shopGoldAmount').textContent = `${state.player.gold} 💰`;
     
-        const itemList = document.createElement('div');
-        itemList.style.display = 'flex';
-        itemList.style.flexDirection = 'column';
-        itemList.style.gap = '20px';
+      const itemGrid = document.createElement('div');
+      itemGrid.style.display = 'grid';
+      itemGrid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(200px, 1fr))';
+      itemGrid.style.gap = '16px';
     
-        SHOP_ITEMS.forEach(item => {
-            const itemBox = document.createElement('div');
-            itemBox.classList.add('shop-item');
-            itemBox.setAttribute('data-tooltip', item.description);
+      SHOP_ITEMS.forEach(item => {
+        const itemBox = document.createElement('div');
+        itemBox.classList.add('shop-item');
+        itemBox.setAttribute('data-tooltip', item.description);
     
-            itemBox.innerHTML = `
-                <img src="${item.icon}" class="shop-image" alt="${item.name}">
-                <div class="shop-info">
-                    <h3>${item.name}</h3>
-                    <div class="shop-price">${item.cost} Gold</div>
-                </div>
-            `;
+        itemBox.innerHTML = `
+          <img src="${item.icon}" class="shop-image" alt="${item.name}">
+          <div class="shop-info">
+            <h3>${item.name}</h3>
+            <div class="shop-price">${item.cost} Gold</div>
+          </div>
+        `;
     
-            itemBox.addEventListener('click', () => buyItem(item));
-            itemList.appendChild(itemBox);
-        });
+        itemBox.addEventListener('click', () => buyItem(item));
+        itemGrid.appendChild(itemBox);
+      });
     
-        // "Shop überspringen"-Button
-        const skipBtn = document.createElement('button');
-        skipBtn.textContent = 'Shop überspringen';
-        skipBtn.style.marginTop = '20px';
-        skipBtn.onclick = () => closeShop();
+      shopItems.appendChild(itemGrid);
     
-        shopContainer.appendChild(itemList);
-        shopContainer.appendChild(skipBtn);
-        shopContainer.style.display = 'flex';
+      // Shop sichtbar machen
+      document.getElementById('shopContainer').classList.add('visible');
     }
+    
+  
+  
     
     // Shop schließen und ggf. Callback ausführen
     function closeShop() {
-        shopContainer.style.display = 'none';
-        if (typeof afterShopCallback === 'function') {
-            afterShopCallback(); // z. B. Upgrade anzeigen
-            afterShopCallback = null; // zurücksetzen
-        }
+      const shopContainer = document.getElementById('shopContainer');
+      shopContainer.classList.remove('visible');
+      shopContainer.style.display = 'none'; // Fallback für ältere Browser
+    
+      if (typeof afterShopCallback === 'function') {
+        afterShopCallback();
+        afterShopCallback = null;
+      }
     }
+    
+  
     
   
   function buyItem(item) {
