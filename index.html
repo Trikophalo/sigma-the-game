@@ -1,6 +1,23 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCSn9mCvNT6JZgXy5ZTIOeVhri4FQRvn9E",
+    authDomain: "sigma-the-game.firebaseapp.com",
+    projectId: "sigma-the-game",
+    storageBucket: "sigma-the-game.appspot.com",
+    messagingSenderId: "346310580482",
+    appId: "1:346310580482:web:a7e6f835eb4dd541964a1b"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+</script>
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sigma The Game</title>
@@ -637,22 +654,25 @@
     `;
     document.head.appendChild(styleElement);
 
-    // Leaderboard nach dem Laden anzeigen
-document.addEventListener('DOMContentLoaded', () => {
-  const leaderboardList = document.getElementById('leaderboardList');
-  if (!leaderboardList) return;
-
-  try {
-    const leaderboard = JSON.parse(localStorage.getItem('leaderboard') || '[]');
-    leaderboard.forEach(entry => {
+// Globale Highscores aus Firestore anzeigen
+db.collection("highscores")
+  .orderBy("score", "desc")
+  .limit(10)
+  .get()
+  .then(snapshot => {
+    const leaderboardList = document.getElementById('leaderboardList');
+    leaderboardList.innerHTML = '';
+    snapshot.forEach(doc => {
+      const entry = doc.data();
       const li = document.createElement('li');
-      li.textContent = `${entry.name.padEnd(12)} - Level ${entry.level}`;
+      li.textContent = `${entry.name.padEnd(12)} - ${entry.score} besiegt (Lvl ${entry.level})`;
       leaderboardList.appendChild(li);
     });
-  } catch (e) {
-    console.warn('⚠️ Leaderboard konnte nicht geladen werden:', e);
-  }
-});
+  })
+  .catch(err => {
+    console.warn("⚠️ Highscore konnte nicht geladen werden:", err);
+  });
+
 
   </script>
 </body>
