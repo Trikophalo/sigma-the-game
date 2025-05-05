@@ -1058,7 +1058,7 @@ h2 {
     
         /* --- Upgrade Screen --- */
         .upgrade-container {
-            display: none;
+            display: flex;
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
@@ -1450,6 +1450,91 @@ h2 {
             opacity: 1;
         }
 
+        .upgrade-option.superrare {
+            position: relative;
+            background: linear-gradient(
+                270deg,
+                #222,
+                #332244,
+                #098181,
+                #442255,
+                #223344,
+                #222
+            );
+            background-size: 800% 800%;
+            animation: darkRainbow 12s ease infinite;
+
+            border: 2px solid #ffeb3b;
+            box-shadow:
+                0 0 10px #ffeb3b,
+                0 0 20px rgba(255, 235, 59, 0.4),
+                inset 0 0 10px rgba(255, 235, 59, 0.2);
+            
+            color: #ffeb3b;
+            font-weight: bold;
+            text-shadow: 0 0 6px #ffeb3b;
+
+            overflow: hidden;
+        }
+
+        /* Animation für den Regenbogen-Hintergrund */
+        @keyframes darkRainbow {
+            0%   { background-position: 0% 50%; }
+            50%  { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .card.superrare {
+            position: relative;
+            background: linear-gradient(
+                270deg,
+                #222,
+                #332244,
+                #098181,
+                #442255,
+                #223344,
+                #222
+            );
+            background-size: 800% 800%;
+            animation: darkRainbow 12s ease infinite;
+
+            border: 2px solid #ffeb3b;
+            box-shadow:
+                0 0 10px #ffeb3b,
+                0 0 20px rgba(255, 235, 59, 0.4),
+                inset 0 0 10px rgba(255, 235, 59, 0.2);
+
+            color: #ffeb3b;
+            font-weight: bold;
+            text-shadow: 0 0 6px #ffeb3b;
+            overflow: hidden;
+        }
+        .upgrade-option {
+            background-color: #333;
+            color: white;
+            border: 2px solid #666;
+            border-radius: 10px;
+            padding: 10px;
+            margin: 10px;
+            cursor: pointer;
+            width: 200px;
+            text-align: center;
+            transition: transform 0.2s ease;
+        }
+
+        .upgrade-option:hover {
+            transform: scale(1.05);
+            border-color: #ccc;
+            background-color: #444;
+        }
+
+        .upgrade-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
     
     </style>
 </head>
@@ -1607,6 +1692,9 @@ h2 {
                  {id: 14, name: 'Gambler’s Luck', icon: '🎲', description: 'Gegner nimmt 5 Schaden und du erhältst 100 Gold (Ignoriert Block) oder Du nimmst 5 Schaden.', power: 5, effect: 'gamble', manaCost: 0, weight: 1},
                  { id: 15, name: 'Kraft Sammeln', icon: '🔋', description: 'Heilt dich um dein gesamtes Mana.<br><br>Einmaliger Schadensboost i.H.v. Manakosten -1', power: 0, effect: 'power_surge', manaCost: 'X', weight: 1 },
                  {id: 16, name: 'Klingenwirbel', icon: '🌀', description: 'Greift mehrere Gegner gleichzeitig an. (Ignoriert Block.)', power: 8, effect: 'whirlwind', manaCost: 3, weight: 2},
+                 {id: 17, name: 'Todesklinge', icon: '⚔️', description: 'Ein einfaches Schwert.', power: 20, effect: 'damage', manaCost: 2, weight: 1, tags: ['sword'], rarity: 'superrare'},
+                 {id: 18, name: 'Mana Oase', icon: '🧪', description: 'Erhalte 5 Mana', power: 5, effect: 'gain_mana', manaCost: 0, weight: 1, rarity: 'superrare'},
+                 {id: 19, name: 'Blutrausch', icon: '🧛', description: '25 Schaden, heilt 15', power: 25, healAmount: 15, effect: 'lifesteal', manaCost: 7, weight: 1, rarity: 'superrare'},
 
         ];
     
@@ -1623,8 +1711,9 @@ h2 {
                 'Riesen Spinne': IMAGE_FOLDER + 'Spinne.png', // Leerzeichen vermieden
                 'Eiskönig': IMAGE_FOLDER + 'Eiskönig.png', // Umlaut vermieden
                 'Erzengel': IMAGE_FOLDER + 'Erzengel.png',
-                'Dracula': IMAGE_FOLDER + 'Dracula.png',
+                'Dracula': IMAGE_FOLDER + 'Drakula.png',
                 'Drache': IMAGE_FOLDER + 'Drache.png',
+                'Verfluchter Ritter': IMAGE_FOLDER + 'CursedKnight.png',
                 'Gepanzertes Skelett': IMAGE_FOLDER + 'armorskelett.png'
         };
         const PLAYER_PIXEL_IMAGE = IMAGE_FOLDER + 'Spieler.png';
@@ -1642,21 +1731,24 @@ h2 {
                 { name: 'Baby Drache', health: 60, attack: 11, levelMin: 8, levelMax: 13, xp: 120, gold: 300, pixelImageKey: 'Baby Drache', description: 'Speit Feuerstöße.', traits: ['Verspielt', 'Feueratem'] }, // Effekte müssen implementiert werden
                 { name: 'Dracula', health: 70, attack: 10, levelMin: 9, levelMax: 14, xp: 150, gold: 350, pixelImageKey: 'Dracula', description: 'Dein Blut macht ihn stärker.', traits: ['Vamp', 'Stark'] }, // Effekte müssen implementiert werden
                 { name: 'Dämon', health: 75, attack: 12, levelMin: 10, levelMax: 14, xp: 150, gold: 450, pixelImageKey: 'Dämon', description: 'Feuer und Schatten. Resistent.', traits: ['Höllen Krallen', 'Regeneration'], regen: 3 }, // Effekte müssen implementiert werden
+                { name: 'Verfluchter Ritter', health: 70, attack: 9, levelMin: 10, levelMax: 15, xp: 180, gold: 480, pixelImageKey: 'Verfluchter Ritter', description: 'Ein wandelnde Geisterrüstung', traits: ['Rüstung', 'Krieger']}, // Effekte müssen implementiert werden
                 { name: 'Erzengel', health: 100, attack: 12, levelMin: 10, levelMax: 16, xp: 200, gold: 550, pixelImageKey: 'Erzengel', description: 'Ein mächtiger gefallener Engel.', traits: ['Segen', 'Fliegend'] }, // Effekte müssen implementiert werden
-                { name: 'Drache', health: 140, attack: 15, levelMin: 15, levelMax: 20, xp: 250, gold: 600, pixelImageKey: 'Drache', description: 'Ein mächtiger, alter Drache.', traits: ['Feueratem', 'Fliegend', 'Gepanzerte Schuppen'] }, // Effekte müssen implementiert werden
+                { name: 'Drache', health: 140, attack: 16, levelMin: 17, levelMax: 20, xp: 250, gold: 600, pixelImageKey: 'Drache', description: 'Ein mächtiger, alter Drache.', traits: ['Feueratem', 'Fliegend', 'Gepanzerte Schuppen'] }, // Effekte müssen implementiert werden
         ];
     
         // --- Upgrade-Typen ---
         const UPGRADE_TYPES = [
             // ... (deine Upgrade-Typen bleiben hier unverändert) ...
                  { type: 'newCardSpecific', title: 'Neue Karte wählen', description: 'Wähle 1 von 3 neuen Karten.', rarity: 'common' }, // Komplexer zu implementieren
-                 { type: 'upgradeSwordPower', title: 'Schwertstärke +2', description: 'Erhöhe die Stärke deiner Schwerter um +2.', rarity: 'common' },
+                 { type: 'upgradeSwordPower', title: 'Schwertstärke +1', description: 'Erhöhe die Stärke deiner Schwerter um +1.', rarity: 'common' },
                  { type: 'upgradeHealth', title: 'Max Leben +8', description: 'Erhöhe dein maximales Leben um 8.', rarity: 'common' },
                  { type: 'healPercent', title: 'Heilung 50%', description: 'Stelle 50% deines max. Lebens wieder her.', rarity: 'common' },
                  { type: 'upgradeMana', title: 'Max Mana +1', description: 'Erhöhe dein maximales Mana um 1.', rarity: 'rare' }, // Seltener
                  { type: 'increaseHandSize', title: 'Handgröße +1', description: 'Du kannst 1 Karte mehr halten.', rarity: 'rare' },
                  { type: 'addLifestealFlat', title: 'Lebensraub +1', description: 'Du bekommst 20% Lifesteal.', rarity: 'rare' }, // Geändert zu festem Wert pro Schadenspunkt
-    { type: 'regenManaPassive', title: 'Mana-Regen +1', description: 'Du erhältst pro Runde +1 zusätzliches Mana zurück.', rarity: 'rare' }
+                 { type: 'regenManaPassive', title: 'Mana-Regen +1', description: 'Du erhältst pro Runde +1 zusätzliches Mana zurück.', rarity: 'rare' },
+                 { type: 'regenManaPassive3', title: 'Mana-Regen +3', description: 'Du erhältst pro Runde +3 zusätzliches Mana zurück.', rarity: 'superrare' },
+                 { type: 'newUltraCardSpecific', title: 'Eine Ultra Karte wählen', description: 'Wähle 1 von 3 Ultra Karten.', rarity: 'superrare' }, // Komplexer zu implementieren
         ];
     
         // --- XP & Level Konstanten ---
@@ -1742,31 +1834,46 @@ h2 {
         }
 
         // Hilfsfunktion für gewichtete Upgrade-Auswahl
-        function getWeightedUpgrades(pool, rareWeight = 1, commonWeight = 4) {
-        const weighted = [];
+        function getWeightedUpgrades(pool, superRareWeight = 0.1, rareWeight = 1, commonWeight = 5) {
+            const weighted = [];
 
-        for (const upg of pool) {
-            const weight = upg.rarity === 'rare' ? rareWeight : commonWeight;
-            for (let i = 0; i < weight; i++) {
-            weighted.push(upg);
+            for (const upg of pool) {
+                let weight;
+                switch (upg.rarity) {
+                    case 'superrare':
+                        weight = superRareWeight;
+                        break;
+                    case 'rare':
+                        weight = rareWeight;
+                        break;
+                    default: 
+                        weight = commonWeight;
+                }
+
+                for (let i = 0; i < Math.round(weight); i++) {
+                    weighted.push(upg);
+                }
             }
+
+            shuffleArray(weighted);
+            return weighted;
         }
 
-        shuffleArray(weighted);
-        return weighted;
-        }
 
         function getThreeUniqueNewCards() {
+            const forbiddenCardIds = [17, 18, 19];
             const ownedCardIds = new Set(state.player.deck.map(card => card.id));
-            const availableCards = CARD_TYPES.filter(card => !ownedCardIds.has(card.id));
 
-            // Falls es weniger als 3 neue Karten gibt, nimm einfach alle
+            const availableCards = CARD_TYPES.filter(card =>
+                !ownedCardIds.has(card.id) && !forbiddenCardIds.includes(card.id)
+            );
+
             shuffleArray(availableCards);
             return availableCards.slice(0, Math.min(3, availableCards.length));
         }
     
         // Funktion zum Erstellen einer eindeutigen Karteninstanz
-        function createCardInstance(cardType) {
+    function createCardInstance(cardType) {
             cardUniqueCounter++;
 
             let newCard = {
@@ -1791,8 +1898,18 @@ h2 {
             return newCard;
         }
 
+        function getThreeUniqueUltraCards() {
+                const ultraCardIds = [17, 18, 19];
+                const ownedCardIds = new Set(state.player.deck.map(card => card.id));
+                const ultraCards = CARD_TYPES.filter(card =>
+                    ultraCardIds.includes(card.id) && !ownedCardIds.has(card.id)
+                );
+                console.log("Ultra-Karten zur Auswahl:", ultraCards);
+                shuffleArray(ultraCards);
+                return ultraCards.slice(0, 3);
+            }
 
-    
+
          // Funktion zum Loggen von Nachrichten im Spiel
         function logMessage(message, type = 'system') {
             const messageDiv = document.createElement('div');
@@ -2167,6 +2284,12 @@ h2 {
             cardDiv.classList.add('card', 'card-animation');
             cardDiv.dataset.uniqueId = card.uniqueId;
 
+            if (card.rarity === 'rare') {
+                cardDiv.classList.add('rare');
+            } else if (card.rarity === 'superrare') {
+                cardDiv.classList.add('superrare');
+            }
+
             // Berechnung der tatsächlichen Angriffskraft
             let calculatedPower = card.basePower ?? card.power; // Falls basePower nicht existiert
             let powerHint = '';
@@ -2402,13 +2525,14 @@ h2 {
 function executeCardEffect(card) {
     switch (card.effect) {
         case 'whirlwind': {
-                const power = card.power;
+                let rawDamage = card.power;
+                let totalDamage = applyDamageBonuses(rawDamage); // ✅ alle Boni berücksichtigen
 
                 // Minions zuerst treffen
                 if (state.currentEnemy.minions?.length > 0) {
                     state.currentEnemy.minions.forEach((minion, index) => {
-                        minion.health -= power;
-                        logMessage(`🌀 ${minion.name} erleidet ${power} Schaden (ignoriert Block).`, 'enemy');
+                        minion.health -= totalDamage;
+                        logMessage(`🌀 ${minion.name} erleidet ${totalDamage} Schaden (ignoriert Block).`, 'enemy');
                     });
 
                     // Entferne besiegte Minions
@@ -2416,8 +2540,8 @@ function executeCardEffect(card) {
                 }
 
                 // Hauptgegner angreifen (Block ignorieren)
-                state.currentEnemy.health -= power;
-                logMessage(`🌀 ${state.currentEnemy.name} erleidet ${power} Schaden durch Klingenwirbel (ignoriert Block).`, 'enemy');
+                state.currentEnemy.health -= totalDamage;
+                logMessage(`🌀 ${state.currentEnemy.name} erleidet ${totalDamage} Schaden durch Klingenwirbel (ignoriert Block).`, 'enemy');
 
                 enemyContainerElem.classList.add('hit');
                 setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
@@ -2445,33 +2569,19 @@ function executeCardEffect(card) {
             break;
         }
         case 'damage':
-        let damageDealt = (typeof card.basePower === 'number' ? card.basePower : card.power);
+            let rawDamage = (typeof card.basePower === 'number' ? card.basePower : card.power);
 
             if (card.name === 'Schwert') {
                 if (state.player.swordBonus) {
-                    damageDealt += state.player.swordBonus;
+                    rawDamage += state.player.swordBonus;
                 }
-
                 if (state.player.isShieldmaster) {
-                    damageDealt -= 1;
+                    rawDamage -= 1;
                     logMessage('⚠️ Schildmeister: Schwert macht 1 weniger Schaden.', 'system');
                 }
             }
 
-            //Kraft sammeln
-            if (state.player.tempAttackBonus) {
-                damageDealt += state.player.tempAttackBonus;
-                logMessage(`💥 Kraftbonus: +${state.player.tempAttackBonus} Schaden!`, 'buff');
-                state.player.tempAttackBonus = 0; // BONUS AUCH ZURÜCKSETZEN!
-            }
-
-            // Märtyrer-Bonus erst jetzt anwenden
-            if (state.player.isMartyr) {
-                const lostPercent = 1 - (state.player.health / state.player.maxHealth);
-                const martyrBonus = Math.floor(damageDealt * lostPercent);
-                damageDealt += martyrBonus;
-                logMessage(`⚔️ Märtyrer: +${martyrBonus} Bonus-Schaden durch erlittenen Schmerz.`, 'system');
-            }
+            let damageDealt = applyDamageBonuses(rawDamage);
 
             if (state.currentEnemy.minions?.length > 0) {
                 const target = state.currentEnemy.minions[0];
@@ -2588,88 +2698,100 @@ function executeCardEffect(card) {
             }
             break;
 
-        case 'lifesteal':
-            let lsDamage = card.power;
-            logMessage(`${state.currentEnemy.name} erleidet ${lsDamage} Schaden.`, 'enemy');
-            let enemyBlockUsed = Math.min(state.currentEnemy.block || 0, damageDealt);
-            if (enemyBlockUsed > 0) {
-                state.currentEnemy.block -= enemyBlockUsed;
-                logMessage(`${state.currentEnemy.name} blockt ${enemyBlockUsed} Schaden.`, 'block');
-            }
-            const remainingDamage = damageDealt - enemyBlockUsed;
-            if (remainingDamage > 0) {
-                state.currentEnemy.health -= remainingDamage;
-            }
+            case 'lifesteal':
+                let rawLifestealDamage = card.power;
 
-            // Lifesteal der Karte (direkt, unabhängig von Upgrade)
-            const healFromCardLifesteal = Math.min(card.healAmount || 0, state.player.maxHealth - state.player.health);
-            if (healFromCardLifesteal > 0) {
-                state.player.health += healFromCardLifesteal;
-                logMessage(`🧛 Vampirbiss heilt ${healFromCardLifesteal} Leben.`, 'lifesteal');
-            }
+                // Anwenden aller temporären Schadenboni (Kraft sammeln, Märtyrer, etc.)
+                let lsDamage = applyDamageBonuses(rawLifestealDamage);
 
-            enemyContainerElem.classList.add('hit');
-            setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
-            break;
+                logMessage(`${state.currentEnemy.name} erleidet ${lsDamage} Schaden.`, 'enemy');
 
-            case 'firearrow':
-                let fireDamage = card.power;
-
-                // Doppelter Schaden bei Eis-Gegner
-                if (state.currentEnemy.traits?.includes('Eis-Elementar')) {
-                    fireDamage *= 2;
-                    logMessage(`🔥 Effektiv! ${state.currentEnemy.name} erhält doppelten Schaden durch Feuer.`, 'system');
+                let enemyBlockUsed = Math.min(state.currentEnemy.block || 0, lsDamage);
+                if (enemyBlockUsed > 0) {
+                    state.currentEnemy.block -= enemyBlockUsed;
+                    logMessage(`${state.currentEnemy.name} blockt ${enemyBlockUsed} Schaden.`, 'block');
                 }
 
-                // Block berücksichtigen
-                const enemyBlock = state.currentEnemy.block || 0;
-                const blockUsed = Math.min(enemyBlock, fireDamage);
-                const damageAfterBlock = Math.max(0, fireDamage - blockUsed);
-
-                if (blockUsed > 0) {
-                    state.currentEnemy.block -= blockUsed;
-                    logMessage(`🛡️ ${state.currentEnemy.name} blockt ${blockUsed} Schaden.`, 'block');
+                const remainingDamage = lsDamage - enemyBlockUsed;
+                if (remainingDamage > 0) {
+                    state.currentEnemy.health -= remainingDamage;
                 }
 
-                state.currentEnemy.health -= damageAfterBlock;
-                logMessage(`${state.currentEnemy.name} erleidet ${damageAfterBlock} Schaden durch Feuerpfeil.`, 'enemy');
+                // Lifesteal der Karte (direkt, unabhängig von Upgrade)
+                const healFromCardLifesteal = Math.min(card.healAmount || 0, state.player.maxHealth - state.player.health);
+                if (healFromCardLifesteal > 0) {
+                    state.player.health += healFromCardLifesteal;
+                    logMessage(`🧛 Vampirbiss heilt ${healFromCardLifesteal} Leben.`, 'lifesteal');
+                }
 
                 enemyContainerElem.classList.add('hit');
                 setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
-
-                // 50% Verbrennungs-Chance
-                if (Math.random() < 0.5) {
-                    const alreadyBurning = state.currentEnemy.statusEffects?.some(e => e.type === 'burn');
-                    if (!alreadyBurning) {
-                        state.currentEnemy.statusEffects.push({
-                            type: 'burn',
-                            power: 5,
-                            remaining: 2
-                        });
-                        logMessage(`${state.currentEnemy.name} wird verbrannt! (5 Schaden für 2 Runden)`, 'burn');
-                    } else {
-                        logMessage(`${state.currentEnemy.name} ist bereits verbrannt.`, 'system');
-                    }
-                    updateEnemyUI();
-                }
                 break;
 
-        case 'gamble':
+
+                case 'firearrow':
+                    let baseFireDamage = card.power;
+
+                    // Doppelter Schaden bei Eis-Gegner
+                    if (state.currentEnemy.traits?.includes('Eis-Elementar')) {
+                        baseFireDamage *= 2;
+                        logMessage(`🔥 Effektiv! ${state.currentEnemy.name} erhält doppelten Schaden durch Feuer.`, 'system');
+                    }
+
+                    // Bonus-Effekte anwenden
+                    let fireDamage = applyDamageBonuses(baseFireDamage);
+
+                    // Block berücksichtigen
+                    const enemyBlock = state.currentEnemy.block || 0;
+                    const blockUsed = Math.min(enemyBlock, fireDamage);
+                    const damageAfterBlock = Math.max(0, fireDamage - blockUsed);
+
+                    if (blockUsed > 0) {
+                        state.currentEnemy.block -= blockUsed;
+                        logMessage(`🛡️ ${state.currentEnemy.name} blockt ${blockUsed} Schaden.`, 'block');
+                    }
+
+                    state.currentEnemy.health -= damageAfterBlock;
+                    logMessage(`${state.currentEnemy.name} erleidet ${damageAfterBlock} Schaden durch Feuerpfeil.`, 'enemy');
+
+                    enemyContainerElem.classList.add('hit');
+                    setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
+
+                    // 50% Verbrennungs-Chance
+                    if (Math.random() < 0.5) {
+                        const alreadyBurning = state.currentEnemy.statusEffects?.some(e => e.type === 'burn');
+                        if (!alreadyBurning) {
+                            state.currentEnemy.statusEffects.push({
+                                type: 'burn',
+                                power: 5,
+                                remaining: 2
+                            });
+                            logMessage(`${state.currentEnemy.name} wird verbrannt! (5 Schaden für 2 Runden)`, 'burn');
+                        } else {
+                            logMessage(`${state.currentEnemy.name} ist bereits verbrannt.`, 'system');
+                        }
+                        updateEnemyUI();
+                    }
+                    break;
+
+
+         case 'gamble':
                 if (Math.random() < 0.5) {
                     // Negativer Effekt
                     state.player.health -= card.power;
                     logMessage(`💥 Pech gehabt! Du verlierst ${card.power} Leben.`, 'player');
                 } else {
-                    // Positiver Effekt
-                    state.currentEnemy.health -= card.power;
+                    // Positiver Effekt → Schaden am Gegner mit Boni
+                    let gambleDamage = applyDamageBonuses(card.power);
+
+                    state.currentEnemy.health -= gambleDamage;
                     state.player.gold += 100;
-                    logMessage(`🍀 Glück gehabt! Gegner erleidet ${card.power} Schaden und du erhältst 100 Gold.`, 'system');
+                    logMessage(`🍀 Glück gehabt! Gegner erleidet ${gambleDamage} Schaden und du erhältst 100 Gold.`, 'system');
+
                     enemyContainerElem.classList.add('hit');
                     setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
                 }
                 break;
-
-
 
 
         case 'draw':
@@ -2696,6 +2818,25 @@ function executeCardEffect(card) {
             logMessage(`Unbekannter Effekt: ${card.effect}`, 'system');
     }
 
+}
+
+        function applyDamageBonuses(baseDamage) {
+            let damage = baseDamage;
+
+            if (state.player.tempAttackBonus) {
+                damage += state.player.tempAttackBonus;
+                logMessage(`💥 Kraftbonus: +${state.player.tempAttackBonus} Schaden!`, 'buff');
+                state.player.tempAttackBonus = 0;
+            }
+
+            if (state.player.isMartyr) {
+                const lostPercent = 1 - (state.player.health / state.player.maxHealth);
+                const martyrBonus = Math.floor(damage * lostPercent);
+                damage += martyrBonus;
+                logMessage(`⚔️ Märtyrer: +${martyrBonus} Bonus-Schaden durch erlittenen Schmerz.`, 'system');
+            }
+
+            return damage;
 }
 
 
@@ -2813,8 +2954,35 @@ function executeCardEffect(card) {
                     logMessage(`🔥 Du brennst – 5 Schaden für 2 Runden!`, 'enemy');
                 }
             }
+            // ⚔️ NEU: KRIEGER-Trait – Chance auf Extra-Angriff mit Verzögerung
+            if (enemy.traits?.includes('Krieger') && Math.random() < 0.3) {
+                logMessage(`⚔️ ${enemy.name} holt zu einem weiteren Schlag aus...`, 'enemy');
 
+                setTimeout(() => {
+                    const bonusDamage = enemy.attack || 0;
+                    const blockUsed = Math.min(state.player.block, bonusDamage);
+                    const damageTaken = Math.max(0, bonusDamage - blockUsed);
+
+                    if (blockUsed > 0) {
+                        state.player.block -= blockUsed;
+                        logMessage(`🛡️ Spieler blockt ${blockUsed} Schaden vom Zusatzschlag.`, 'block');
+                    }
+
+                    if (damageTaken > 0) {
+                        state.player.health -= damageTaken;
+                        logMessage(`💥 ${enemy.name} trifft erneut und verursacht ${damageTaken} Extraschaden!`, 'enemy');
+                    } else {
+                        logMessage(`${enemy.name}'s Zusatzschlag wird komplett geblockt.`, 'block');
+                    }
+
+                    updateUIDisplay();
+
+                    if (state.player.health <= 0) {
+                        gameOver();
+                    }
+                }, 600); // ≈ 0.6 Sekunden Verzögerung – angenehm sichtbar
             }
+        }
 
 
             function enemyTurn() {
@@ -3187,13 +3355,13 @@ function executeCardEffect(card) {
                 // Immer enthalten: feste Gold-Option
                 const goldOption = {
                     type: 'gainGoldFixed',
-                    title: 'Goldbeutel +250',
-                    description: 'Erhalte 250 Gold.',
+                    title: 'Goldbeutel +350',
+                    description: 'Erhalte 350 Gold.',
                     rarity: 'common'
                 };
 
                 const availableUpgrades = UPGRADE_TYPES.filter(upg => upg.type !== 'gain_gold');
-                const weightedPool = getWeightedUpgrades(availableUpgrades, 1, 10); // ✨ 1:4 Verhältnis
+                const weightedPool = getWeightedUpgrades(availableUpgrades, 0.1, 1, 5); //Upgrade wahrscheinlichkeit
                 const chosenUpgrades = [goldOption, ...weightedPool.slice(0, 2)];
 
 
@@ -3201,8 +3369,11 @@ function executeCardEffect(card) {
                 chosenUpgrades.forEach(upgrade => {
                     const optionDiv = document.createElement('div');
                     optionDiv.classList.add('upgrade-option');
+
                     if (upgrade.rarity === 'rare') {
                         optionDiv.classList.add('rare');
+                    } else if (upgrade.rarity === 'superrare') {
+                        optionDiv.classList.add('superrare');
                     }
 
                     optionDiv.innerHTML = `
@@ -3243,7 +3414,7 @@ function executeCardEffect(card) {
              // --- HIER DIE LOGIK FÜR JEDEN UPGRADE-TYP EINFÜGEN ---
               switch(upgrade.type) {
               case 'upgradeSwordPower':
-                    state.player.swordBonus = (state.player.swordBonus || 0) + 2;
+                    state.player.swordBonus = (state.player.swordBonus || 0) + 1;
                     logMessage(`Schwertbonus dauerhaft auf +${state.player.swordBonus} erhöht.`, 'system');
                     
                     // 👇 Optional: Nur zur Klarheit, keine Power-Dopplung
@@ -3260,6 +3431,18 @@ function executeCardEffect(card) {
               case 'newCardSpecific':
                     showCardChoice(getThreeUniqueNewCards()); // ✅ Lösung
                     return; // ganz wichtig, damit der Bildschirm nicht sofort verschwindet
+                    case 'newUltraCardSpecific': {
+                        const ultraChoices = getThreeUniqueUltraCards();
+
+                        if (!ultraChoices || ultraChoices.length === 0) {
+                            logMessage("❌ Keine Ultra-Karten verfügbar!", 'system');
+                            break;
+                        }
+
+                        logMessage("🔮 Wähle eine ULTRA Karte!", 'system');
+                        showCardChoice(ultraChoices, true);
+                        return; // ganz wichtig
+                    }
                 case 'newCard':
                     const ownedCardIds = new Set(state.player.deck.map(card => card.id));
                     const possibleNewCards = CARD_TYPES.filter(card => !ownedCardIds.has(card.id));
@@ -3277,6 +3460,10 @@ function executeCardEffect(card) {
                         state.player.passiveManaRegen = (state.player.passiveManaRegen || 0) + 1;
                         logMessage(`Du regenerierst jetzt ${state.player.passiveManaRegen} zusätzliches Mana pro Runde.`, 'mana');
                         break;
+                case 'regenManaPassive3':
+                        state.player.passiveManaRegen = (state.player.passiveManaRegen || 0) + 3;
+                        logMessage(`Du regenerierst jetzt ${state.player.passiveManaRegen} zusätzliches Mana pro Runde.`, 'mana');
+                        break;                        
                  case 'upgradeHealth':
                      state.player.maxHealth += 8;
                      state.player.health += 8; // Auch heilen
@@ -3307,8 +3494,8 @@ function executeCardEffect(card) {
                     logMessage(`Lebensraub auf 20 % gesetzt.`, 'lifesteal');
                     break;
                   case 'gainGoldFixed':
-                    state.player.gold += 250;
-                    logMessage(`Du erhältst 250 Gold. Aktuell: ${state.player.gold} Gold.`, 'system');
+                    state.player.gold += 350;
+                    logMessage(`Du erhältst 350 Gold. Aktuell: ${state.player.gold} Gold.`, 'system');
                     break;
                  // --- Implementiere andere Upgrades ---
                  default:
@@ -3323,31 +3510,50 @@ function executeCardEffect(card) {
              updateCardAvailability();
          }
 
-         function showCardChoice(cards) {
-                upgradeOptionsElem.innerHTML = '';
-                upgradeTitleElem.textContent = 'Wähle eine neue Karte';
+         function showCardChoice(cards, isSuperrare = false) {
+            upgradeOptionsElem.innerHTML = '';
+            upgradeTitleElem.textContent = isSuperrare ? 'Wähle eine ULTRA Karte' : 'Wähle eine neue Karte';
 
-                cards.forEach(card => {
-                    const optionDiv = document.createElement('div');
-                    optionDiv.classList.add('upgrade-option');
-                    optionDiv.innerHTML = `
-                        <h3>${card.name}</h3>
-                        <p>${card.description}</p>
-                        <div style="font-size: 24px; margin-top: 5px;">${card.icon}</div>
-                    `;
-                    optionDiv.addEventListener('click', () => {
-                        const newCard = createCardInstance(card);
-                        state.player.deck.push(newCard);
-                        logMessage(`Neue Karte hinzugefügt: ${newCard.name}`, 'system');
-                        shuffleArray(state.player.deck);
-                        upgradeContainerElem.style.display = 'none';
-                        state.turnInProgress = false;
-                        updateUIDisplay();
-                        updateCardAvailability();
-                    });
-                    upgradeOptionsElem.appendChild(optionDiv);
-                });
+            if (!cards || cards.length === 0) {
+                logMessage("❌ Es wurden keine Karten übergeben!", 'system');
+                return;
             }
+
+            cards.forEach(card => {
+                const optionDiv = document.createElement('div');
+                optionDiv.classList.add('upgrade-option');
+
+                if (card.rarity === 'rare') {
+                    optionDiv.classList.add('rare');
+                }
+
+                // 👉 WICHTIG: entweder ist die Karte superrare, oder wir erzwingen es per Flag
+                if (card.rarity === 'superrare' || isSuperrare) {
+                    optionDiv.classList.add('superrare');
+                }
+
+                optionDiv.innerHTML = `
+                    <h3>${card.name}</h3>
+                    <p>${card.description}</p>
+                    <div style="font-size: 24px; margin-top: 5px;">${card.icon}</div>
+                `;
+
+                optionDiv.addEventListener('click', () => {
+                    const newCard = createCardInstance(card);
+                    state.player.deck.push(newCard);
+                    shuffleArray(state.player.deck);
+                    upgradeContainerElem.style.display = 'none';
+                    state.turnInProgress = false;
+                    updateUIDisplay();
+                    updateCardAvailability();
+                });
+
+                upgradeOptionsElem.appendChild(optionDiv);
+            });
+
+            upgradeContainerElem.style.display = 'flex';
+        }
+
 
     
             function gameOver() {
