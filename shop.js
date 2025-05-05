@@ -12,7 +12,7 @@ const SHOP_ITEMS = [
     {
       id: 'donner',
       name: 'Donner-Zauber',
-      cost: 500,
+      cost: 350,
       description: 'Einmalige Karte: 25 Schaden, kein Mana.',
       icon: 'images/donner.png',
       effect: 'spell'
@@ -32,7 +32,16 @@ const SHOP_ITEMS = [
       description: 'Der Gegner erleidet 30 % seines Schadens als Rückstoß.',
       icon: 'images/dornenhelm.png',
       effect: 'thorns'
+    },
+    {
+      id: 'lotus',
+      name: 'Lotus Trank',
+      cost: 350,
+      description: 'Einmalige Karte: Heilt dich vollständig. Kein Mana, kein Kartenplatz.',
+      icon: 'images/lotus.png',
+      effect: 'lotus'
     }
+    
     
   ];
   
@@ -194,6 +203,23 @@ const SHOP_ITEMS = [
       case 'thorns':
         state.player.hasThorns = true;
         break;
+
+      case 'lotus':
+      const lotusCard = {
+        id: 1000,
+        name: 'Lotus Trank',
+        icon: 'images/lotus.png',
+        description: 'Heilt dich vollständig.',
+        power: 9999, // Wird in Effect ignoriert
+        effect: 'full_heal',
+        manaCost: 0,
+        tags: ['potion'],
+        oneShot: true
+      };
+      state.player.deck.push(createCardInstance(lotusCard));
+      logMessage('🌸 Lotus Trank wurde deinem Deck hinzugefügt.', 'system');
+      break;
+
 
     }
     updateUIDisplay();

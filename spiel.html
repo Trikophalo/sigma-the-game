@@ -2614,6 +2614,18 @@ function executeCardEffect(card) {
                     logMessage(`💥 Kritischer Treffer! Schaden um +${critBonus} erhöht!`, 'player');
                 }
 
+                case 'full_heal': {
+                    const amount = state.player.maxHealth - state.player.health;
+                    if (amount > 0) {
+                        state.player.health = state.player.maxHealth;
+                        logMessage(`🌸 Lotus Trank heilt dich vollständig (${amount} Leben).`, 'heal');
+                    } else {
+                        logMessage(`🌸 Lotus Trank: Du bist bereits voll geheilt.`, 'system');
+                    }
+                    break;
+                    }
+
+
             // 🔥 Drachenschuppen-Effekt: 10% Chance auf Verbrennung
                 if (state.player.hasDragonscale) {
                     const burnChance = Math.random();
