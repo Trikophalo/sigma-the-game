@@ -3621,71 +3621,54 @@ function executeCardEffect(card) {
     
         function gameOver() {
             logMessage("💀 GAME OVER!", 'enemy');
+            console.log("💀 gameOver() wurde aufgerufen.");
 
             state.gameOver = true;
             state.turnInProgress = true;
 
-            playerInventory.clear(); // Items nur bis zum Tod behalten
+            playerInventory.clear();
 
-            // Endstatistik anzeigen
             finalScoreElem.textContent = state.defeatedEnemies;
             finalRoundElem.textContent = state.round;
             finalLevelElem.textContent = state.player.level;
 
-            // Highscore lokal prüfen und speichern
-            if (state.defeatedEnemies > state.highScore) {
-            state.highScore = state.defeatedEnemies;
-            try {
+            const isNewLocalRecord = state.defeatedEnemies > state.highScore;
+            const playerName = (localStorage.getItem('playerName') || 'Unbekannt').substring(0, 15);
+
+            // 🏆 Lokalen Highscore nur überschreiben, wenn besser
+            if (isNewLocalRecord) {
+                state.highScore = state.defeatedEnemies;
                 localStorage.setItem('pixelKartenspielHighScore', state.highScore.toString());
-
-                // GLOBAL speichern bei Firebase
-                const playerName = (localStorage.getItem('playerName') || 'Unbekannt').substring(0, 15);
-                if (typeof db !== 'undefined') {
-                    db.collection("highscores").add({
-                        name: playerName,
-                        score: state.defeatedEnemies,
-                        round: state.round,
-                        level: state.player.level,
-                        timestamp: Date.now()
-                    }).then(() => {
-                        console.log("✅ Highscore online gespeichert!");
-                    }).catch(err => {
-                        console.warn("⚠️ Fehler beim Speichern im Highscore:", err);
-                    });
-                }
-
                 logMessage(`🌟 Neuer Highscore: ${state.highScore}!`, 'system');
-            } catch (e) {
-                console.warn('⚠️ Highscore konnte nicht gespeichert werden:', e);
-            }
-        }
-
-            // 🏆 Highscore-Eintrag fürs Leaderboard (Top-Level)
-            try {
-                const playerName = localStorage.getItem('playerName') || 'Unbekannt';
-                const playerLevel = state.player.level;
-
-                let leaderboard = JSON.parse(localStorage.getItem('leaderboard') || '[]');
-
-                leaderboard.push({ name: playerName, level: playerLevel });
-
-                // Sortieren nach höchstem Level, dann Top 10 speichern
-                leaderboard.sort((a, b) => b.level - a.level);
-                leaderboard = leaderboard.slice(0, 10);
-
-                localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
-            } catch (e) {
-                console.warn('⚠️ Leaderboard konnte nicht gespeichert werden:', e);
             }
 
-            // Game Over Screen anzeigen
+            // 💾 Immer bei Firebase speichern
+            if (typeof db !== 'undefined') {
+                db.collection("highscores").add({
+                    name: playerName,
+                    score: state.defeatedEnemies,
+                    round: state.round,
+                    level: state.player.level,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                }).then(() => {
+                    console.log("✅ Highscore online gespeichert!");
+                }).catch(err => {
+                    console.warn("⚠️ Fehler beim Speichern im Highscore:", err);
+                });
+            } else {
+                console.warn("❌ Firestore-DB nicht verfügbar.");
+            }
+
+            // Zeige Game Over Screen
             gameOverContainerElem.style.display = 'flex';
 
-            // Kleine Verzögerung, dann zurück zum Titel
+            // Verzögere Weiterleitung
             setTimeout(() => {
                 window.location.href = 'index.html';
-            }, 500);
+            }, 500); // Erhöht für Debug-Zwecke
         }
+
+
 
     </script>
     <script src="shop.js"></script>
