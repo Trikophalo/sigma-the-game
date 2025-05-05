@@ -377,7 +377,7 @@
   
   <div class="menu-container" id="mainMenu">
     <h1>SIGMA THE GAME</h1>
-    <input type="text" id="playerNameInput" placeholder="Spielername eingeben" autocomplete="off" />
+    <input type="text" id="playerNameInput" placeholder="Spielername eingeben" maxlength="15" autocomplete="off" required />
     <h3>Wähle eine passive Fähigkeit</h3>
 
     <div class="passive-selection">
@@ -410,6 +410,12 @@
     </div>
 
     <button onclick="startGame()" id="startButton">Neues Spiel starten</button>
+
+    <div id="leaderboardDisplay" style="margin-top: 40px;">
+      <h3>🏆 Highscore-Liste</h3><br/>
+      <ol id="leaderboardList" style="text-align: mid; font-size: 20px; max-width: 300px; margin: 0 auto; font-family: monospace;"></ol>
+    </div>
+    
   </div>
 
   <script>
@@ -508,7 +514,12 @@
       // Neues Spiel starten mit Animation
       window.startGame = function() {
         const nameInput = document.getElementById('playerNameInput');
-        const playerName = nameInput?.value.trim() || 'Spieler';
+        const playerName = nameInput?.value.trim();
+
+        if (!playerName || playerName.length < 1) {
+          alert("Bitte gib einen gültigen Namen ein (max. 15 Zeichen).");
+          return;
+        }
 
         localStorage.setItem('playerName', playerName);
         localStorage.setItem('selectedPassive', selectedPassive);
@@ -520,13 +531,14 @@
         const menuContainer = document.getElementById('mainMenu');
         menuContainer.style.opacity = '0';
         menuContainer.style.transform = 'scale(1.1)';
-        
+
         try { clickSound.play(); } catch(e) {}
 
         setTimeout(() => {
           window.location.href = 'spiel.html';
         }, 800);
       };
+
 
       // Tastatur-Event für Enter-Taste
       document.getElementById('playerNameInput').addEventListener('keypress', function(event) {
@@ -623,6 +635,24 @@
       }
     `;
     document.head.appendChild(styleElement);
+
+    // Leaderboard nach dem Laden anzeigen
+document.addEventListener('DOMContentLoaded', () => {
+  const leaderboardList = document.getElementById('leaderboardList');
+  if (!leaderboardList) return;
+
+  try {
+    const leaderboard = JSON.parse(localStorage.getItem('leaderboard') || '[]');
+    leaderboard.forEach(entry => {
+      const li = document.createElement('li');
+      li.textContent = `${entry.name.padEnd(12)} - Level ${entry.level}`;
+      leaderboardList.appendChild(li);
+    });
+  } catch (e) {
+    console.warn('⚠️ Leaderboard konnte nicht geladen werden:', e);
+  }
+});
+
   </script>
 </body>
 </html>

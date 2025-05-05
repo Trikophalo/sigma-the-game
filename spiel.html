@@ -1973,7 +1973,7 @@ h2 {
                 }
 
             // Pasiven
-            state.player.name = playerName;
+            state.player.name = localStorage.getItem('playerName') || 'Spieler';
 
             switch (selectedPassive) {
             case 'swordfighter':
@@ -2196,7 +2196,8 @@ h2 {
                 'Lebensraub': 'Heilt sich um 50% seine schadens.',
                 'Segen': 'Heilt sich einmal um 50% seiner Leben.',
                 'Rüstung': 'Stellt jede Runde 5 Block her',
-                'Vamp': 'Heilt sich um 50% des verursachten Schadens'
+                'Vamp': 'Heilt sich um 50% des verursachten Schadens',
+                'Krieger': 'Ein erfahrener Krieger trifft auch manchmal doppelt'
             };
 
             monsterTraitsElem.innerHTML = '';
@@ -2614,17 +2615,6 @@ function executeCardEffect(card) {
                     logMessage(`💥 Kritischer Treffer! Schaden um +${critBonus} erhöht!`, 'player');
                 }
 
-                case 'full_heal': {
-                    const amount = state.player.maxHealth - state.player.health;
-                    if (amount > 0) {
-                        state.player.health = state.player.maxHealth;
-                        logMessage(`🌸 Lotus Trank heilt dich vollständig (${amount} Leben).`, 'heal');
-                    } else {
-                        logMessage(`🌸 Lotus Trank: Du bist bereits voll geheilt.`, 'system');
-                    }
-                    break;
-                    }
-
 
             // 🔥 Drachenschuppen-Effekt: 10% Chance auf Verbrennung
                 if (state.player.hasDragonscale) {
@@ -2682,6 +2672,16 @@ function executeCardEffect(card) {
                 logMessage(`Spieler ist bereits bei vollem Leben.`, 'heal');
             }
             break;
+        case 'full_heal': {
+            const amount = state.player.maxHealth - state.player.health;
+            if (amount > 0) {
+                state.player.health = state.player.maxHealth;
+                logMessage(`🌸 Lotus Trank heilt dich vollständig (${amount} Leben).`, 'heal');
+            } else {
+                logMessage(`🌸 Lotus Trank: Du bist bereits voll geheilt.`, 'system');
+            }
+            break;
+        }
 
         case 'poison':
             if (
@@ -3578,40 +3578,57 @@ function executeCardEffect(card) {
 
 
     
-            function gameOver() {
-                logMessage("GAME OVER!", 'enemy');
-                state.gameOver = true;
-                state.turnInProgress = true;
+        function gameOver() {
+            logMessage("💀 GAME OVER!", 'enemy');
 
-                playerInventory.clear(); // ← Items wirklich nur nach dem Tod entfernen
+            state.gameOver = true;
+            state.turnInProgress = true;
 
-                // Endstatistik anzeigen
-                finalScoreElem.textContent = state.defeatedEnemies;
-                finalRoundElem.textContent = state.round;
-                finalLevelElem.textContent = state.player.level;
+            playerInventory.clear(); // Items nur bis zum Tod behalten
 
-                // Gegnername aufbereitet (falls noch vorhanden)
-                const enemyName = state.currentEnemy?.name?.trim().toLowerCase();
+            // Endstatistik anzeigen
+            finalScoreElem.textContent = state.defeatedEnemies;
+            finalRoundElem.textContent = state.round;
+            finalLevelElem.textContent = state.player.level;
 
-                // Highscore prüfen und speichern
-                if (state.defeatedEnemies > state.highScore) {
-                    state.highScore = state.defeatedEnemies;
-                    try {
-                        localStorage.setItem('pixelKartenspielHighScore', state.highScore.toString());
-                        logMessage(`🌟 Neuer Highscore: ${state.highScore}!`, 'system');
-                    } catch (e) {
-                        console.warn('⚠️ Highscore konnte nicht gespeichert werden:', e);
-                    }
+            // Highscore lokal prüfen und speichern
+            if (state.defeatedEnemies > state.highScore) {
+                state.highScore = state.defeatedEnemies;
+                try {
+                    localStorage.setItem('pixelKartenspielHighScore', state.highScore.toString());
+                    logMessage(`🌟 Neuer Highscore: ${state.highScore}!`, 'system');
+                } catch (e) {
+                    console.warn('⚠️ Highscore konnte nicht gespeichert werden:', e);
                 }
-
-                // Game Over Screen anzeigen
-                gameOverContainerElem.style.display = 'flex';
-
-                // ❗ Kleine Verzögerung, damit Freischaltungen sicher übernommen werden
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 500);
             }
+
+            // 🏆 Highscore-Eintrag fürs Leaderboard (Top-Level)
+            try {
+                const playerName = localStorage.getItem('playerName') || 'Unbekannt';
+                const playerLevel = state.player.level;
+
+                let leaderboard = JSON.parse(localStorage.getItem('leaderboard') || '[]');
+
+                leaderboard.push({ name: playerName, level: playerLevel });
+
+                // Sortieren nach höchstem Level, dann Top 10 speichern
+                leaderboard.sort((a, b) => b.level - a.level);
+                leaderboard = leaderboard.slice(0, 10);
+
+                localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
+            } catch (e) {
+                console.warn('⚠️ Leaderboard konnte nicht gespeichert werden:', e);
+            }
+
+            // Game Over Screen anzeigen
+            gameOverContainerElem.style.display = 'flex';
+
+            // Kleine Verzögerung, dann zurück zum Titel
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 500);
+        }
+
     </script>
     <script src="shop.js"></script>
 
