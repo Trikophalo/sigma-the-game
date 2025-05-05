@@ -1539,6 +1539,10 @@ h2 {
     </style>
 </head>
 <body>
+    <!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
     <h1>Sigma The Game</h1>
 
     <div id="gameContainer" class="game-container">
@@ -1673,6 +1677,21 @@ h2 {
     </div>
 
     <script>
+        // --- Firebase Initialisierung ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCSn9mCvNT6JZgXy5ZTIOeVhri4FQRvn9E",
+            authDomain: "sigma-the-game.firebaseapp.com",
+            databaseURL: "https://sigma-the-game-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "sigma-the-game",
+            storageBucket: "sigma-the-game.firebasestorage.app",
+            messagingSenderId: "346310580482",
+            appId: "1:346310580482:web:a7e6f835eb4dd541964a1b"
+            };
+
+
+            firebase.initializeApp(firebaseConfig);
+            const db = firebase.firestore();
+
         // --- Spielkonstanten ---
         const CARD_TYPES = [
             // ... (deine Kartendefinitionen bleiben hier unverändert) ...
@@ -1731,9 +1750,9 @@ h2 {
                 { name: 'Baby Drache', health: 60, attack: 11, levelMin: 8, levelMax: 13, xp: 120, gold: 300, pixelImageKey: 'Baby Drache', description: 'Speit Feuerstöße.', traits: ['Verspielt', 'Feueratem'] }, // Effekte müssen implementiert werden
                 { name: 'Dracula', health: 65, attack: 9, levelMin: 9, levelMax: 14, xp: 150, gold: 350, pixelImageKey: 'Dracula', description: 'Dein Blut macht ihn stärker.', traits: ['Vamp', 'Stark'] }, // Effekte müssen implementiert werden
                 { name: 'Dämon', health: 75, attack: 12, levelMin: 10, levelMax: 14, xp: 150, gold: 450, pixelImageKey: 'Dämon', description: 'Feuer und Schatten. Resistent.', traits: ['Höllen Krallen', 'Regeneration'], regen: 3 }, // Effekte müssen implementiert werden
-                { name: 'Verfluchter Ritter', health: 70, attack: 9, levelMin: 10, levelMax: 15, xp: 180, gold: 480, pixelImageKey: 'Verfluchter Ritter', description: 'Ein wandelnde Geisterrüstung', traits: ['Rüstung', 'Krieger']}, // Effekte müssen implementiert werden
-                { name: 'Erzengel', health: 100, attack: 12, levelMin: 10, levelMax: 16, xp: 200, gold: 550, pixelImageKey: 'Erzengel', description: 'Ein mächtiger gefallener Engel.', traits: ['Segen', 'Fliegend'] }, // Effekte müssen implementiert werden
-                { name: 'Drache', health: 140, attack: 16, levelMin: 17, levelMax: 20, xp: 250, gold: 600, pixelImageKey: 'Drache', description: 'Ein mächtiger, alter Drache.', traits: ['Feueratem', 'Fliegend', 'Gepanzerte Schuppen'] }, // Effekte müssen implementiert werden
+                { name: 'Verfluchter Ritter', health: 70, attack: 9, levelMin: 11, levelMax: 15, xp: 180, gold: 480, pixelImageKey: 'Verfluchter Ritter', description: 'Ein wandelnde Geisterrüstung', traits: ['Rüstung', 'Krieger']}, // Effekte müssen implementiert werden
+                { name: 'Erzengel', health: 100, attack: 12, levelMin: 12, levelMax: 16, xp: 200, gold: 550, pixelImageKey: 'Erzengel', description: 'Ein mächtiger gefallener Engel.', traits: ['Segen', 'Fliegend'] }, // Effekte müssen implementiert werden
+                { name: 'Drache', health: 140, attack: 16, levelMin: 15, levelMax: 20, xp: 250, gold: 600, pixelImageKey: 'Drache', description: 'Ein mächtiger, alter Drache.', traits: ['Feueratem', 'Fliegend', 'Gepanzerte Schuppen'] }, // Effekte müssen implementiert werden
         ];
     
         // --- Upgrade-Typen ---
@@ -2049,6 +2068,28 @@ h2 {
     
             console.log("Spiel initialisiert. Aktueller Status:", state);
             logMessage(`🧠 Aktive Passive: ${selectedPassive}`, 'system');
+
+            // Globale Highscore-Liste laden
+            db.collection("highscores")
+            .orderBy("score", "desc")
+            .limit(10)
+            .get()
+            .then(snapshot => {
+                const list = document.getElementById('leaderboardList');
+                if (!list) return;
+
+                list.innerHTML = '';
+                snapshot.forEach(doc => {
+                const entry = doc.data();
+                const li = document.createElement('li');
+                li.textContent = `${entry.name}: ${entry.score} besiegte Gegner (Lvl ${entry.level})`;
+                list.appendChild(li);
+                });
+            })
+            .catch(err => {
+                console.warn("⚠️ Highscore-Liste konnte nicht geladen werden:", err);
+            });
+
 
         }
     
@@ -3593,14 +3634,31 @@ function executeCardEffect(card) {
 
             // Highscore lokal prüfen und speichern
             if (state.defeatedEnemies > state.highScore) {
-                state.highScore = state.defeatedEnemies;
-                try {
-                    localStorage.setItem('pixelKartenspielHighScore', state.highScore.toString());
-                    logMessage(`🌟 Neuer Highscore: ${state.highScore}!`, 'system');
-                } catch (e) {
-                    console.warn('⚠️ Highscore konnte nicht gespeichert werden:', e);
+            state.highScore = state.defeatedEnemies;
+            try {
+                localStorage.setItem('pixelKartenspielHighScore', state.highScore.toString());
+
+                // GLOBAL speichern bei Firebase
+                const playerName = (localStorage.getItem('playerName') || 'Unbekannt').substring(0, 15);
+                if (typeof db !== 'undefined') {
+                    db.collection("highscores").add({
+                        name: playerName,
+                        score: state.defeatedEnemies,
+                        round: state.round,
+                        level: state.player.level,
+                        timestamp: Date.now()
+                    }).then(() => {
+                        console.log("✅ Highscore online gespeichert!");
+                    }).catch(err => {
+                        console.warn("⚠️ Fehler beim Speichern im Highscore:", err);
+                    });
                 }
+
+                logMessage(`🌟 Neuer Highscore: ${state.highScore}!`, 'system');
+            } catch (e) {
+                console.warn('⚠️ Highscore konnte nicht gespeichert werden:', e);
             }
+        }
 
             // 🏆 Highscore-Eintrag fürs Leaderboard (Top-Level)
             try {
