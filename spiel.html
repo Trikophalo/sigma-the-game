@@ -1834,7 +1834,7 @@ h2 {
         }
 
         // Hilfsfunktion für gewichtete Upgrade-Auswahl
-        function getWeightedUpgrades(pool, superRareWeight = 0.1, rareWeight = 1, commonWeight = 5) {
+        function getWeightedUpgrades(pool, superRareWeight = 0.2, rareWeight = 1, commonWeight = 5) {
             const weighted = [];
 
             for (const upg of pool) {
@@ -3047,6 +3047,16 @@ function executeCardEffect(card) {
                     state.player.health -= damageTaken;
                     logMessage(`💥 Spieler erleidet ${damageTaken} Schaden.`, 'player');
 
+                    // 🪓 Dornen-Helm: Gegner erleidet Rückstoß
+                if (state.player.hasThorns) {
+                    const thornDamage = Math.floor(damageTaken * 0.2);
+                    if (thornDamage > 0) {
+                        state.currentEnemy.health -= thornDamage;
+                        logMessage(`🪓 Dornen-Helm: ${state.currentEnemy.name} erleidet ${thornDamage} Rückstoß-Schaden!`, 'enemy');
+                        updateEnemyUI();
+                    }
+                }
+
                     playerDisplay.classList.add('shake');
                     updatePlayerStatusDisplay();
 
@@ -3361,7 +3371,7 @@ function executeCardEffect(card) {
                 };
 
                 const availableUpgrades = UPGRADE_TYPES.filter(upg => upg.type !== 'gain_gold');
-                const weightedPool = getWeightedUpgrades(availableUpgrades, 0.1, 1, 5); //Upgrade wahrscheinlichkeit
+                const weightedPool = getWeightedUpgrades(availableUpgrades, 0.2, 1, 5); //Upgrade wahrscheinlichkeit
                 const chosenUpgrades = [goldOption, ...weightedPool.slice(0, 2)];
 
 

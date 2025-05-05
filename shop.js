@@ -24,7 +24,16 @@ const SHOP_ITEMS = [
       description: '30 % Chance auf kritischen Treffer (Krtisiche Treffer erhöhen deinen Schaden um 1,5x).',
       icon: 'images/katryns-axt.png',
       effect: 'crit'
+    },
+    {
+      id: 'dornenhelm',
+      name: 'Stachelkappe',
+      cost: 1500,
+      description: 'Der Gegner erleidet 20 % seines Schadens als Rückstoß.',
+      icon: 'images/dornenhelm.png',
+      effect: 'thorns'
     }
+    
   ];
   
   const playerInventory = new Set(); // Gekaufte Items speichern
@@ -181,6 +190,11 @@ const SHOP_ITEMS = [
       case 'crit':
         state.player.critChance = 0.3;
         break;
+
+      case 'thorns':
+        state.player.hasThorns = true;
+        break;
+
     }
     updateUIDisplay();
     updatePlayerItemIcons();
@@ -217,6 +231,14 @@ const SHOP_ITEMS = [
             </span>
         `);
     }
+
+    if (state.player.hasThorns) {
+      icons.push(`
+          <span class="item-icon-wrapper" data-tooltip="Fügt dem Gegner 20 % Rückstoß-Schaden zu.">
+              <img src="images/dornenhelm.png" alt="Stachelkappe" class="item-icon" />
+          </span>
+      `);
+  }  
 
     container.innerHTML = icons.join('');
 }
