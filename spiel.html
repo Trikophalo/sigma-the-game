@@ -1729,7 +1729,7 @@ h2 {
                 { name: 'Nekromant', health: 50, attack: 7, levelMin: 6, levelMax: 10, xp: 80, gold: 120, pixelImageKey: 'Nekromant', description: 'Schwächt dich oder ruft Diener.', traits: ['Untotenbeschwörer'] }, // Effekte müssen implementiert werden
                 { name: 'Eiskönig', health: 65, attack: 9, levelMin: 7, levelMax: 12, xp: 100, gold: 200, pixelImageKey: 'Eiskönig', description: 'Verlangsamt dich mit Kälte.', traits: ['Eis-Elementar', 'Frost-Aura'] }, // Effekte müssen implementiert werden
                 { name: 'Baby Drache', health: 60, attack: 11, levelMin: 8, levelMax: 13, xp: 120, gold: 300, pixelImageKey: 'Baby Drache', description: 'Speit Feuerstöße.', traits: ['Verspielt', 'Feueratem'] }, // Effekte müssen implementiert werden
-                { name: 'Dracula', health: 70, attack: 10, levelMin: 9, levelMax: 14, xp: 150, gold: 350, pixelImageKey: 'Dracula', description: 'Dein Blut macht ihn stärker.', traits: ['Vamp', 'Stark'] }, // Effekte müssen implementiert werden
+                { name: 'Dracula', health: 65, attack: 9, levelMin: 9, levelMax: 14, xp: 150, gold: 350, pixelImageKey: 'Dracula', description: 'Dein Blut macht ihn stärker.', traits: ['Vamp', 'Stark'] }, // Effekte müssen implementiert werden
                 { name: 'Dämon', health: 75, attack: 12, levelMin: 10, levelMax: 14, xp: 150, gold: 450, pixelImageKey: 'Dämon', description: 'Feuer und Schatten. Resistent.', traits: ['Höllen Krallen', 'Regeneration'], regen: 3 }, // Effekte müssen implementiert werden
                 { name: 'Verfluchter Ritter', health: 70, attack: 9, levelMin: 10, levelMax: 15, xp: 180, gold: 480, pixelImageKey: 'Verfluchter Ritter', description: 'Ein wandelnde Geisterrüstung', traits: ['Rüstung', 'Krieger']}, // Effekte müssen implementiert werden
                 { name: 'Erzengel', health: 100, attack: 12, levelMin: 10, levelMax: 16, xp: 200, gold: 550, pixelImageKey: 'Erzengel', description: 'Ein mächtiger gefallener Engel.', traits: ['Segen', 'Fliegend'] }, // Effekte müssen implementiert werden
@@ -3049,7 +3049,7 @@ function executeCardEffect(card) {
 
                     // 🪓 Dornen-Helm: Gegner erleidet Rückstoß
                 if (state.player.hasThorns) {
-                    const thornDamage = Math.floor(damageTaken * 0.2);
+                    const thornDamage = Math.floor(damageTaken * 0.3);
                     if (thornDamage > 0) {
                         state.currentEnemy.health -= thornDamage;
                         logMessage(`🪓 Dornen-Helm: ${state.currentEnemy.name} erleidet ${thornDamage} Rückstoß-Schaden!`, 'enemy');

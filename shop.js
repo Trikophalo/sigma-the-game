@@ -29,7 +29,7 @@ const SHOP_ITEMS = [
       id: 'dornenhelm',
       name: 'Stachelkappe',
       cost: 1500,
-      description: 'Der Gegner erleidet 20 % seines Schadens als Rückstoß.',
+      description: 'Der Gegner erleidet 30 % seines Schadens als Rückstoß.',
       icon: 'images/dornenhelm.png',
       effect: 'thorns'
     }
