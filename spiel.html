@@ -1407,6 +1407,49 @@ h2 {
             background-color: rgba(0,0,0,0.3); /* Hintergrund, falls Bild transparent */
             display: inline-block; /* Korrekte Darstellung */
         }
+                    /* Tooltip-Box */
+        .item-icon-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        .item-icon-wrapper::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 5px;
+            white-space: nowrap;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            z-index: 10;
+        }
+
+        .item-icon-wrapper::before {
+            content: '';
+            position: absolute;
+            bottom: 110%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .item-icon-wrapper:hover::after,
+        .item-icon-wrapper:hover::before {
+            opacity: 1;
+        }
+
     
     </style>
 </head>
@@ -1437,25 +1480,39 @@ h2 {
                 <!-- Spieleranzeige -->
                 
                 <div id="playerDisplay" class="player-display">
-                    <div class="player-name">Spieler</div>
-                    <div class="player-gold">💰 Gold: <span id="playerGoldDisplay">0</span></div>
+                    <!-- Spielername und Goldanzeige -->
+                    <div class="player-header">
+                        <div class="player-name">Spieler</div>
+                        <div class="player-gold">💰 Gold: <span id="playerGoldDisplay">0</span></div>
+                    </div>
+                
+                    <!-- Spielerbild -->
                     <div class="player-image" id="playerImage"></div>
-                    <div class="player-status" id="playerStatusDisplay"></div>
-        
+                
+                    <!-- Statusanzeige (Effekte & Items) -->
+                    <div class="player-status-container">
+                        <div class="player-status" id="playerStatusDisplay"></div>
+                        <div class="player-items" id="playerItemIcons"></div>
+                    </div>
+                
+                    <!-- Spielerstatistiken -->
                     <div class="player-stats">
+                
+                        <div class="stat-text">🛡 Block: <span id="playerBlock" class="block-value">0</span></div>
+                
                         <div class="stat-text">Leben: <span id="playerHealth">50</span>/<span id="playerMaxHealth">50</span></div>
                         <div class="health-bar" id="playerHealthBar">
                             <div class="health-fill" style="width: 100%;"></div>
                         </div>
-        
+                
                         <div class="stat-text">Mana: <span id="playerMana">3</span>/<span id="playerMaxMana">3</span></div>
                         <div class="mana-bar">
                             <div class="mana-fill" id="playerManaBar" style="width: 100%;"></div>
                         </div>
-        
-                        <div class="stat-text">🛡 Block: <span id="playerBlock" class="block-value">0</span></div>
+                
                     </div>
                 </div>
+                
         
                 <!-- Gegneranzeige -->
                 <div id="enemyContainer" class="enemy-container enemy-animation">
@@ -1534,11 +1591,11 @@ h2 {
         // --- Spielkonstanten ---
         const CARD_TYPES = [
             // ... (deine Kartendefinitionen bleiben hier unverändert) ...
-                 { id: 1, name: 'Schwert', icon: '⚔️', description: 'Ein einfaches Schwert.', power: 5, effect: 'damage', manaCost: 2, weight: 13, tags: ['sword'] },
-                 { id: 2, name: 'Schild', icon: '🛡️', description: 'Erhalte 5 Block', power: 5, effect: 'block', manaCost: 2, weight: 2 },
+                 { id: 1, name: 'Schwert', icon: '⚔️', description: 'Ein einfaches Schwert.', power: 5, effect: 'damage', manaCost: 2, weight: 11, tags: ['sword'] },
+                 { id: 2, name: 'Schild', icon: '🛡️', description: 'Erhalte 5 Block', power: 5, effect: 'block', manaCost: 2, weight: 1 },
                  { id: 3, name: 'Heilung', icon: '❤️', description: 'Heilt 8 Leben', power: 8, effect: 'heal', manaCost: 3, weight: 2 },
                  { id: 4, name: 'Gift', icon: '☠️', description: 'Vergiftet (2 Schaden, 3 Rd.) Falls bereit Vergitet mache 3 Schaden', power: 2, duration: 3, effect: 'poison', manaCost: 2, weight: 1 },
-                 { id: 5, name: 'Blitz', icon: '⚡', description: 'Fügt 12 Schaden zu', power: 12, effect: 'damage', manaCost: 4, weight: 2 },
+                 { id: 5, name: 'Blitz', icon: '⚡', description: 'Fügt 12 Schaden zu', power: 12, effect: 'damage', manaCost: 3, weight: 2 },
                  { id: 6, name: 'Großer Schlag', icon: '💥', description: 'Fügt 15 Schaden zu', power: 15, effect: 'damage', manaCost: 4, weight: 2 },
                  { id: 7, name: 'Meditieren', icon: '🧘', description: 'Ziehe 1 Karte', power: 1, effect: 'draw', manaCost: 0, weight: 1 },
                  { id: 8, name: 'Vampirbiss', icon: '🧛', description: '8 Schaden, heilt 8', power: 8, healAmount: 8, effect: 'lifesteal', manaCost: 4, weight: 2 }, // Direkte Heilung statt %
@@ -1546,8 +1603,10 @@ h2 {
                  { id: 10, name: 'Fokus', icon: '🎯', description: 'Ziehe 2 Karten', power: 2, effect: 'draw', manaCost: 2, weight: 2 },
                  { id: 11, name: 'Heilige Macht', icon: '✨', description: 'Fügt 25 Schaden zu', power: 25, effect: 'damage', manaCost: 6, weight: 1 },
                  { id: 12, name: 'Genesung', icon: '💖', description: 'Heilt 15 Leben', power: 15, effect: 'heal', manaCost: 5, weight: 1 },
-                 {id: 13, name: 'Feuerpfeil', icon: '🔥', description: 'Fügt 12 Schaden zu. 50% Chance auf Verbrennung (5 Schaden für 2 Runden).', power: 12, effect: 'firearrow', manaCost: 5, weight: 1},
-                 {id: 14, name: 'Gambler’s Luck', icon: '🎲', description: 'Gegner nimmt 5 Schaden und du erhältst 100 Gold. oder Du nimmst 5 Schaden.', power: 5, effect: 'gamble', manaCost: 1, weight: 1}
+                 {id: 13, name: 'Feuerpfeil', icon: '🔥', description: 'Fügt 12 Schaden zu. 50% Chance auf Verbrennung (5 Schaden für 2 Runden).', power: 12, effect: 'firearrow', manaCost: 5, weight: 2},
+                 {id: 14, name: 'Gambler’s Luck', icon: '🎲', description: 'Gegner nimmt 5 Schaden und du erhältst 100 Gold (Ignoriert Block) oder Du nimmst 5 Schaden.', power: 5, effect: 'gamble', manaCost: 0, weight: 1},
+                 { id: 15, name: 'Kraft Sammeln', icon: '🔋', description: 'Heilt dich um dein gesamtes Mana.<br><br>Einmaliger Schadensboost i.H.v. Manakosten -1', power: 0, effect: 'power_surge', manaCost: 'X', weight: 1 },
+                 {id: 16, name: 'Klingenwirbel', icon: '🌀', description: 'Greift mehrere Gegner gleichzeitig an. (Ignoriert Block.)', power: 8, effect: 'whirlwind', manaCost: 3, weight: 2},
 
         ];
     
@@ -1565,22 +1624,24 @@ h2 {
                 'Eiskönig': IMAGE_FOLDER + 'Eiskönig.png', // Umlaut vermieden
                 'Erzengel': IMAGE_FOLDER + 'Erzengel.png',
                 'Dracula': IMAGE_FOLDER + 'Dracula.png',
-                'Drache': IMAGE_FOLDER + 'Drache.png'
+                'Drache': IMAGE_FOLDER + 'Drache.png',
+                'Gepanzertes Skelett': IMAGE_FOLDER + 'armorskelett.png'
         };
         const PLAYER_PIXEL_IMAGE = IMAGE_FOLDER + 'Spieler.png';
     
         // --- Gegnertypen ---
         const ENEMY_TYPES = [
             // ... (deine Gegnertypen bleiben hier unverändert) ...
-                { name: 'Goblin', health: 20, attack: 5, levelMin: 1, levelMax: 5, xp: 35, gold: 50, pixelImageKey: 'Goblin', description: 'Ein kleiner, flinker Goblin.', traits: ['Keine Fähigkeit'] },
-                { name: 'Ork', health: 35, attack: 5, levelMin: 2, levelMax: 5, xp: 50, gold: 65, pixelImageKey: 'Ork', description: 'Ein brutaler Ork-Krieger.', traits: ['Stark'] },
-                { name: 'Riesen Spinne', health: 30, attack: 6, levelMin: 3, levelMax: 6, xp: 45, gold: 80, pixelImageKey: 'Riesen Spinne', description: 'Spuckt lähmendes Gift.', traits: ['Giftig'] }, // 'Netzwerfer' Effekt muss implementiert werden
-                { name: 'Troll', health: 50, attack: 8, levelMin: 4, levelMax: 6, xp: 70, gold: 100, pixelImageKey: 'Troll', description: 'Regeneriert 3 Leben pro Runde.', traits: ['Regeneration', 'Massiv'], regen: 3 }, // Regeneration implementiert
-                { name: 'Nekromant', health: 40, attack: 7, levelMin: 6, levelMax: 10, xp: 80, gold: 120, pixelImageKey: 'Nekromant', description: 'Schwächt dich oder ruft Diener.', traits: ['Untotenbeschwörer'] }, // Effekte müssen implementiert werden
-                { name: 'Eiskönig', health: 60, attack: 9, levelMin: 7, levelMax: 12, xp: 100, gold: 200, pixelImageKey: 'Eiskönig', description: 'Verlangsamt dich mit Kälte.', traits: ['Eis-Elementar', 'Frost-Aura'] }, // Effekte müssen implementiert werden
+                { name: 'Goblin', health: 25, attack: 5, levelMin: 1, levelMax: 5, xp: 35, gold: 50, pixelImageKey: 'Goblin', description: 'Ein kleiner, flinker Goblin.', traits: ['Keine Fähigkeit'] },
+                { name: 'Gepanzertes Skelett', health: 30, attack: 4, levelMin: 2, levelMax: 6, xp: 45, gold: 80, pixelImageKey: 'Gepanzertes Skelett', description: 'Ein ehmaliger stolzer Krieger.', traits: ['Rüstung'] },
+                { name: 'Ork', health: 40, attack: 5, levelMin: 3, levelMax: 7, xp: 50, gold: 65, pixelImageKey: 'Ork', description: 'Ein brutaler Ork-Krieger.', traits: ['Stark'] },
+                { name: 'Riesen Spinne', health: 45, attack: 6, levelMin: 4, levelMax: 7, xp: 45, gold: 80, pixelImageKey: 'Riesen Spinne', description: 'Spuckt lähmendes Gift.', traits: ['Giftig'] }, // 'Netzwerfer' Effekt muss implementiert werden
+                { name: 'Troll', health: 50, attack: 8, levelMin: 5, levelMax: 9, xp: 70, gold: 100, pixelImageKey: 'Troll', description: 'Regeneriert 3 Leben pro Runde.', traits: ['Regeneration', 'Massiv'], regen: 3 }, // Regeneration implementiert
+                { name: 'Nekromant', health: 50, attack: 7, levelMin: 6, levelMax: 10, xp: 80, gold: 120, pixelImageKey: 'Nekromant', description: 'Schwächt dich oder ruft Diener.', traits: ['Untotenbeschwörer'] }, // Effekte müssen implementiert werden
+                { name: 'Eiskönig', health: 65, attack: 9, levelMin: 7, levelMax: 12, xp: 100, gold: 200, pixelImageKey: 'Eiskönig', description: 'Verlangsamt dich mit Kälte.', traits: ['Eis-Elementar', 'Frost-Aura'] }, // Effekte müssen implementiert werden
                 { name: 'Baby Drache', health: 60, attack: 11, levelMin: 8, levelMax: 13, xp: 120, gold: 300, pixelImageKey: 'Baby Drache', description: 'Speit Feuerstöße.', traits: ['Verspielt', 'Feueratem'] }, // Effekte müssen implementiert werden
                 { name: 'Dracula', health: 70, attack: 10, levelMin: 9, levelMax: 14, xp: 150, gold: 350, pixelImageKey: 'Dracula', description: 'Dein Blut macht ihn stärker.', traits: ['Vamp', 'Stark'] }, // Effekte müssen implementiert werden
-                { name: 'Dämon', health: 75, attack: 10, levelMin: 10, levelMax: 14, xp: 150, gold: 450, pixelImageKey: 'Dämon', description: 'Feuer und Schatten. Resistent.', traits: ['Höllen Krallen', 'Regeneration'], regen: 3 }, // Effekte müssen implementiert werden
+                { name: 'Dämon', health: 75, attack: 12, levelMin: 10, levelMax: 14, xp: 150, gold: 450, pixelImageKey: 'Dämon', description: 'Feuer und Schatten. Resistent.', traits: ['Höllen Krallen', 'Regeneration'], regen: 3 }, // Effekte müssen implementiert werden
                 { name: 'Erzengel', health: 100, attack: 12, levelMin: 10, levelMax: 16, xp: 200, gold: 550, pixelImageKey: 'Erzengel', description: 'Ein mächtiger gefallener Engel.', traits: ['Segen', 'Fliegend'] }, // Effekte müssen implementiert werden
                 { name: 'Drache', health: 140, attack: 15, levelMin: 15, levelMax: 20, xp: 250, gold: 600, pixelImageKey: 'Drache', description: 'Ein mächtiger, alter Drache.', traits: ['Feueratem', 'Fliegend', 'Gepanzerte Schuppen'] }, // Effekte müssen implementiert werden
         ];
@@ -1778,7 +1839,7 @@ h2 {
                     discardPile: [],
                     maxHandSize: 5,
                     lifestealFlat: 0,
-                    gold: 0, // 💰 Start-Gold
+                    gold: 1000, // 💰 Start-Gold
                     statusEffects: [], // Für zukünftige Effekte
                     swordBonus: 0
                 },
@@ -1825,8 +1886,8 @@ h2 {
             playerImageElem.style.backgroundImage = `url(${PLAYER_PIXEL_IMAGE})`;
             playerImageElem.style.backgroundColor = '#444'; // Fallback-Farbe
 
-            // Freigeschaltete Karten definieren (z. B. Schwert, Schild, Heilung, Meditieren)
-            const unlockedStartCardIds = [1, 2, 3, 7];
+            // Freigeschaltete Karten definieren, Start karten
+            const unlockedStartCardIds = [1, 2, 3, 7, 15, 16];
             const unlockedCards = CARD_TYPES.filter(card => unlockedStartCardIds.includes(card.id));
 
             // Gewichteten Pool erstellen
@@ -1948,6 +2009,14 @@ h2 {
                     });
                 }
 
+                //Kurze damage buffs (Kraft sammeln)
+                if (state.player.tempAttackBonus) {
+                    const span = document.createElement('span');
+                    span.classList.add('status-effect', 'buff');
+                    span.textContent = `+${state.player.tempAttackBonus} Angriff`;
+                    container.appendChild(span);
+                }
+
                 // 🔥 Märtyrer-Bonus anzeigen (außerhalb der Schleife!)
                 if (state.player.isMartyr) {
                     const lostPercent = 1 - (state.player.health / state.player.maxHealth);
@@ -2008,7 +2077,9 @@ h2 {
                 'Fliegend': 'Ignoriert Block zu 75%.',
                 'Gepanzerte Schuppen': 'Immun gegen Gift, reduziert Schaden leicht.',
                 'Lebensraub': 'Heilt sich um 50% seine schadens.',
-                'Segen': 'Heilt sich einmal um 50% seiner Leben.'
+                'Segen': 'Heilt sich einmal um 50% seiner Leben.',
+                'Rüstung': 'Stellt jede Runde 5 Block her',
+                'Vamp': 'Heilt sich um 50% des verursachten Schadens'
             };
 
             monsterTraitsElem.innerHTML = '';
@@ -2022,6 +2093,17 @@ h2 {
                 });
                 }
 
+                //Block enemy
+            const enemyBlockElem = document.getElementById('enemyBlock');
+                if (!enemyBlockElem) {
+                    const blockDiv = document.createElement('div');
+                    blockDiv.id = 'enemyBlock';
+                    blockDiv.style.color = '#00bcd4';
+                    blockDiv.style.fontWeight = 'bold';
+                    blockDiv.style.marginTop = '4px';
+                    enemyHealthElem.parentElement.appendChild(blockDiv);
+                }
+                document.getElementById('enemyBlock').textContent = `🛡 ${state.currentEnemy.block || 0}`;
 
             // Status-Effekte
             if (enemy.statusEffects?.length) {
@@ -2101,7 +2183,7 @@ h2 {
             }
 
             cardDiv.innerHTML = `
-                <div class="card-mana">${card.manaCost}</div>
+                <div class="card-mana">${card.manaCost === 'X' ? 'X' : card.manaCost}</div>
                 <div class="card-name">${card.name}</div>
                 <div class="card-icon">
                     ${card.icon.endsWith('.png') ? `<img src="${card.icon}" class="card-icon-image" alt="${card.name}">` : card.icon}
@@ -2111,9 +2193,9 @@ h2 {
                     ${card.name === 'Schwert' && state.player?.isShieldmaster ? `<br><span style="color:orange;">-1 wegen Schildmeister</span>` : ''}
                 </div>
                 <div class="card-power ${
-                    ['damage', 'block', 'heal', 'lifesteal', 'poison'].includes(card.effect) ? '' : 'hidden-power'
+                    ['whirlwind', 'firearrow', 'gamble', 'damage', 'block', 'heal', 'lifesteal', 'poison'].includes(card.effect) ? '' : 'hidden-power'
                 }" title="${powerHint.trim()}">
-                    ${['damage', 'block', 'heal', 'lifesteal', 'poison'].includes(card.effect) ? calculatedPower : ''}
+                    ${['whirlwind', 'firearrow', 'gamble', 'damage', 'block', 'heal', 'lifesteal', 'poison'].includes(card.effect) ? calculatedPower : ''}
                 </div>
             `;
 
@@ -2124,24 +2206,32 @@ h2 {
     
         // Aktualisiert den 'disabled'-Status der Karten basierend auf Manakosten
         function updateCardAvailability() {
-            const cardsInHand = cardHandElem.querySelectorAll('.card');
-            cardsInHand.forEach(cardDiv => {
-                const uniqueId = parseInt(cardDiv.dataset.uniqueId);
-                const cardData = state.player.hand.find(c => c.uniqueId === uniqueId);
-                // Karte ist spielbar, wenn genug Mana vorhanden UND kein Zug im Gange ist
-                if (cardData && cardData.manaCost <= state.player.mana && !state.turnInProgress) {
-                    cardDiv.classList.remove('disabled');
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(cardElem => {
+                const card = state.player.hand.find(c => c.uniqueId == cardElem.dataset.uniqueId);
+                if (!card) return;
+
+                // Karten mit "X" als Mana-Kosten zählen als 1 Mindestkosten
+                const isPowerSurge = card.name === 'Kraft Sammeln';
+                const rawManaCost = card.manaCost === 'X' ? 1 : Number(card.manaCost);
+
+                // Nur deaktivieren, wenn Kosten > 0 und Spieler zu wenig Mana hat
+                const needsMana = rawManaCost > 0;
+                const hasEnoughMana = state.player.mana >= rawManaCost;
+
+                if (needsMana && !hasEnoughMana) {
+                    cardElem.classList.add('disabled');
                 } else {
-                    cardDiv.classList.add('disabled');
+                    cardElem.classList.remove('disabled');
                 }
             });
-            // Buttons auch prüfen
+
             endTurnBtn.disabled = state.turnInProgress;
             manaBoostBtn.disabled = state.turnInProgress || cardsPlayedThisTurn > 0;
+
         }
-    
-        // --- Spiellogik Funktionen (Platzhalter/Basisimplementierung) ---
-    
+
+
         // Lädt einen neuen Gegner basierend auf dem Spielerlevel
         function loadEnemy() {
             const possibleEnemies = ENEMY_TYPES.filter(enemy =>
@@ -2165,7 +2255,8 @@ h2 {
                  maxHealth: enemyTemplate.health, // MaxLeben speichern
                  poisonTurns: 0,
                  statusEffects: [], // Initial leere Status-Effekte
-                 minions: []
+                 minions: [],
+                 block: 0 
              };
              
     
@@ -2225,8 +2316,12 @@ h2 {
             const card = state.player.hand[cardIndex];
 
             // Genug Mana?
-            if (card.manaCost > state.player.mana) {
-                logMessage(`Nicht genug Mana für ${card.name}! (${card.manaCost} benötigt)`, 'player');
+            const isPowerSurge = card.name === 'Kraft Sammeln';
+            const requiredMana = card.manaCost === 'X' ? 1 : card.manaCost;
+
+            // 0-Mana-Karten dürfen immer gespielt werden
+            if (requiredMana > 0 && state.player.mana < requiredMana) {
+                logMessage(`Nicht genug Mana für ${card.name}! (${requiredMana} benötigt)`, 'player');
                 const cardElement = cardHandElem.querySelector(`.card[data-unique-id="${uniqueCardId}"]`);
                 if (cardElement) {
                     cardElement.classList.add('shake');
@@ -2240,10 +2335,16 @@ h2 {
 
             console.log("Spiele Karte:", card.name);
 
+            if (card.name === 'Kraft Sammeln' && state.usedPowerSurgeThisTurn) {
+                logMessage(`🔋 Kraft Sammeln kann nur einmal pro Runde gespielt werden.`, 'system');
+                return;
+            }
+
             // 1. Mana abziehen – außer für oneShot Karten
             if (!card.oneShot) {
-                state.player.mana -= card.manaCost;
+                state.player.mana -= requiredMana;
             }
+
             cardsPlayedThisTurn++;
 
             // 3. Animation anzeigen (Entfernen übernimmt updateHandUI)
@@ -2259,9 +2360,19 @@ h2 {
                 updateUIDisplay();
             }
 
+            //Kraft sammeln nur einmal pro runde
+            if (card.name === 'Kraft Sammeln' && state.usedPowerSurgeThisTurn) {
+                logMessage(`🔋 Kraft Sammeln kann nur einmal pro Runde genutzt werden.`, 'system');
+                return;
+            }
+
             // 4. Karteneffekt ausführen
             logMessage(`Spieler spielt ${card.name}.`, 'player');
             executeCardEffect(card);
+
+            if (card.name === 'Kraft Sammeln') {
+                state.usedPowerSurgeThisTurn = true;
+            }
 
             // 💥 One-Shot Karte entfernen, sonst in Ablagestapel
             state.player.hand.splice(cardIndex, 1);
@@ -2290,6 +2401,49 @@ h2 {
     
 function executeCardEffect(card) {
     switch (card.effect) {
+        case 'whirlwind': {
+                const power = card.power;
+
+                // Minions zuerst treffen
+                if (state.currentEnemy.minions?.length > 0) {
+                    state.currentEnemy.minions.forEach((minion, index) => {
+                        minion.health -= power;
+                        logMessage(`🌀 ${minion.name} erleidet ${power} Schaden (ignoriert Block).`, 'enemy');
+                    });
+
+                    // Entferne besiegte Minions
+                    state.currentEnemy.minions = state.currentEnemy.minions.filter(m => m.health > 0);
+                }
+
+                // Hauptgegner angreifen (Block ignorieren)
+                state.currentEnemy.health -= power;
+                logMessage(`🌀 ${state.currentEnemy.name} erleidet ${power} Schaden durch Klingenwirbel (ignoriert Block).`, 'enemy');
+
+                enemyContainerElem.classList.add('hit');
+                setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
+                break;
+            }
+        case 'power_surge': {
+            const spentMana = state.player.mana;
+
+            if (spentMana > 0) {
+                // Mana ausgeben
+                state.player.mana = 0;
+
+                // Heilen
+                const healAmount = Math.min(spentMana, state.player.maxHealth - state.player.health);
+                state.player.health += healAmount;
+
+                logMessage(`💚 Kraft Sammeln heilt dich um ${healAmount} Leben.`, 'heal');
+
+                // Temporärer Schadensbonus für nächste Runde
+                state.player.tempAttackBonus = (state.player.tempAttackBonus || 0) + spentMana;
+                logMessage(`⚔️ Du bekommst +${spentMana} Angriff für deine nächste Runde.`, 'buff');
+            } else {
+                logMessage(`🌀 Kein Mana verfügbar – Effekt von Kraft Sammeln entfällt.`, 'system');
+            }
+            break;
+        }
         case 'damage':
         let damageDealt = (typeof card.basePower === 'number' ? card.basePower : card.power);
 
@@ -2302,6 +2456,13 @@ function executeCardEffect(card) {
                     damageDealt -= 1;
                     logMessage('⚠️ Schildmeister: Schwert macht 1 weniger Schaden.', 'system');
                 }
+            }
+
+            //Kraft sammeln
+            if (state.player.tempAttackBonus) {
+                damageDealt += state.player.tempAttackBonus;
+                logMessage(`💥 Kraftbonus: +${state.player.tempAttackBonus} Schaden!`, 'buff');
+                state.player.tempAttackBonus = 0; // BONUS AUCH ZURÜCKSETZEN!
             }
 
             // Märtyrer-Bonus erst jetzt anwenden
@@ -2321,8 +2482,19 @@ function executeCardEffect(card) {
                     state.currentEnemy.minions.shift();
                 }
             } else {
-                state.currentEnemy.health -= damageDealt;
-                logMessage(`${state.currentEnemy.name} erleidet ${damageDealt} Schaden.`, 'enemy');
+                let blockUsed = Math.min(state.currentEnemy.block || 0, damageDealt);
+                if (blockUsed > 0) {
+                    state.currentEnemy.block -= blockUsed;
+                    logMessage(`${state.currentEnemy.name} blockt ${blockUsed} Schaden.`, 'block');
+                }
+
+                const remainingDamage = damageDealt - blockUsed;
+                if (remainingDamage > 0) {
+                    state.currentEnemy.health -= remainingDamage;
+                    logMessage(`${state.currentEnemy.name} erleidet ${remainingDamage} Schaden.`, 'enemy');
+                } else {
+                    logMessage(`${state.currentEnemy.name} blockt den gesamten Schaden!`, 'block');
+                }
             }
 
             // 🪓 Kritischer Treffer durch Katryns Axt
@@ -2419,7 +2591,15 @@ function executeCardEffect(card) {
         case 'lifesteal':
             let lsDamage = card.power;
             logMessage(`${state.currentEnemy.name} erleidet ${lsDamage} Schaden.`, 'enemy');
-            state.currentEnemy.health -= lsDamage;
+            let enemyBlockUsed = Math.min(state.currentEnemy.block || 0, damageDealt);
+            if (enemyBlockUsed > 0) {
+                state.currentEnemy.block -= enemyBlockUsed;
+                logMessage(`${state.currentEnemy.name} blockt ${enemyBlockUsed} Schaden.`, 'block');
+            }
+            const remainingDamage = damageDealt - enemyBlockUsed;
+            if (remainingDamage > 0) {
+                state.currentEnemy.health -= remainingDamage;
+            }
 
             // Lifesteal der Karte (direkt, unabhängig von Upgrade)
             const healFromCardLifesteal = Math.min(card.healAmount || 0, state.player.maxHealth - state.player.health);
@@ -2432,36 +2612,47 @@ function executeCardEffect(card) {
             setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
             break;
 
-        case 'firearrow':
-            let fireDamage = card.power;
+            case 'firearrow':
+                let fireDamage = card.power;
 
-            // Doppelter Schaden bei Eis-Gegner
-            if (state.currentEnemy.traits?.includes('Eis-Elementar')) {
-                fireDamage *= 2;
-                logMessage(`🔥 Effektiv! ${state.currentEnemy.name} erhält doppelten Schaden durch Feuer.`, 'system');
-            }
+                // Doppelter Schaden bei Eis-Gegner
+                if (state.currentEnemy.traits?.includes('Eis-Elementar')) {
+                    fireDamage *= 2;
+                    logMessage(`🔥 Effektiv! ${state.currentEnemy.name} erhält doppelten Schaden durch Feuer.`, 'system');
+                }
 
-            state.currentEnemy.health -= fireDamage;
-            logMessage(`${state.currentEnemy.name} erleidet ${fireDamage} Schaden durch Feuerpfeil.`, 'enemy');
-            enemyContainerElem.classList.add('hit');
-            setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
+                // Block berücksichtigen
+                const enemyBlock = state.currentEnemy.block || 0;
+                const blockUsed = Math.min(enemyBlock, fireDamage);
+                const damageAfterBlock = Math.max(0, fireDamage - blockUsed);
 
-            // 50% Verbrennungs-Chance
-            if (Math.random() < 0.5) {
-                const alreadyBurning = state.currentEnemy.statusEffects?.some(e => e.type === 'burn');
-                if (!alreadyBurning) {
-                    state.currentEnemy.statusEffects.push({
-                        type: 'burn',
-                        power: 5,
-                        remaining: 2
-                    });
-                    logMessage(`${state.currentEnemy.name} wird verbrannt! (5 Schaden für 2 Runden)`, 'burn'); // ✅ richtiger Typ
-                } else {
-                    logMessage(`${state.currentEnemy.name} ist bereits verbrannt.`, 'system');
+                if (blockUsed > 0) {
+                    state.currentEnemy.block -= blockUsed;
+                    logMessage(`🛡️ ${state.currentEnemy.name} blockt ${blockUsed} Schaden.`, 'block');
+                }
+
+                state.currentEnemy.health -= damageAfterBlock;
+                logMessage(`${state.currentEnemy.name} erleidet ${damageAfterBlock} Schaden durch Feuerpfeil.`, 'enemy');
+
+                enemyContainerElem.classList.add('hit');
+                setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
+
+                // 50% Verbrennungs-Chance
+                if (Math.random() < 0.5) {
+                    const alreadyBurning = state.currentEnemy.statusEffects?.some(e => e.type === 'burn');
+                    if (!alreadyBurning) {
+                        state.currentEnemy.statusEffects.push({
+                            type: 'burn',
+                            power: 5,
+                            remaining: 2
+                        });
+                        logMessage(`${state.currentEnemy.name} wird verbrannt! (5 Schaden für 2 Runden)`, 'burn');
+                    } else {
+                        logMessage(`${state.currentEnemy.name} ist bereits verbrannt.`, 'system');
+                    }
                     updateEnemyUI();
                 }
-            }
-            break;
+                break;
 
         case 'gamble':
                 if (Math.random() < 0.5) {
@@ -2533,7 +2724,9 @@ function executeCardEffect(card) {
             // Fülle Mana komplett auf
             state.player.mana = state.player.maxMana;
 
+
             updateUIDisplay(); // UI sofort aktualisieren
+            
 
             // Jetzt Zug beenden – turnInProgress wird dort korrekt gesetzt
             setTimeout(() => {
@@ -2542,9 +2735,9 @@ function executeCardEffect(card) {
         }
 
     
-        // PLATZHALTER - Hier kommt die Gegner-KI rein
+
 // --- Gegnerzug-Logik ---
-            function applyEnemyTraitEffectsBeforeAttack() {
+        function applyEnemyTraitEffectsBeforeAttack() {
                 const enemy = state.currentEnemy;
 
                 if (!enemy.traitRounds) enemy.traitRounds = 0;
@@ -2566,14 +2759,14 @@ function executeCardEffect(card) {
                             name: 'Skelett',
                             health: 5,
                             maxHealth: 5,
-                            attack: 2,
+                            attack: 3,
                             pixelImageKey: 'Skelett' // Bildname, z. B. 'Skelett.png'
                         },
                         {
                             name: 'Skelett',
                             health: 5,
                             maxHealth: 5,
-                            attack: 2,
+                            attack: 3,
                             pixelImageKey: 'Skelett'
                         }
                     );
@@ -2625,6 +2818,9 @@ function executeCardEffect(card) {
 
 
             function enemyTurn() {
+
+                state.turnInProgress = true;
+
                 if (!state.currentEnemy || state.currentEnemy.health <= 0) {
                     logMessage(`Kein gültiger Gegner vorhanden.`, 'system');
                     startNewTurn();
@@ -2738,7 +2934,6 @@ function executeCardEffect(card) {
                 } else {
                     setTimeout(startNewTurn, 800); // Immer neue Runde einleiten, wenn nicht tot
                 }
-
             }
 
 
@@ -2806,6 +3001,14 @@ function executeCardEffect(card) {
              state.round++;
              logMessage(`--- Runde ${state.round} beginnt ---`, 'system');
 
+            state.currentEnemy.block = 0;
+
+                 // RÜSTUNG: 5 Block pro Runde
+            if (state.currentEnemy.traits?.includes('Rüstung')) {
+                 state.currentEnemy.block = (state.currentEnemy.block || 0) + 5;
+                logMessage(`${state.currentEnemy.name} erhält 5 Block durch Rüstung.`, 'block');
+             }
+
              // ✅ Blutrüstung heilt 2 Leben
              if (state.player.hasBloodArmor && state.player.health < state.player.maxHealth) {
                 const heal = Math.min(2, state.player.maxHealth - state.player.health);
@@ -2833,6 +3036,8 @@ function executeCardEffect(card) {
                 state.player.mana + baseRegen + bonusRegen,
                 state.player.maxMana
                 );
+
+                state.usedPowerSurgeThisTurn = false;
 
         // Zieht so viele Karten, bis die Hand (ohne Sonderkarten) voll ist
             const handCount = state.player.hand.filter(c => c.name !== 'Donner-Zauber').length;

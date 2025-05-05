@@ -187,21 +187,38 @@ const SHOP_ITEMS = [
   }
   
   function updatePlayerItemIcons() {
-    const container = document.getElementById('playerStatusDisplay');
+    const container = document.getElementById('playerItemIcons'); // RICHTIGER Container!
     if (!container) return;
-  
+
+    container.innerHTML = ''; // Vorherigen Inhalt leeren
+
     const icons = [];
-  
+
     if (state.player.hasBloodArmor) {
-      icons.push('<img src="images/blutrüstung.png" alt="Blutrüstung" title="Regeneriert jede Runde 2 Leben." class="item-icon" />');
+        icons.push(`
+            <span class="item-icon-wrapper" data-tooltip="Regeneriert jede Runde 2 Leben.">
+                <img src="images/blutrüstung.png" alt="Blutrüstung" class="item-icon" />
+            </span>
+        `);
     }
+
     if (state.player.critChance) {
-      icons.push('<img src="images/katryns-axt.png" alt="Katryns Axt" title="30 % kritische Trefferchance" class="item-icon" />');
+        icons.push(`
+            <span class="item-icon-wrapper" data-tooltip="30 % kritische Trefferchance">
+                <img src="images/katryns-axt.png" alt="Katryns Axt" class="item-icon" />
+            </span>
+        `);
     }
-    if (playerInventory.has('donner')) {
-      icons.push('<img src="images/donner.png" alt="Donner-Zauber" title="Einmalige Karte: 25 Schaden, kein Mana" class="item-icon" />');
+
+    if (playerInventory && playerInventory.has('donner')) {
+        icons.push(`
+            <span class="item-icon-wrapper" data-tooltip="Einmalige Karte: 25 Schaden, kein Mana">
+                <img src="images/donner.png" alt="Donner-Zauber" class="item-icon" />
+            </span>
+        `);
     }
-  
+
     container.innerHTML = icons.join('');
-  }
+}
+
   
