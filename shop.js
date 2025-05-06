@@ -37,7 +37,7 @@ const SHOP_ITEMS = [
       id: 'lotus',
       name: 'Lotus Trank',
       cost: 350,
-      description: 'Einmalige Karte: Heilt dich vollständig. Kein Mana, kein Kartenplatz.',
+      description: 'Einmalige Karte: Heilt dich vollständig. Kostet kein Mana.',
       icon: 'images/lotus.png',
       effect: 'lotus'
     },

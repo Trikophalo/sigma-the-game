@@ -3685,11 +3685,11 @@ function executeCardEffect(card) {
                 state.usedPowerSurgeThisTurn = false;
 
         // Zieht so viele Karten, bis die Hand (ohne Sonderkarten) voll ist
-            const handCount = state.player.hand.filter(c => c.name !== 'Donner-Zauber').length;
-            const missingCards = state.player.maxHandSize - handCount;
-            if (missingCards > 0) {
-                drawCards(missingCards);
-            }
+        const handCount = state.player.hand.filter(c => c.name !== 'Donner-Zauber' && c.name !== 'Lotus-Trank').length;
+        const missingCards = state.player.maxHandSize - handCount;
+        if (missingCards > 0) {
+            drawCards(missingCards);
+        }
 
              // PET-AKTION MIT ANIMATION
              if (state.player.activePet) {
