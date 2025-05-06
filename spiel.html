@@ -3671,7 +3671,7 @@ function executeCardEffect(card) {
 
              // ✅ Blutrüstung heilt 2 Leben
              if (state.player.hasBloodArmor && state.player.health < state.player.maxHealth) {
-                const heal = Math.min(2, state.player.maxHealth - state.player.health);
+                const heal = Math.min(3, state.player.maxHealth - state.player.health);
                 if (heal > 0) {
                     state.player.health += heal;
                     logMessage(`🩸 Blutrüstung heilt ${heal} Leben.`, 'heal');
