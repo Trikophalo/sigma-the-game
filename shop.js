@@ -308,6 +308,14 @@ const SHOP_ITEMS = [
         `);
     }
 
+    if (playerInventory && playerInventory.has('lotus')) {
+      icons.push(`
+          <span class="item-icon-wrapper" data-tooltip="Einmalige Karte: Heilt dich komplett">
+              <img src="images/lotus.png" alt="Lotus Trank" class="item-icon" />
+          </span>
+      `);
+  }
+
     if (state.player.hasThorns) {
       icons.push(`
           <span class="item-icon-wrapper" data-tooltip="Fügt dem Gegner 20 % Rückstoß-Schaden zu.">

@@ -2708,6 +2708,13 @@ h2 {
                     break;
                 }
 
+                while (drawnCount < numCards) {
+                const handCount = state.player.hand.filter(c => c.name !== 'Lotus Trank').length;
+                if (handCount >= state.player.maxHandSize) {
+                    logMessage(`Hand ist voll. Ziehen gestoppt.`, 'discard');
+                    break;
+                }
+
                 // Deck leer → Mische Ablagestapel
                 if (state.player.deck.length === 0) {
                     if (state.player.discardPile.length === 0) {
@@ -2818,6 +2825,7 @@ h2 {
 
                 // Entferne Donner-Zauber aus dem Inventar (damit das Icon verschwindet)
                 playerInventory.delete('donner');
+                playerInventory.delete('lotus');
 
                 updatePlayerItemIcons(); // UI-Update
             } else {
