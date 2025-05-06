@@ -1663,7 +1663,7 @@ h2 {
                  <div>Max Mana: <span id="playerMaxManaDisplay">3</span></div> <div>Handgröße: <span id="maxHandSizeDisplay">5</span></div>
             </div>
              <div class="stats-column">
-                 <div>Update: <span id="playerLifestealDisplay">1.22</span>%</div>
+                 <div>Update: 1.22</div>
                  <div>Highscore: <span id="highScoreDisplay">0</span></div>
             </div>
         </div>
@@ -1970,7 +1970,7 @@ h2 {
         }
 
         // Hilfsfunktion für gewichtete Upgrade-Auswahl
-        function getWeightedUpgrades(pool, superRareWeight = 0.4, rareWeight = 1, commonWeight = 5) {
+        function getWeightedUpgrades(pool, superRareWeight = 1, rareWeight = 10, commonWeight = 50) {
             const weighted = [];
 
             for (const upg of pool) {
@@ -3915,7 +3915,7 @@ if (state.player.hellhound) {
                 };
 
                 const availableUpgrades = UPGRADE_TYPES.filter(upg => upg.type !== 'gain_gold');
-                const weightedPool = getWeightedUpgrades(availableUpgrades, 0.4, 1, 5); //Upgrade wahrscheinlichkeit
+                const weightedPool = getWeightedUpgrades(availableUpgrades, 1, 10, 50); //Upgrade wahrscheinlichkeit
                 const chosenUpgrades = [goldOption, ...weightedPool.slice(0, 2)];
 
                 // Zusätzliche Option "Totenkeule" nur für Untoten
