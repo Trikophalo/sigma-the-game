@@ -432,7 +432,17 @@
       </div>   
     </div>
 
-    <button onclick="startGame()" id="startButton">Neues Spiel starten</button>
+    <div style="display: flex; gap: 15px; justify-content: center;">
+      <button id="monsterWikiButton" style="padding: 8px 16px; font-size: 14px;">
+        📚 Monster-Wiki
+      </button>
+      <button id="cardWikiButton" style="padding: 8px 16px; font-size: 14px;">
+        🃏 Karten-Wiki
+      </button>
+      <button onclick="startGame()" id="startButton">Neues Spiel starten</button>
+    </div>
+    
+    
 
     <div id="leaderboardDisplay" style="margin-top: 30px;">
       <h3>🏆 Highscore-Liste</h3>
@@ -441,6 +451,62 @@
     
     
   </div>
+
+
+
+  <div id="monsterWikiModal" style="display:none;">
+    <div style="
+      position: fixed;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      max-width: 850px;
+      max-height: 80vh;
+      overflow-y: auto;
+      background-color: var(--card-bg);
+      color: var(--text-primary);
+      border: 2px solid var(--accent-color);
+      border-radius: 12px;
+      padding: 20px;
+      z-index: 1000;
+      box-shadow: 0 0 30px var(--accent-glow);
+    ">
+      <h2 style="margin-bottom: 15px;">🧟 Monster-Wiki</h2>
+      <div id="monsterList" style="text-align: left; font-family: monospace;"></div>
+      <button onclick="closeMonsterWiki()" style="margin-top: 20px;">Schließen</button>
+    </div>
+  </div>
+  
+  <div id="cardWikiModal" style="display:none;">
+    <div style="
+      position: fixed;
+      top: 8%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 95%;
+      max-width: 1000px;
+      max-height: 80vh;
+      overflow-y: auto;
+      background-color: var(--card-bg);
+      color: var(--text-primary);
+      border: 2px solid var(--accent-color);
+      border-radius: 12px;
+      padding: 20px;
+      z-index: 1000;
+      box-shadow: 0 0 30px var(--accent-glow);
+    ">
+      <h2 style="margin-bottom: 15px;">🃏 Karten-Wiki</h2>
+      <div id="cardList" style="
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 15px;
+      "></div>
+      <button onclick="closeCardWiki()" style="margin-top: 20px;">Schließen</button>
+    </div>
+  </div>
+  
+  
 
   <script>
     let selectedPassive = 'swordfighter';
@@ -679,6 +745,99 @@ db.collection("highscores")
   .catch(err => {
     console.warn("⚠️ Highscore konnte nicht geladen werden:", err);
   });
+
+
+  const monsters = [
+                { name: 'Goblin', health: 20, attack: 5, levelMin: 1, levelMax: 5, xp: 35, gold: 70, pixelImageKey: 'Goblin', description: 'Ein kleiner, flinker Goblin.', traits: ['Keine Fähigkeit'] },
+                { name: 'Gepanzertes Skelett', health: 25, attack: 4, levelMin: 2, levelMax: 6, xp: 55, gold: 85, pixelImageKey: 'armorskelett', description: 'Ein ehmaliger stolzer Krieger.', traits: ['Rüstung'] },
+                { name: 'Ork', health: 35, attack: 5, levelMin: 3, levelMax: 7, xp: 60, gold: 65, pixelImageKey: 'Ork', description: 'Ein brutaler Ork-Krieger.', traits: ['Stark'] },
+                { name: 'Riesen Spinne', health: 40, attack: 6, levelMin: 4, levelMax: 7, xp: 65, gold: 110, pixelImageKey: 'Riesen Spinne', description: 'Spuckt lähmendes Gift.', traits: ['Giftig'] }, // 'Netzwerfer' Effekt muss implementiert werden
+                { name: 'Troll', health: 50, attack: 8, levelMin: 5, levelMax: 9, xp: 70, gold: 120, pixelImageKey: 'Troll', description: 'Regeneriert 3 Leben pro Runde.', traits: ['Regeneration', 'Massiv'], regen: 3 }, // Regeneration implementiert
+                { name: 'Donnerschlange', health: 45, attack: 9, levelMin: 6, levelMax: 10, xp: 120, gold: 135, pixelImageKey: 'snake', description: 'Eine lähmende Donnerschlange', traits: ['Statisch'] },
+                { name: 'Nekromant', health: 50, attack: 7, levelMin: 8, levelMax: 12, xp: 80, gold: 160, pixelImageKey: 'Nekromant', description: 'Schwächt dich oder ruft Diener.', traits: ['Untotenbeschwörer'] }, // Effekte müssen implementiert werden
+                { name: 'Eiskönig', health: 65, attack: 9, levelMin: 9, levelMax: 13, xp: 100, gold: 180, pixelImageKey: 'Eiskönig', description: 'Verlangsamt dich mit Kälte.', traits: ['Eis-Elementar', 'Frost-Aura'] }, // Effekte müssen implementiert werden
+                { name: 'Baby Drache', health: 60, attack: 11, levelMin: 10, levelMax: 14, xp: 120, gold: 230, pixelImageKey: 'BabyDrache', description: 'Speit Feuerstöße.', traits: ['Verspielt', 'Feueratem'] }, // Effekte müssen implementiert werden
+                { name: 'Charged Golem', health: 70, attack: 9, levelMin: 11, levelMax: 15, xp: 170, gold: 260, pixelImageKey: 'golem', description: 'Mächtiger Elementar Golem.', traits: ['Statisch', 'Regeneration'], regen: 3 }, // Effekte müssen implementiert werden
+                { name: 'Dracula', health: 65, attack: 9, levelMin: 12, levelMax: 16, xp: 190, gold: 300, pixelImageKey: 'drakula', description: 'Dein Blut macht ihn stärker.', traits: ['Vamp', 'Stark'] }, // Effekte müssen implementiert werden
+                { name: 'Dämon', health: 75, attack: 12, levelMin: 13, levelMax: 18, xp: 280, gold: 360, pixelImageKey: 'demon', description: 'Feuer und Schatten. Resistent.', traits: ['Höllen Krallen'] }, // Effekte müssen implementiert werden
+                { name: 'Verfluchter Ritter', health: 70, attack: 9, levelMin: 14, levelMax: 18, xp: 360, gold: 400, pixelImageKey: 'CursedKnight', description: 'Ein wandelnde Geisterrüstung', traits: ['Rüstung', 'Krieger']}, // Effekte müssen implementiert werden
+                { name: 'Erzengel', health: 90, attack: 12, levelMin: 15, levelMax: 19, xp: 400, gold: 450, pixelImageKey: 'Erzengel', description: 'Ein mächtiger gefallener Engel.', traits: ['Segen', 'Fliegend'] }, // Effekte müssen implementiert werden
+                { name: 'Gargoyle', health: 95, attack: 14, levelMin: 16, levelMax: 20, xp: 450, gold: 480, pixelImageKey: 'Gargoyle', description: 'Einst da um die Menschen zu beschützen. Jetzt ein unbändiges Monster', traits: ['Gepanzerte Schuppen'] }, 
+                { name: 'Drache', health: 110, attack: 16, levelMin: 17, levelMax: 21, xp: 650, gold: 600, pixelImageKey: 'Drache', description: 'Ein mächtiger, alter Drache.', traits: ['Feueratem', 'Fliegend', 'Gepanzerte Schuppen'] }, 
+                { name: 'Teufel', health: 70, attack: 5, levelMin: 18, levelMax: 23, xp: 750, gold: 800, pixelImageKey: 'Teufel', description: 'Der Herrscher der Unterwelt.', traits: ['Höllenwache'] },
+                { name: 'Rainbow', health: 80, attack: 10, levelMin: 19, levelMax: 24, xp: 800, gold: 800, pixelImageKey: 'Rainbow', description: 'Der einzig wahre Elementar Herrscher', traits: ['Frost-Aura', 'Giftig', 'Feueratem'] },
+                { name: 'Yagdril', health: 130, attack: 15, levelMin: 20, levelMax: 100, xp: 1000, gold: 1000, pixelImageKey: 'Yagdril', description: 'Ein Wesen dessen Macht unbeschreiblich ist', traits: ['Fliegend', 'Segen'] } 
+];
+
+document.getElementById("monsterWikiButton").addEventListener("click", function () {
+  const container = document.getElementById("monsterList");
+  container.innerHTML = monsters.map(monster => `
+    <div style="display: flex; align-items: center; gap: 15px; padding: 10px 0; border-bottom: 1px solid #333;">
+      <img src="images/${monster.pixelImageKey}.png" alt="${monster.name}" style="width: 48px; height: 48px; image-rendering: pixelated;" />
+      <div>
+        <strong>${monster.name}</strong> (Lvl ${monster.levelMin}-${monster.levelMax})<br/>
+        ❤️ ${monster.health} | 🗡️ ${monster.attack} | ⭐ Spawn Level: ${monster.levelMin} | 💰 ${monster.gold}<br/>
+        🧬 Traits: ${monster.traits.join(', ')}
+      </div>
+    </div>
+  `).join('');
+  document.getElementById("monsterWikiModal").style.display = "block";
+});
+
+function closeMonsterWiki() {
+  document.getElementById("monsterWikiModal").style.display = "none";
+}
+
+const cards = [
+  { id: 1, name: 'Schwert', icon: '⚔️', description: 'Ein einfaches Schwert.', power: 5, effect: 'damage', manaCost: 2, weight: 11 },
+  { id: 2, name: 'Schild', icon: '🛡️', description: 'Erhalte 5 Block', power: 5, effect: 'block', manaCost: 2, weight: 1 },
+  { id: 3, name: 'Heilung', icon: '❤️', description: 'Heilt 8 Leben', power: 8, effect: 'heal', manaCost: 3, weight: 2 },
+  { id: 4, name: 'Gift', icon: '☠️', description: 'Vergiftet (2 Schaden, 3 Rd.) Falls bereit Vergitet mache 3 Schaden', power: 2, duration: 3, effect: 'poison', manaCost: 1, weight: 1 },
+  { id: 5, name: 'Blitz', icon: '⚡', description: '12 Schaden, Paralysiert Gegner zu 45%', power: 12, effect: 'damage_paralyze', manaCost: 4, weight: 2 },
+  { id: 6, name: 'Großer Schlag', icon: '💥', description: 'Fügt 15 Schaden zu', power: 15, effect: 'damage', manaCost: 4, weight: 2 },
+  { id: 7, name: 'Meditieren', icon: '🧘', description: 'Ziehe 1 Karte', power: 1, effect: 'draw', manaCost: 0, weight: 1 },
+  { id: 8, name: 'Vampirbiss', icon: '🧛', description: '8 Schaden, heilt 8', power: 8, healAmount: 8, effect: 'lifesteal', manaCost: 4, weight: 2 },
+  { id: 9, name: 'Manatrank', icon: '🧪', description: 'Erhalte 2 Mana', power: 2, effect: 'gain_mana', manaCost: 0, weight: 3 },
+  { id: 10, name: 'Fokus', icon: '🎯', description: 'Ziehe 2 Karten', power: 2, effect: 'draw', manaCost: 1, weight: 1 },
+  { id: 11, name: 'Heilige Macht', icon: '✨', description: 'Fügt 25 Schaden zu', power: 25, effect: 'damage', manaCost: 6, weight: 1 },
+  { id: 12, name: 'Genesung', icon: '💖', description: 'Heilt 15 Leben', power: 15, effect: 'heal', manaCost: 5, weight: 1 },
+  { id: 13, name: 'Feuerpfeil', icon: '🔥', description: '12 Schaden + Verbrennung (50%)', power: 12, effect: 'firearrow', manaCost: 5, weight: 2 },
+  { id: 14, name: 'Gambler’s Luck', icon: '🎲', description: '5 Schaden ODER erhalte Gold', power: 5, effect: 'gamble', manaCost: 0, weight: 1 },
+  { id: 15, name: 'Kraft Sammeln', icon: '🔋', description: 'Heilt dich um gesamtes Mana. Boost i.H.v. Manakosten -1', power: 0, effect: 'power_surge', manaCost: 'X', weight: 1 },
+  { id: 16, name: 'Klingenwirbel', icon: '🌀', description: 'Angriff auf mehrere Gegner. Ignoriert Block.', power: 8, effect: 'whirlwind', manaCost: 3, weight: 2 },
+  { id: 17, name: 'Todesklinge', icon: '⚔️', description: '25 Schaden. Die stärkste aller Schwerter.', power: 30, effect: 'damage', manaCost: 4, weight: 1, rarity: 'superrare' },
+  { id: 18, name: 'Mana Oase', icon: '🧪', description: 'Erhalte 5 Mana', power: 5, effect: 'gain_mana', manaCost: 0, weight: 1, rarity: 'superrare' },
+  { id: 19, name: 'Blutrausch', icon: '🧛', description: '25 Schaden, heilt 15', power: 25, healAmount: 15, effect: 'lifesteal', manaCost: 7, weight: 1, rarity: 'superrare' },
+  { id: 20, name: 'Unwetter', icon: '🌩️', description: 'Paralysiert (2 Runden Angriff halbiert)', power: 0, effect: 'paralyze', manaCost: 2, weight: 2 }
+];
+
+document.getElementById("cardWikiButton").addEventListener("click", function () {
+  const container = document.getElementById("cardList");
+  container.innerHTML = cards.map(card => `
+    <div style="
+      background: linear-gradient(145deg, var(--card-bg), #2a2a3a);
+      border: 2px solid ${card.rarity === 'superrare' ? 'gold' : '#444'};
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 14px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    ">
+      <div style="font-size: 22px;">${card.icon}</div>
+      <strong>${card.name}</strong><br/>
+      <small style="color: var(--text-secondary);">${card.description}</small><br/>
+      <div style="margin-top: 6px;">
+        💥 Power: ${card.power} <br/>
+        🔮 Mana: ${card.manaCost} <br/>
+        🧠 Effekt: ${card.effect}
+      </div>
+    </div>
+  `).join('');
+  document.getElementById("cardWikiModal").style.display = "block";
+});
+
+function closeCardWiki() {
+  document.getElementById("cardWikiModal").style.display = "none";
+}
 
 
   </script>
