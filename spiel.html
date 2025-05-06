@@ -1663,7 +1663,7 @@ h2 {
                  <div>Max Mana: <span id="playerMaxManaDisplay">3</span></div> <div>Handgröße: <span id="maxHandSizeDisplay">5</span></div>
             </div>
              <div class="stats-column">
-                 <div>Update: 1.22</div>
+                 <div>Update: <span id="playerLifestealDisplay">1.22</span>%</div>
                  <div>Highscore: <span id="highScoreDisplay">0</span></div>
             </div>
         </div>
@@ -1970,7 +1970,7 @@ h2 {
         }
 
         // Hilfsfunktion für gewichtete Upgrade-Auswahl
-        function getWeightedUpgrades(pool, superRareWeight = 1, rareWeight = 15, commonWeight =45) {
+        function getWeightedUpgrades(pool, superRareWeight = 1, rareWeight = 15, commonWeight = 45) {
             const weighted = [];
 
             for (const upg of pool) {
@@ -3685,11 +3685,11 @@ function executeCardEffect(card) {
                 state.usedPowerSurgeThisTurn = false;
 
         // Zieht so viele Karten, bis die Hand (ohne Sonderkarten) voll ist
-        const handCount = state.player.hand.filter(c => c.name !== 'Donner-Zauber' && c.name !== 'Lotus-Trank').length;
-        const missingCards = state.player.maxHandSize - handCount;
-        if (missingCards > 0) {
-            drawCards(missingCards);
-        }
+            const handCount = state.player.hand.filter(c => c.name !== 'Donner-Zauber').length;
+            const missingCards = state.player.maxHandSize - handCount;
+            if (missingCards > 0) {
+                drawCards(missingCards);
+            }
 
              // PET-AKTION MIT ANIMATION
              if (state.player.activePet) {
