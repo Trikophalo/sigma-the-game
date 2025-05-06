@@ -3713,7 +3713,10 @@ function executeCardEffect(card) {
         petImage.classList.add('wobble');
         setTimeout(() => petImage.classList.remove('wobble'), 300);
     }
-
+//FALLS KAPUTT
+    if (state.currentEnemy.health <= 0) {
+            checkEnemyDefeat();
+        }
     setTimeout(() => {
         state.currentEnemy.health -= damage;
         state.player.block += blockGain;
