@@ -40,8 +40,31 @@ const SHOP_ITEMS = [
       description: 'Einmalige Karte: Heilt dich vollständig. Kein Mana, kein Kartenplatz.',
       icon: 'images/lotus.png',
       effect: 'lotus'
-    }
-    
+    },
+    {
+      id: 'pet_gawa',
+      name: 'Pet: Gawa',
+      cost: 3000,
+      description: '🐾 Gawa greift jeden Zug an und macht 4 Schaden. Kaufst du ein neues wird dein altes Pet ersetzt!',
+      icon: 'images/gawa.png',
+      effect: 'pet_gawa'
+    },
+    {
+      id: 'pet_lulu',
+      name: 'Pet: Lulu',
+      cost: 3000,
+      description: '🐾 Lulu macht 2 Schaden und gibt +1 Mana pro Runde. Kaufst du ein neues wird dein altes Pet ersetzt!',
+      icon: 'images/lulu.png',
+      effect: 'pet_lulu'
+    },
+    {
+      id: 'pet_cassa',
+      name: 'Pet: Cassa',
+      cost: 3000,
+      description: '🐾 Cassa macht 1 Schaden und gibt 3 Block pro Runde. Kaufst du ein neues wird dein altes Pet ersetzt!',
+      icon: 'images/cassa.png',
+      effect: 'pet_cassa'
+    }    
     
   ];
   
@@ -220,8 +243,35 @@ const SHOP_ITEMS = [
       logMessage('🌸 Lotus Trank wurde deinem Deck hinzugefügt.', 'system');
       break;
 
-
+      case 'pet_gawa':
+        state.player.activePet = {
+            name: 'Gawa',
+            effect: 'gawa',
+            icon: 'images/gawa.png'
+        };
+        logMessage('🐾 Gawa begleitet dich ab jetzt!', 'system');
+        break;
+    
+    case 'pet_lulu':
+        state.player.activePet = {
+            name: 'Lulu',
+            effect: 'lulu',
+            icon: 'images/lulu.png'
+        };
+        logMessage('✨ Lulu ist nun an deiner Seite!', 'system');
+        break;
+    
+    case 'pet_cassa':
+        state.player.activePet = {
+            name: 'Cassa',
+            effect: 'cassa',
+            icon: 'images/cassa.png'
+        };
+        logMessage('🛡️ Cassa schützt dich treu!', 'system');
+        break;
+    
     }
+    updatePetDisplay();
     updateUIDisplay();
     updatePlayerItemIcons();
   }

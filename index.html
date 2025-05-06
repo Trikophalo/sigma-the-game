@@ -417,13 +417,19 @@
         <strong>Goldjunge</strong>
         <p>Starte mit 1000 Gold</p>
         <em>Freigeschaltet nach Sieg über Nekromant</em>
-      </div>
+      </div>   
 
       <div class="passive-option locked" data-passive="dragonscale">
         <strong>Drachenschuppen</strong>
-        <p>Immun gegen Statuseffekte. Verbrenne Gegner zu 10%.</p>
+        <p>Immun gegen Statuseffekte. Verbrenne Gegner zu 20%.</p>
         <em>Freigeschaltet nach Sieg über Drache</em>
       </div>
+
+      <div class="passive-option locked" data-passive="undead">
+        <strong>Totenbeschwörer</strong>
+        <p>Beschwöre einen Teufelshund an deiner Seite.<br/>Verbesserbar mit Totenkeule.</p>
+        <em>Freigeschaltet nach Sieg über Teufel</em>
+      </div>   
     </div>
 
     <button onclick="startGame()" id="startButton">Neues Spiel starten</button>
@@ -593,6 +599,7 @@
       // Unlock-Status prüfen
       if (localStorage.getItem('unlockedGoldboy') === 'true') unlockPassive('goldboy');
       if (localStorage.getItem('unlockedDragonscale') === 'true') unlockPassive('dragonscale');
+      if (localStorage.getItem('unlockedUndead') === 'true') unlockPassive('undead');
     });
 
     // Funktion zum Erstellen von Partikeln

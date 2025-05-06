@@ -265,6 +265,74 @@ h2 {
     gap: 5px;
 }
 
+#petContainer {
+    position: absolute;
+    left: 60px; /* links vom Spieler – bleibt gleich */
+    top: 90px;
+    display: flex;
+    flex-direction: column; /* untereinander */
+    align-items: center;
+    gap: 10px; /* Abstand zwischen Pets */
+    z-index: 20; /* sicher über Hintergrund */
+}
+
+.pet-tooltip-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column; /* Tooltip über oder unter Bild */
+    align-items: center;
+}
+
+.pet-image {
+    width: 70px;
+    height: 70px;
+    background-color: rgba(0, 0, 0, 0.2);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    border: 3px solid var(--player-color);
+    border-radius: var(--border-radius);
+    image-rendering: pixelated;
+    transition: all var(--anim-medium) ease;
+    box-shadow: 0 0 15px rgba(80, 224, 80, 0.2);
+    position: relative;
+    pointer-events: auto;
+    overflow: hidden;
+}
+
+.pet-image.wobble {
+    animation: petWobble 0.4s ease-in-out;
+}
+
+.pet-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 110%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.85);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.pet-tooltip-wrapper:hover .pet-tooltip {
+    display: block;
+}
+
+
+@keyframes petWobble {
+  0%   { transform: translateY(0px); }
+  25%  { transform: translateY(-4px); }
+  50%  { transform: translateY(4px); }
+  75%  { transform: translateY(-4px); }
+  100% { transform: translateY(0px); }
+}
+
 .player-image {
     width: 110px;
     height: 110px;
@@ -1395,7 +1463,7 @@ h2 {
         }
         .status-effect.buff { color: var(--player-color-lighter); border-color: var(--player-color); }
         .status-effect.debuff { color: var(--accent-color-lighter); border-color: var(--accent-color); }
-    
+
         .item-icon {
             width: 28px; /* Größer */
             height: 28px;
@@ -1535,6 +1603,42 @@ h2 {
             flex-wrap: wrap;
         }
 
+        .status-effect[data-tooltip] {
+            position: relative;
+            cursor: help;
+            display: inline-block;
+        }
+
+        .status-effect[data-tooltip]::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #222;
+            color: #fff;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            white-space: nowrap;           /* ← Keine Umbrüche! */
+            max-width: none;               /* ← Keine feste Breite */
+            word-break: normal;
+            overflow-wrap: normal;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            z-index: 1000;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+        }
+
+        .status-effect[data-tooltip]:hover::after {
+            opacity: 1;
+        }
+        .minion-box.hellhound {
+            border: 2px solid crimson;
+            box-shadow: 0 0 10px rgba(255, 50, 50, 0.7);
+        }
+
     
     </style>
 </head>
@@ -1577,6 +1681,7 @@ h2 {
                 
                     <!-- Spielerbild -->
                     <div class="player-image" id="playerImage"></div>
+                    <div id="petContainer"></div>
                 
                     <!-- Statusanzeige (Effekte & Items) -->
                     <div class="player-status-container">
@@ -1699,21 +1804,22 @@ h2 {
                  { id: 2, name: 'Schild', icon: '🛡️', description: 'Erhalte 5 Block', power: 5, effect: 'block', manaCost: 2, weight: 1 },
                  { id: 3, name: 'Heilung', icon: '❤️', description: 'Heilt 8 Leben', power: 8, effect: 'heal', manaCost: 3, weight: 2 },
                  { id: 4, name: 'Gift', icon: '☠️', description: 'Vergiftet (2 Schaden, 3 Rd.) Falls bereit Vergitet mache 3 Schaden', power: 2, duration: 3, effect: 'poison', manaCost: 2, weight: 1 },
-                 { id: 5, name: 'Blitz', icon: '⚡', description: 'Fügt 12 Schaden zu', power: 12, effect: 'damage', manaCost: 3, weight: 2 },
+                 { id: 5, name: 'Blitz', icon: '⚡', description: 'Paralysiert den Gegner zu 45% (Halbiert den Angriff 2 Runden)', power: 12, effect: 'damage_paralyze', manaCost: 4, weight: 2 },
                  { id: 6, name: 'Großer Schlag', icon: '💥', description: 'Fügt 15 Schaden zu', power: 15, effect: 'damage', manaCost: 4, weight: 2 },
                  { id: 7, name: 'Meditieren', icon: '🧘', description: 'Ziehe 1 Karte', power: 1, effect: 'draw', manaCost: 0, weight: 1 },
                  { id: 8, name: 'Vampirbiss', icon: '🧛', description: '8 Schaden, heilt 8', power: 8, healAmount: 8, effect: 'lifesteal', manaCost: 4, weight: 2 }, // Direkte Heilung statt %
                  { id: 9, name: 'Manatrank', icon: '🧪', description: 'Erhalte 2 Mana', power: 2, effect: 'gain_mana', manaCost: 0, weight: 3 },
-                 { id: 10, name: 'Fokus', icon: '🎯', description: 'Ziehe 2 Karten', power: 2, effect: 'draw', manaCost: 2, weight: 2 },
+                 { id: 10, name: 'Fokus', icon: '🎯', description: 'Ziehe 2 Karten', power: 2, effect: 'draw', manaCost: 1, weight: 1 },
                  { id: 11, name: 'Heilige Macht', icon: '✨', description: 'Fügt 25 Schaden zu', power: 25, effect: 'damage', manaCost: 6, weight: 1 },
                  { id: 12, name: 'Genesung', icon: '💖', description: 'Heilt 15 Leben', power: 15, effect: 'heal', manaCost: 5, weight: 1 },
                  {id: 13, name: 'Feuerpfeil', icon: '🔥', description: 'Fügt 12 Schaden zu. 50% Chance auf Verbrennung (5 Schaden für 2 Runden).', power: 12, effect: 'firearrow', manaCost: 5, weight: 2},
                  {id: 14, name: 'Gambler’s Luck', icon: '🎲', description: 'Gegner nimmt 5 Schaden und du erhältst 100 Gold (Ignoriert Block) oder Du nimmst 5 Schaden.', power: 5, effect: 'gamble', manaCost: 0, weight: 1},
                  { id: 15, name: 'Kraft Sammeln', icon: '🔋', description: 'Heilt dich um dein gesamtes Mana.<br><br>Einmaliger Schadensboost i.H.v. Manakosten -1', power: 0, effect: 'power_surge', manaCost: 'X', weight: 1 },
                  {id: 16, name: 'Klingenwirbel', icon: '🌀', description: 'Greift mehrere Gegner gleichzeitig an. (Ignoriert Block.)', power: 8, effect: 'whirlwind', manaCost: 3, weight: 2},
-                 {id: 17, name: 'Todesklinge', icon: '⚔️', description: 'Ein einfaches Schwert.', power: 20, effect: 'damage', manaCost: 2, weight: 1, tags: ['sword'], rarity: 'superrare'},
+                 {id: 17, name: 'Todesklinge', icon: '⚔️', description: 'Die stärkste aller Schwerter. 25 Schaden.', power: 30, effect: 'damage', manaCost: 4, weight: 1, tags: ['sword'], rarity: 'superrare'},
                  {id: 18, name: 'Mana Oase', icon: '🧪', description: 'Erhalte 5 Mana', power: 5, effect: 'gain_mana', manaCost: 0, weight: 1, rarity: 'superrare'},
                  {id: 19, name: 'Blutrausch', icon: '🧛', description: '25 Schaden, heilt 15', power: 25, healAmount: 15, effect: 'lifesteal', manaCost: 7, weight: 1, rarity: 'superrare'},
+                 { id: 20, name: 'Unwetter', icon: '🌩️', description: 'Paralysiere den Gegner (Halbiert den Angriff 2 Runden)', power: 0, effect: 'paralyze', manaCost: 2, weight: 2 },
 
         ];
     
@@ -1733,7 +1839,12 @@ h2 {
                 'Dracula': IMAGE_FOLDER + 'Drakula.png',
                 'Drache': IMAGE_FOLDER + 'Drache.png',
                 'Verfluchter Ritter': IMAGE_FOLDER + 'CursedKnight.png',
-                'Gepanzertes Skelett': IMAGE_FOLDER + 'armorskelett.png'
+                'Gepanzertes Skelett': IMAGE_FOLDER + 'armorskelett.png',
+                'Donnerschlange': IMAGE_FOLDER + 'snake.png',
+                'Charged Golem': IMAGE_FOLDER + 'golem.png',
+                'Gargoyle': IMAGE_FOLDER + 'gargoyle.png',
+                'hund': IMAGE_FOLDER + 'hund.png',
+                'Teufel': IMAGE_FOLDER + 'teufel.png'
         };
         const PLAYER_PIXEL_IMAGE = IMAGE_FOLDER + 'Spieler.png';
     
@@ -1745,14 +1856,18 @@ h2 {
                 { name: 'Ork', health: 35, attack: 5, levelMin: 3, levelMax: 7, xp: 50, gold: 65, pixelImageKey: 'Ork', description: 'Ein brutaler Ork-Krieger.', traits: ['Stark'] },
                 { name: 'Riesen Spinne', health: 40, attack: 6, levelMin: 4, levelMax: 7, xp: 45, gold: 80, pixelImageKey: 'Riesen Spinne', description: 'Spuckt lähmendes Gift.', traits: ['Giftig'] }, // 'Netzwerfer' Effekt muss implementiert werden
                 { name: 'Troll', health: 50, attack: 8, levelMin: 5, levelMax: 9, xp: 70, gold: 100, pixelImageKey: 'Troll', description: 'Regeneriert 3 Leben pro Runde.', traits: ['Regeneration', 'Massiv'], regen: 3 }, // Regeneration implementiert
-                { name: 'Nekromant', health: 50, attack: 7, levelMin: 6, levelMax: 10, xp: 80, gold: 120, pixelImageKey: 'Nekromant', description: 'Schwächt dich oder ruft Diener.', traits: ['Untotenbeschwörer'] }, // Effekte müssen implementiert werden
-                { name: 'Eiskönig', health: 65, attack: 9, levelMin: 7, levelMax: 12, xp: 100, gold: 200, pixelImageKey: 'Eiskönig', description: 'Verlangsamt dich mit Kälte.', traits: ['Eis-Elementar', 'Frost-Aura'] }, // Effekte müssen implementiert werden
-                { name: 'Baby Drache', health: 60, attack: 11, levelMin: 8, levelMax: 13, xp: 120, gold: 300, pixelImageKey: 'Baby Drache', description: 'Speit Feuerstöße.', traits: ['Verspielt', 'Feueratem'] }, // Effekte müssen implementiert werden
-                { name: 'Dracula', health: 65, attack: 9, levelMin: 9, levelMax: 14, xp: 150, gold: 350, pixelImageKey: 'Dracula', description: 'Dein Blut macht ihn stärker.', traits: ['Vamp', 'Stark'] }, // Effekte müssen implementiert werden
-                { name: 'Dämon', health: 75, attack: 12, levelMin: 10, levelMax: 14, xp: 150, gold: 450, pixelImageKey: 'Dämon', description: 'Feuer und Schatten. Resistent.', traits: ['Höllen Krallen', 'Regeneration'], regen: 3 }, // Effekte müssen implementiert werden
-                { name: 'Verfluchter Ritter', health: 70, attack: 9, levelMin: 11, levelMax: 15, xp: 180, gold: 480, pixelImageKey: 'Verfluchter Ritter', description: 'Ein wandelnde Geisterrüstung', traits: ['Rüstung', 'Krieger']}, // Effekte müssen implementiert werden
-                { name: 'Erzengel', health: 100, attack: 12, levelMin: 12, levelMax: 16, xp: 200, gold: 550, pixelImageKey: 'Erzengel', description: 'Ein mächtiger gefallener Engel.', traits: ['Segen', 'Fliegend'] }, // Effekte müssen implementiert werden
-                { name: 'Drache', health: 140, attack: 16, levelMin: 15, levelMax: 20, xp: 250, gold: 600, pixelImageKey: 'Drache', description: 'Ein mächtiger, alter Drache.', traits: ['Feueratem', 'Fliegend', 'Gepanzerte Schuppen'] }, // Effekte müssen implementiert werden
+                { name: 'Donnerschlange', health: 45, attack: 9, levelMin: 6, levelMax: 10, xp: 120, gold: 125, pixelImageKey: 'Donnerschlange', description: 'Eine lähmende Donnerschlange', traits: ['Statisch'] },
+                { name: 'Nekromant', health: 50, attack: 7, levelMin: 8, levelMax: 12, xp: 80, gold: 150, pixelImageKey: 'Nekromant', description: 'Schwächt dich oder ruft Diener.', traits: ['Untotenbeschwörer'] }, // Effekte müssen implementiert werden
+                { name: 'Eiskönig', health: 65, attack: 9, levelMin: 9, levelMax: 13, xp: 100, gold: 200, pixelImageKey: 'Eiskönig', description: 'Verlangsamt dich mit Kälte.', traits: ['Eis-Elementar', 'Frost-Aura'] }, // Effekte müssen implementiert werden
+                { name: 'Baby Drache', health: 60, attack: 11, levelMin: 10, levelMax: 14, xp: 120, gold: 300, pixelImageKey: 'Baby Drache', description: 'Speit Feuerstöße.', traits: ['Verspielt', 'Feueratem'] }, // Effekte müssen implementiert werden
+                { name: 'Charged Golem', health: 70, attack: 7, levelMin: 11, levelMax: 15, xp: 150, gold: 330, pixelImageKey: 'Charged Golem', description: 'Mächtiger Elementar Golem.', traits: ['Statisch', 'Regeneration'], regen: 3 }, // Effekte müssen implementiert werden
+                { name: 'Dracula', health: 68, attack: 9, levelMin: 12, levelMax: 16, xp: 160, gold: 350, pixelImageKey: 'Dracula', description: 'Dein Blut macht ihn stärker.', traits: ['Vamp', 'Stark'] }, // Effekte müssen implementiert werden
+                { name: 'Dämon', health: 75, attack: 12, levelMin: 13, levelMax: 18, xp: 280, gold: 450, pixelImageKey: 'Dämon', description: 'Feuer und Schatten. Resistent.', traits: ['Höllen Krallen'] }, // Effekte müssen implementiert werden
+                { name: 'Verfluchter Ritter', health: 70, attack: 9, levelMin: 14, levelMax: 18, xp: 330, gold: 500, pixelImageKey: 'Verfluchter Ritter', description: 'Ein wandelnde Geisterrüstung', traits: ['Rüstung', 'Krieger']}, // Effekte müssen implementiert werden
+                { name: 'Erzengel', health: 100, attack: 12, levelMin: 15, levelMax: 19, xp: 400, gold: 550, pixelImageKey: 'Erzengel', description: 'Ein mächtiger gefallener Engel.', traits: ['Segen', 'Fliegend'] }, // Effekte müssen implementiert werden
+                { name: 'Gargoyle', health: 110, attack: 16, levelMin: 16, levelMax: 20, xp: 450, gold: 580, pixelImageKey: 'Gargoyle', description: 'Einst da um die Menschen zu beschützen. Jetzt ein unbändiges Monster', traits: ['Gepanzerte Schuppen'] }, 
+                { name: 'Drache', health: 140, attack: 20, levelMin: 17, levelMax: 100, xp: 650, gold: 700, pixelImageKey: 'Drache', description: 'Ein mächtiger, alter Drache.', traits: ['Feueratem', 'Fliegend', 'Gepanzerte Schuppen'] }, 
+                { name: 'Teufel', health: 110, attack: 8, levelMin: 18, levelMax: 100, xp: 750, gold: 900, pixelImageKey: 'Teufel', description: 'Der Herrscher der Unterwelt.', traits: ['Höllenwache'] } 
         ];
     
         // --- Upgrade-Typen ---
@@ -1762,7 +1877,9 @@ h2 {
                  { type: 'upgradeSwordPower', title: 'Schwertstärke +1', description: 'Erhöhe die Stärke deiner Schwerter um +1.', rarity: 'common' },
                  { type: 'upgradeHealth', title: 'Max Leben +8', description: 'Erhöhe dein maximales Leben um 8.', rarity: 'common' },
                  { type: 'healPercent', title: 'Heilung 50%', description: 'Stelle 50% deines max. Lebens wieder her.', rarity: 'common' },
+                 { type: 'blackMarketGold', title: 'Schwarzmarkt', description: 'Entferne 1 Karte dauerhaft und erhalte 250 Gold.', rarity: 'common' },
                  { type: 'upgradeMana', title: 'Max Mana +1', description: 'Erhöhe dein maximales Mana um 1.', rarity: 'rare' }, // Seltener
+                 { type: 'swapCard', title: 'Kartentausch', description: 'Lösche eine Karte aus deinem Deck und wähle eine neue.', rarity: 'rare' }, 
                  { type: 'increaseHandSize', title: 'Handgröße +1', description: 'Du kannst 1 Karte mehr halten.', rarity: 'rare' },
                  { type: 'addLifestealFlat', title: 'Lebensraub +1', description: 'Du bekommst 20% Lifesteal.', rarity: 'rare' }, // Geändert zu festem Wert pro Schadenspunkt
                  { type: 'regenManaPassive', title: 'Mana-Regen +1', description: 'Du erhältst pro Runde +1 zusätzliches Mana zurück.', rarity: 'rare' },
@@ -1853,7 +1970,7 @@ h2 {
         }
 
         // Hilfsfunktion für gewichtete Upgrade-Auswahl
-        function getWeightedUpgrades(pool, superRareWeight = 0.2, rareWeight = 1, commonWeight = 5) {
+        function getWeightedUpgrades(pool, superRareWeight = 0.4, rareWeight = 1, commonWeight = 5) {
             const weighted = [];
 
             for (const upg of pool) {
@@ -1882,15 +1999,18 @@ h2 {
         function getThreeUniqueNewCards() {
             const forbiddenCardIds = [17, 18, 19];
             const ownedCardIds = new Set(state.player.deck.map(card => card.id));
+            const unlockedIds = state.unlockedCardIds;
 
             const availableCards = CARD_TYPES.filter(card =>
-                !ownedCardIds.has(card.id) && !forbiddenCardIds.includes(card.id)
+                !ownedCardIds.has(card.id) &&
+                !forbiddenCardIds.includes(card.id) &&
+                !unlockedIds.has(card.id) // <- NEU: noch nicht freigeschaltet
             );
 
             shuffleArray(availableCards);
             return availableCards.slice(0, Math.min(3, availableCards.length));
         }
-    
+   
         // Funktion zum Erstellen einer eindeutigen Karteninstanz
     function createCardInstance(cardType) {
             cardUniqueCounter++;
@@ -1943,6 +2063,7 @@ h2 {
     
         // --- Kern Initialisierungsfunktion ---
         function initGame() {
+
             console.log('Gibt es shopContainerElem?', document.getElementById('shopContainer'));
             // 🛠️ Fix: Alle Overlays verstecken, falls sie versehentlich offen geblieben sind
             if (typeof upgradeContainerElem !== 'undefined') upgradeContainerElem.style.display = 'none';
@@ -1992,6 +2113,13 @@ h2 {
                 }
 
             // Pasiven
+            const savedCardIds = localStorage.getItem('unlockedCardIds');
+            if (savedCardIds) {
+                state.unlockedCardIds = new Set(JSON.parse(savedCardIds));
+            } else {
+                state.unlockedCardIds = new Set([1, 2, 3, 7, 15, 16]);
+            }
+
             state.player.name = localStorage.getItem('playerName') || 'Spieler';
 
             switch (selectedPassive) {
@@ -2016,15 +2144,24 @@ h2 {
             case 'martyr':
                 state.player.isMartyr = true;
                 break;
+            case 'undead':
+                state.player.passive = 'undead';
+                state.player.hellhound = {
+                    damage: 2,
+                    icon: 'images/hellhound.png'
+                };
+                break;
             }
+
+            state.unlockedCardIds.add(1); // Schwert hat id 1
 
             // Spielerbild setzen
             playerImageElem.style.backgroundImage = `url(${PLAYER_PIXEL_IMAGE})`;
             playerImageElem.style.backgroundColor = '#444'; // Fallback-Farbe
 
             // Freigeschaltete Karten definieren, Start karten
-            const unlockedStartCardIds = [1, 2, 3, 7, 15, 16];
-            const unlockedCards = CARD_TYPES.filter(card => unlockedStartCardIds.includes(card.id));
+            const unlockedCards = CARD_TYPES.filter(card => state.unlockedCardIds.has(card.id));
+
 
             // Gewichteten Pool erstellen
             let weightedPool = [];
@@ -2056,6 +2193,7 @@ h2 {
             messageLogElem.innerHTML = ''; // Log leeren
             logMessage("Neues Spiel gestartet. Viel Glück!", "system");
             updateUIDisplay(); // Zeigt alle Startwerte an
+            updatePetDisplay();
             updateHandUI(); // Zeigt die Handkarten an
             updateEnemyUI(); // Zeigt den Gegner an
     
@@ -2143,26 +2281,45 @@ h2 {
                 const container = document.getElementById('playerStatusDisplay');
                 container.innerHTML = ''; // alten Inhalt löschen
 
+                    // Entferne Frost-Aura-Effekt (blauer Hintergrund) wenn er nicht mehr aktiv ist
+                if (!state.player.frozen) {
+                    document.getElementById('playerDisplay').style.backgroundColor = '';  // Normaler Zustand
+                }
+
                 if (state.player.statusEffects?.length > 0) {
                     state.player.statusEffects.forEach(effect => {
                         const span = document.createElement('span');
-                        span.classList.add('status-effect');
+                        span.classList.add('status-effect', effect.type);
 
+                        // Symbol und Text
+                        let icon = '';
                         switch (effect.type) {
                             case 'poison':
-                                span.textContent = `☠️ ${effect.power} (${effect.duration})`;
+                                icon = '☠️';
                                 span.style.color = '#ce93d8'; // lila
+                                span.textContent = `${icon} ${effect.power} (${effect.duration})`;
                                 break;
 
                             case 'burn':
-                                span.textContent = `🔥 ${effect.power} (${effect.duration})`;
+                                icon = '🔥';
                                 span.style.color = '#ff7043'; // orange/rot
+                                span.textContent = `${icon} ${effect.power} (${effect.duration})`;
+                                break;
+
+                            case 'paralyze':
+                                icon = '⚡';
+                                span.style.color = '#ffeb3b'; // Gelb
+                                span.textContent = `${icon} (${effect.duration})`;
                                 break;
 
                             default:
-                                span.textContent = `${effect.type} (${effect.duration})`;
+                                icon = '❓';
+                                span.textContent = `${icon} (${effect.duration})`;
                         }
 
+                        // Tooltip hinzufügen
+                        span.setAttribute('data-tooltip', getEffectDescription(effect.type, effect.duration, effect.power));
+                        
                         container.appendChild(span);
                     });
                 }
@@ -2188,7 +2345,19 @@ h2 {
                 updateEnemyUI();
             }
 
-    
+        function getEffectDescription(type, duration, power = 0) {
+                switch (type) {
+                    case 'poison':
+                        return `Vergiftung: Verliert ${power} Leben pro Runde. (${duration} Runden)`;
+                    case 'burn':
+                        return `Verbrennung: Verliert ${power} Leben pro Runde. (${duration} Runden)`;
+                    case 'paralyze':
+                        return `Paralyse: Du kannst nur 3 Karten pro Runde spielen. (${duration} Runden)`;
+                    default:
+                        return `${type} (${duration} Runden)`;
+                }
+            }
+ 
         function updateEnemyUI() {
             if (!state.currentEnemy) {
                 enemyNameElem.textContent = 'Kein Gegner';
@@ -2211,7 +2380,12 @@ h2 {
             enemyHealthElem.textContent = enemy.health;
             enemyMaxHealthElem.textContent = enemy.maxHealth;
             enemyHealthBarElem.style.width = `${Math.max(0, (enemy.health / enemy.maxHealth)) * 100}%`;
-            enemyAttackElem.textContent = enemy.attack || '0';
+            let displayedAttack = enemy.attack || 0;
+            if (enemy.statusEffects?.some(e => e.type === 'paralyze')) {
+                displayedAttack = Math.floor(displayedAttack / 2);
+            }
+            enemyAttackElem.textContent = displayedAttack;
+            enemyAttackElem.style.color = enemy.statusEffects?.some(e => e.type === 'paralyze') ? '#ffeb3b' : '#fff';
             enemyInfoElem.textContent = enemy.description || '';
 
             // Bild
@@ -2233,12 +2407,14 @@ h2 {
                 'Verspielt': '20% Chance, den Angriff zu verpassen.',
                 'Feueratem': '30% Chance auf Brennen (5 Schaden für 2 Runden).',
                 'Fliegend': 'Ignoriert Block zu 75%.',
-                'Gepanzerte Schuppen': 'Immun gegen Gift, reduziert Schaden leicht.',
+                'Gepanzerte Schuppen': 'Immun gegen alle Statuseffekte.',
                 'Lebensraub': 'Heilt sich um 50% seine schadens.',
                 'Segen': 'Heilt sich einmal um 50% seiner Leben.',
                 'Rüstung': 'Stellt jede Runde 5 Block her',
                 'Vamp': 'Heilt sich um 50% des verursachten Schadens',
-                'Krieger': 'Ein erfahrener Krieger trifft auch manchmal doppelt'
+                'Krieger': 'Ein erfahrener Krieger trifft auch manchmal doppelt',
+                'Statisch': 'Angriffe Paralysieren dich zu 45% (Paraylse = 2 Karte nur Spielbar)',
+                'Höllenwache': 'Beschwört einen Höllenhund als Verteidigungs-Minion.'
             };
 
             monsterTraitsElem.innerHTML = '';
@@ -2266,23 +2442,47 @@ h2 {
 
             // Status-Effekte
             if (enemy.statusEffects?.length) {
-                enemy.statusEffects.forEach(effect => {
-                    const span = document.createElement('span');
-                    span.classList.add('monster-trait', 'status-effect');
-                    if (effect.type === 'poison') {
-                        span.style.backgroundColor = '#6a1b9a';
-                        span.style.color = '#fff';
-                        span.title = 'Vergiftung – erleidet Schaden zu Beginn jeder Runde';
-                        span.textContent = `☠️ ${effect.power} (${effect.remaining})`;
-                    } else if (effect.type === 'burn') {
-                        span.style.backgroundColor = '#ff7043';
-                        span.style.color = '#fff';
-                        span.title = 'Verbrennung – erleidet Schaden zu Beginn jeder Runde';
-                        span.textContent = `🔥 ${effect.power} (${effect.remaining})`;
-                    }
-                    monsterTraitsElem.appendChild(span);
-                });
-            }
+            enemy.statusEffects.forEach(effect => {
+                const span = document.createElement('span');
+                span.classList.add('monster-trait', 'status-effect');
+
+                let icon = '❓';
+                let bgColor = '#777';
+                let textColor = '#fff';
+                let tooltip = `${effect.type} (${effect.duration})`;
+                let text = `${icon} (${effect.duration})`;
+
+                switch (effect.type) {
+                    case 'poison':
+                        icon = '☠️';
+                        bgColor = '#6a1b9a';
+                        tooltip = `Vergiftung – erleidet ${effect.power} Schaden pro Runde`;
+                        text = `${icon} ${effect.power} (${effect.duration})`;
+                        break;
+
+                    case 'burn':
+                        icon = '🔥';
+                        bgColor = '#ff7043';
+                        tooltip = `Verbrennung – erleidet ${effect.power} Schaden pro Runde`;
+                        text = `${icon} ${effect.power} (${effect.duration})`;
+                        break;
+
+                    case 'paralyze':
+                        icon = '⚡';
+                        bgColor = '#ffeb3b';
+                        textColor = '#000';
+                        tooltip = `Paralyse – halbiert den Angriff (${effect.duration} Runden)`;
+                        text = `${icon} (${effect.duration})`;
+                        break;
+                }
+
+                span.style.backgroundColor = bgColor;
+                span.style.color = textColor;
+                span.setAttribute('data-tooltip', tooltip);
+                span.textContent = text;
+                monsterTraitsElem.appendChild(span);
+            });
+        }
 
             // Minions anzeigen
             const minionContainer = document.getElementById('enemyMinions');
@@ -2293,7 +2493,13 @@ h2 {
                     const minionDiv = document.createElement('div');
                     minionDiv.classList.add('minion-box');
 
+                    // Bildpfad korrekt abrufen
                     const imgPath = ENEMY_PIXEL_PLACEHOLDERS[minion.pixelImageKey] || 'images/Skelett.png';
+
+                    // Besondere Klasse für Höllenhund
+                    if (minion.pixelImageKey === 'hund' || minion.pixelImageKey === 'hund') {
+                        minionDiv.classList.add('hund');
+                    }
 
                     minionDiv.innerHTML = `
                         <div class="minion-image" style="background-image: url(${imgPath});"></div>
@@ -2305,7 +2511,6 @@ h2 {
                 });
             }
         }
-
     
         // Aktualisiert die Anzeige der Handkarten
         function updateHandUI() {
@@ -2358,13 +2563,17 @@ h2 {
                     ${card.name === 'Schwert' && state.player?.isShieldmaster ? `<br><span style="color:orange;">-1 wegen Schildmeister</span>` : ''}
                 </div>
                 <div class="card-power ${
-                    ['whirlwind', 'firearrow', 'gamble', 'damage', 'block', 'heal', 'lifesteal', 'poison'].includes(card.effect) ? '' : 'hidden-power'
+                    ['damage_paralyze', 'whirlwind', 'firearrow', 'gamble', 'damage', 'block', 'heal', 'lifesteal', 'poison'].includes(card.effect) ? '' : 'hidden-power'
                 }" title="${powerHint.trim()}">
-                    ${['whirlwind', 'firearrow', 'gamble', 'damage', 'block', 'heal', 'lifesteal', 'poison'].includes(card.effect) ? calculatedPower : ''}
+                    ${['damage_paralyze', 'whirlwind', 'firearrow', 'gamble', 'damage', 'block', 'heal', 'lifesteal', 'poison'].includes(card.effect) ? calculatedPower : ''}
                 </div>
             `;
+            
+            if (!state.player.frozen){
+                cardDiv.addEventListener('click', () => playCard(card.uniqueId));
+            }
 
-            cardDiv.addEventListener('click', () => playCard(card.uniqueId));
+           // cardDiv.addEventListener('click', () => playCard(card.uniqueId));
             return cardDiv;
         }
 
@@ -2384,7 +2593,7 @@ h2 {
                 const needsMana = rawManaCost > 0;
                 const hasEnoughMana = state.player.mana >= rawManaCost;
 
-                if (needsMana && !hasEnoughMana) {
+                if (needsMana && !hasEnoughMana || state.player.frozen) {
                     cardElem.classList.add('disabled');
                 } else {
                     cardElem.classList.remove('disabled');
@@ -2392,10 +2601,67 @@ h2 {
             });
 
             endTurnBtn.disabled = state.turnInProgress;
-            manaBoostBtn.disabled = state.turnInProgress || cardsPlayedThisTurn > 0;
+            manaBoostBtn.disabled = state.turnInProgress || cardsPlayedThisTurn > 0 || state.player.frozen;
 
         }
+        
+        //Pet
+        function updatePetDisplay() {
+            const container = document.getElementById('petContainer');
+            container.innerHTML = '';
 
+            // Normales Pet anzeigen
+            if (state.player.activePet) {
+                const wrapper = document.createElement('div');
+                wrapper.classList.add('pet-tooltip-wrapper');
+
+                const img = document.createElement('img');
+                img.src = state.player.activePet.icon;
+                img.alt = state.player.activePet.name;
+                img.classList.add('pet-image');
+
+                const tooltip = document.createElement('div');
+                tooltip.classList.add('pet-tooltip');
+                tooltip.textContent = getPetDescription(state.player.activePet.effect);
+
+                wrapper.appendChild(img);
+                wrapper.appendChild(tooltip);
+                container.appendChild(wrapper);
+            }
+
+            // Teufelshund anzeigen (falls vorhanden)
+            if (state.player.hellhound) {
+                const wrapper = document.createElement('div');
+                wrapper.classList.add('pet-tooltip-wrapper');
+
+                const img = document.createElement('img');
+                img.src = state.player.hellhound.icon;
+                img.alt = 'Teufelshund';
+                img.classList.add('pet-image');
+
+                const tooltip = document.createElement('div');
+                tooltip.classList.add('pet-tooltip');
+                tooltip.textContent = `Teufelshund: ${state.player.hellhound.damage} Damage.`;
+
+                wrapper.appendChild(img);
+                wrapper.appendChild(tooltip);
+                container.appendChild(wrapper);
+            }
+        }
+
+
+        function getPetDescription(effect) {
+                switch (effect) {
+                    case 'gawa':
+                        return 'Macht 4 extra Schaden.';
+                    case 'lulu':
+                        return '2 Schaden, +1 Mana Regeneration';
+                    case 'cassa':
+                        return '1 Schaden, +3 Block pro Runde.';
+                    default:
+                        return 'Ein treuer Begleiter.';
+                }
+            }
 
         // Lädt einen neuen Gegner basierend auf dem Spielerlevel
         function loadEnemy() {
@@ -2472,6 +2738,12 @@ h2 {
     
         function playCard(uniqueCardId) {
             if (state.gameOver || state.turnInProgress) return;
+
+            const paralyzeEffect = state.player.statusEffects?.find(e => e.type === 'paralyze');
+            if (paralyzeEffect && cardsPlayedThisTurn >= 2) {
+                logMessage("⚡ Du bist paralysiert und kannst diese Runde nur 2 Karten spielen!", 'system');
+                return;
+            }
 
             const cardIndex = state.player.hand.findIndex(c => c.uniqueId === uniqueCardId);
             if (cardIndex === -1) {
@@ -2566,6 +2838,13 @@ h2 {
     
 function executeCardEffect(card) {
     switch (card.effect) {
+        case 'paralyze':
+                tryApplyParalyze(state.currentEnemy); // 100 % Chance
+                break;
+        case 'damage_paralyze':
+                dealDamage(state.currentEnemy, card.power);
+                tryApplyParalyze(state.currentEnemy, 0.45); // 45 % Chance
+                break;
         case 'whirlwind': {
                 let rawDamage = card.power;
                 let totalDamage = applyDamageBonuses(rawDamage); // ✅ alle Boni berücksichtigen
@@ -2657,10 +2936,10 @@ function executeCardEffect(card) {
                 }
 
 
-            // 🔥 Drachenschuppen-Effekt: 10% Chance auf Verbrennung
+            // 🔥 Drachenschuppen-Effekt: 20% Chance auf Verbrennung
                 if (state.player.hasDragonscale) {
                     const burnChance = Math.random();
-                    if (burnChance <= 0.10) {
+                    if (burnChance <= 0.20) {
                         const burnPower = 5;
                         const burnDuration = 2;
 
@@ -2673,7 +2952,7 @@ function executeCardEffect(card) {
                             target.statusEffects.push({
                                 type: 'burn',
                                 power: burnPower,
-                                remaining: burnDuration
+                                duration: burnDuration
                             });
                             console.log("🔥 Burn-Effekt hinzugefügt:", target.statusEffects);
                             logMessage(`🔥 Drachenschuppen: ${target.name} wurde verbrannt! (${burnPower} Schaden für ${burnDuration} Runden)`, 'burn');
@@ -2724,14 +3003,39 @@ function executeCardEffect(card) {
             break;
         }
 
-        case 'poison':
-            if (
-                state.currentEnemy.traits?.includes('Gepanzerte Schuppen') ||
-                state.currentEnemy.traits?.includes('Massiv')
-            ) {
-                logMessage(`${state.currentEnemy.name} ist immun gegen Vergiftung!`, 'enemy');
-                break;
+        if (!state.currentEnemy.statusEffects) {
+            state.currentEnemy.statusEffects = [];
+                    }
+
+            switch (effectType) {
+                case 'poison':
+                    if (
+                        state.currentEnemy.traits?.includes('Gepanzerte Schuppen') ||
+                        state.currentEnemy.traits?.includes('Massiv')
+                    ) {
+                        logMessage(`${state.currentEnemy.name} ist immun gegen Vergiftung!`, 'enemy');
+                        return; // bricht die ganze Funktion ab
+                    }
+                    applyEnemyStatusEffect('poison');
+                    break;
+
+                case 'paralyze':
+                    if (state.currentEnemy.traits?.includes('Gepanzerte Schuppen')) {
+                        logMessage(`${state.currentEnemy.name} ist immun gegen Paralyse!`, 'enemy');
+                        return;
+                    }
+                    applyEnemyStatusEffect('paralyze');
+                    break;
+
+                case 'burn':
+                    if (state.currentEnemy.traits?.includes('Gepanzerte Schuppen')) {
+                        logMessage(`${state.currentEnemy.name} ist immun gegen Verbrennung!`, 'enemy');
+                        return;
+                    }
+                    applyEnemyStatusEffect('burn');
+                    break;
             }
+
 
             const existingPoison = state.currentEnemy.statusEffects.find(e => e.type === 'poison');
             if (existingPoison) {
@@ -2744,7 +3048,7 @@ function executeCardEffect(card) {
                 state.currentEnemy.statusEffects.push({
                     type: 'poison',
                     power: card.power,
-                    remaining: card.duration
+                    duration: card.duration
                 });
                 logMessage(`${state.currentEnemy.name} wird vergiftet (${card.power} Schaden für ${card.duration} Runden).`, 'poison');
                 updateEnemyUI();
@@ -2782,7 +3086,7 @@ function executeCardEffect(card) {
                 break;
 
 
-                case 'firearrow':
+            case 'firearrow':
                     let baseFireDamage = card.power;
 
                     // Doppelter Schaden bei Eis-Gegner
@@ -2817,7 +3121,7 @@ function executeCardEffect(card) {
                             state.currentEnemy.statusEffects.push({
                                 type: 'burn',
                                 power: 5,
-                                remaining: 2
+                                duration: 2
                             });
                             logMessage(`${state.currentEnemy.name} wird verbrannt! (5 Schaden für 2 Runden)`, 'burn');
                         } else {
@@ -2869,9 +3173,56 @@ function executeCardEffect(card) {
 
         default:
             logMessage(`Unbekannter Effekt: ${card.effect}`, 'system');
+        }
     }
 
-}
+
+        function dealDamage(target, amount) {
+            const blockUsed = Math.min(target.block || 0, amount);
+            const remaining = Math.max(0, amount - blockUsed);
+
+            if (blockUsed > 0) {
+                target.block -= blockUsed;
+                logMessage(`${target.name} blockt ${blockUsed} Schaden.`, 'block');
+            }
+
+            if (remaining > 0) {
+                target.health -= remaining;
+                logMessage(`${target.name} erleidet ${remaining} Schaden.`, 'enemy');
+            } else {
+                logMessage(`${target.name} blockt den gesamten Schaden!`, 'block');
+            }
+
+            enemyContainerElem.classList.add('hit');
+            setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
+        }
+
+
+        function tryApplyParalyze(target, chance = 1.0) {
+                // Immun gegen Paralyse durch "Gepanzerte Schuppen"
+                if (target.traits?.includes('Gepanzerte Schuppen')) {
+                    logMessage(`🛡️ ${target.name} ist immun gegen Paralyse!`, 'enemy');
+                    return;
+                }
+
+                // Bereits paralysiert?
+                if (target.statusEffects?.some(e => e.type === 'paralyze')) {
+                    logMessage(`⚡ ${target.name} ist bereits paralysiert.`, 'system');
+                    return;
+                }
+
+                // Paralyse mit Chance anwenden
+                if (Math.random() < chance) {
+                    if (!target.statusEffects) target.statusEffects = [];
+                    target.statusEffects.push({ type: 'paralyze', duration: 2 });
+                    logMessage(`⚡ ${target.name} wird paralysiert!`, 'enemy');
+                    updateEnemyUI();
+                } else {
+                    logMessage(`⚡ Der Paralyseversuch bei ${target.name} ist fehlgeschlagen.`, 'system');
+                }
+            }
+
+
 
         function applyDamageBonuses(baseDamage) {
             let damage = baseDamage;
@@ -2900,7 +3251,6 @@ function executeCardEffect(card) {
              updateCardAvailability(); // Deaktiviert Karten/Buttons
     
              logMessage("Spieler beendet den Zug.", 'system');
-    
     
              // 3. UI aktualisieren (leere Hand, kein Block)
              updateHandUI();
@@ -2969,6 +3319,22 @@ function executeCardEffect(card) {
                     updateEnemyUI(); // Anzeige sofort aktualisieren
                 }
 
+
+                if (enemy.traits?.includes('Höllenwache') && !enemy.summonedHellhound) {
+                    logMessage(`${enemy.name} ruft einen höllischen Wachhund zur Hilfe!`, 'enemy');
+
+                    enemy.minions.push({
+                        name: 'Höllenhund',
+                        health: 50,
+                        maxHealth: 50,
+                        attack: 15,
+                        pixelImageKey: 'hund'
+                    });
+
+                    enemy.summonedHellhound = true;
+                    updateEnemyUI();
+                }
+
                 // VERSPIELT – 20% verfehlt
                 if (enemy.traits?.includes('Verspielt') && Math.random() < 0.2) {
                     logMessage(`${enemy.name} spielt herum und verfehlt seinen Angriff.`, 'enemy');
@@ -2986,27 +3352,48 @@ function executeCardEffect(card) {
                 const enemy = state.currentEnemy;
 
                 // GIFTIG
-                if (enemy.traits?.includes('Giftig') && Math.random() < 0.3 && !state.player.statusEffects?.some(e => e.type === 'poison')) {
-                    if (!state.player.statusEffects) state.player.statusEffects = [];
-                    state.player.statusEffects.push({ type: 'poison', power: 2, duration: 3 });
-                    logMessage(`☠️ Du wurdest vergiftet (2 Schaden für 3 Runden)!`, 'poison');
-                }
+                if (
+                    enemy.traits?.includes('Giftig') &&
+                    Math.random() < 0.3 &&
+                    !state.player.statusEffects?.some(e => e.type === 'poison')
+                ) {
+                    if (state.player.immuneToStatus) {
+                        logMessage(`🛡️ Drachenschuppen schützt dich vor Vergiftung.`, 'system');
+                    } else {
+                        if (!state.player.statusEffects) state.player.statusEffects = [];
+                        state.player.statusEffects.push({ type: 'poison', power: 2, duration: 3 });
+                        logMessage(`☠️ Du wurdest vergiftet (2 Schaden für 3 Runden)!`, 'poison');
+                    }
+            }
 
                 // FROST-AURA
                 if (enemy.traits?.includes('Frost-Aura') && Math.random() < 0.20) {
+                if (state.player.immuneToStatus) {
+                    logMessage(`🛡️ Drachenschuppen schützt dich vor Vereisung durch Frost-Aura.`, 'system');
+                } else {
                     state.player.frozen = true;
                     logMessage(`❄️ Du bist vereist und setzt nächste Runde aus!`, 'enemy');
+
+                    // Visual Effect: Spielerfeld wird blau (vereist)
+                    document.getElementById('playerDisplay').style.backgroundColor = 'rgba(0, 247, 255, 0.8)';
                 }
+            }
+
 
                 // FEUERATEM
                 if (enemy.traits?.includes('Feueratem') && Math.random() < 0.3) {
                 const alreadyBurning = state.player.statusEffects?.some(e => e.type === 'burn');
                 if (!alreadyBurning) {
-                    if (!state.player.statusEffects) state.player.statusEffects = [];
-                    state.player.statusEffects.push({ type: 'burn', power: 5, duration: 2 });
-                    logMessage(`🔥 Du brennst – 5 Schaden für 2 Runden!`, 'enemy');
+                    if (state.player.immuneToStatus) {
+                        logMessage(`🛡️ Drachenschuppen schützt dich vor Feuer.`, 'system');
+                    } else {
+                        if (!state.player.statusEffects) state.player.statusEffects = [];
+                        state.player.statusEffects.push({ type: 'burn', power: 5, duration: 2 });
+                        logMessage(`🔥 Du brennst – 5 Schaden für 2 Runden!`, 'enemy');
+                    }
                 }
             }
+
             // ⚔️ NEU: KRIEGER-Trait – Chance auf Extra-Angriff mit Verzögerung
             if (enemy.traits?.includes('Krieger') && Math.random() < 0.3) {
                 logMessage(`⚔️ ${enemy.name} holt zu einem weiteren Schlag aus...`, 'enemy');
@@ -3041,12 +3428,7 @@ function executeCardEffect(card) {
             function enemyTurn() {
 
                 state.turnInProgress = true;
-
-                if (!state.currentEnemy || state.currentEnemy.health <= 0) {
-                    logMessage(`Kein gültiger Gegner vorhanden.`, 'system');
-                    startNewTurn();
-                    return;
-                }
+                state.player.frozen = false;
 
                 logMessage("🔁 Gegner ist am Zug...", 'enemy');
 
@@ -3084,6 +3466,12 @@ function executeCardEffect(card) {
 
                 let damage = state.currentEnemy.attack || 0;
 
+                const paralyzeEffect = state.currentEnemy.statusEffects?.find(e => e.type === 'paralyze');
+                if (paralyzeEffect) {
+                    damage = Math.floor(damage / 2);
+                    logMessage(`⚡ Paralyse reduziert den Angriff des Gegners auf ${damage}.`, 'enemy');
+                }
+
                 if (state.currentEnemy.traits?.includes('Höllen Krallen') && Math.random() < 0.45) {
                     damage = Math.floor(damage * 1.5);
                     logMessage(`💥 Kritischer Treffer! Schaden erhöht auf ${damage}.`, 'enemy');
@@ -3099,6 +3487,23 @@ function executeCardEffect(card) {
                 if (damageTaken > 0) {
                     state.player.health -= damageTaken;
                     logMessage(`💥 Spieler erleidet ${damageTaken} Schaden.`, 'player');
+
+
+                    // ⚡ Paralyse durch "Statisch"-Trait
+                    const hasStaticTrait = state.currentEnemy.traits?.includes('Statisch');
+                    const alreadyParalyzed = state.player.statusEffects?.some(e => e.type === 'paralyze');
+
+                    if (hasStaticTrait && !alreadyParalyzed && Math.random() < 0.45) {
+                        if (state.player.immuneToStatus) {
+                            logMessage(`🛡️ Drachenschuppen schützt dich vor Paralyse durch Statisch.`, 'system');
+                        } else {
+                            if (!state.player.statusEffects) state.player.statusEffects = [];
+                            state.player.statusEffects.push({ type: 'paralyze', duration: 3 });
+                            logMessage(`⚡ Du wurdest durch den statischen Angriff paralysiert!`, 'enemy');
+                            updatePlayerStatusDisplay();
+                        }
+                    }
+
 
                     // 🪓 Dornen-Helm: Gegner erleidet Rückstoß
                 if (state.player.hasThorns) {
@@ -3176,16 +3581,26 @@ function executeCardEffect(card) {
                 let totalBurnDamage = 0;
 
                 for (let effect of state.currentEnemy.statusEffects) {
-                    if (effect.type === 'poison') {
-                        totalPoisonDamage += effect.power;
-                        effect.remaining -= 1;
-                        logMessage(`${state.currentEnemy.name} erleidet ${effect.power} Giftschaden.`, 'poison');
-                    } else if (effect.type === 'burn') {
-                        totalBurnDamage += effect.power;
-                        effect.remaining -= 1;
-                        logMessage(`${state.currentEnemy.name} erleidet ${effect.power} Feuerschaden.`, 'burn');
+                    switch (effect.type) {
+                        case 'poison':
+                            logMessage(`${state.currentEnemy.name} erleidet ${effect.power} Giftschaden.`, 'poison');
+                            totalPoisonDamage += effect.power;
+                            effect.duration -= 1;
+                            break;
+
+                        case 'burn':
+                            logMessage(`${state.currentEnemy.name} erleidet ${effect.power} Feuerschaden.`, 'burn');
+                            totalBurnDamage += effect.power;
+                            effect.duration -= 1;
+                            break;
+
+                        case 'paralyze':
+                            logMessage(`${state.currentEnemy.name} ist gelähmt – Angriff halbiert. (${effect.duration} Runden übrig)`, 'paralyze');
+                            effect.duration -= 1;
+                            break;
                     }
                 }
+
 
                 // Gesamtschaden anwenden
                 if (totalPoisonDamage > 0) {
@@ -3196,7 +3611,7 @@ function executeCardEffect(card) {
                 }
 
                 // Abgelaufene Effekte entfernen
-                state.currentEnemy.statusEffects = state.currentEnemy.statusEffects.filter(e => e.remaining > 0);
+                state.currentEnemy.statusEffects = state.currentEnemy.statusEffects.filter(e => e.duration > 0);
 
                 // Regeneration
                 if (state.currentEnemy.regen && state.currentEnemy.health < state.currentEnemy.maxHealth) {
@@ -3218,20 +3633,22 @@ function executeCardEffect(card) {
     
         // Beginnt eine neue Runde für den Spieler
         function startNewTurn() {
-             if (state.gameOver) return; // Kein neuer Zug, wenn Spiel vorbei ist
+            if (state.gameOver) return; // Kein neuer Zug, wenn Spiel vorbei ist
+            state.turnInProgress = false;
 
-             if (state.player.frozen) {
-                logMessage(`❄️ Du bist vereist und kannst diese Runde nichts tun.`, 'enemy');
-                state.player.frozen = false;
-                state.turnInProgress = false;
-                updateUIDisplay();
-                updateCardAvailability();
-                return;
-            }
+            //Block erst jetzt zurücksetzen
+            if (state.player.block > 0) {
+                    logMessage(`Block (${state.player.block}) verschwindet.`, 'block');
+                    state.player.block = 0;
+                }
 
-             state.round++;
-             logMessage(`--- Runde ${state.round} beginnt ---`, 'system');
+            if (state.player.isShieldmaster) {
+                state.player.block += 5;
+                logMessage('🛡️ Schildmeister: Du erhältst 5 Block.', 'block');
+                }
 
+
+  
             state.currentEnemy.block = 0;
 
                  // RÜSTUNG: 5 Block pro Runde
@@ -3248,17 +3665,6 @@ function executeCardEffect(card) {
                     logMessage(`🩸 Blutrüstung heilt ${heal} Leben.`, 'heal');
                 }
             }
-
-                 // NEU: Block erst jetzt zurücksetzen
-                if (state.player.block > 0) {
-                    logMessage(`Block (${state.player.block}) verschwindet.`, 'block');
-                    state.player.block = 0;
-                }
-
-                if (state.player.isShieldmaster) {
-                state.player.block += 5;
-                logMessage('🛡️ Schildmeister: Du erhältst 5 Block.', 'block');
-                }
     
              // 1. Mana auffüllen
              const baseRegen = 1;
@@ -3277,6 +3683,69 @@ function executeCardEffect(card) {
                 drawCards(missingCards);
             }
 
+             // PET-AKTION MIT ANIMATION
+             if (state.player.activePet) {
+    const pet = state.player.activePet;
+    let damage = 0;
+    let blockGain = 0;
+    let manaGain = 0;
+    let logText = '';
+
+    switch (pet.effect) {
+        case 'gawa':
+            damage = 4;
+            logText = `🐾 ${pet.name} greift an – ${damage} Schaden.`;
+            break;
+        case 'lulu':
+            damage = 2;
+            manaGain = 1;
+            logText = `🦊 ${pet.name} wirkt Magie – ${damage} Schaden + ${manaGain} Mana.`;
+            break;
+        case 'cassa':
+            damage = 1;
+            blockGain = 3;
+            logText = `🐍 ${pet.name} verteidigt dich – ${damage} Schaden + ${blockGain} Block.`;
+            break;
+    }
+
+    const petImage = document.querySelector('#petContainer img:not([src*="hellhound"])');
+    if (petImage) {
+        petImage.classList.add('wobble');
+        setTimeout(() => petImage.classList.remove('wobble'), 300);
+    }
+
+    setTimeout(() => {
+        state.currentEnemy.health -= damage;
+        state.player.block += blockGain;
+        state.player.mana = Math.min(state.player.maxMana, state.player.mana + manaGain);
+        logMessage(logText, blockGain ? 'block' : damage ? 'enemy' : 'system');
+        updateEnemyUI();
+        updateUIDisplay();
+        updatePetDisplay();
+    }, 600);
+}
+
+// 🔥 HÖLLENHUND → jetzt immer separat prüfen!
+if (state.player.hellhound) {
+    setTimeout(() => {
+        const hellhoundDamage = state.player.hellhound.damage || 2;
+        state.currentEnemy.health -= hellhoundDamage;
+        logMessage(`🔥 Dein Teufelshund greift an und verursacht ${hellhoundDamage} Schaden!`, 'enemy');
+
+        const hellhoundImage = document.querySelector('#petContainer img[src*="hellhound"]');
+        if (hellhoundImage) {
+            hellhoundImage.classList.add('wobble');
+            setTimeout(() => hellhoundImage.classList.remove('wobble'), 300);
+        }
+
+        updateEnemyUI();
+        if (state.currentEnemy.health <= 0) {
+            checkEnemyDefeat();
+        }
+    }, 300); // etwas nach dem Pet
+}
+
+
             // Zähler zurücksetzen
             cardsPlayedThisTurn = 0;
 
@@ -3287,8 +3756,13 @@ function executeCardEffect(card) {
                         logMessage(`☠️ ${effect.type === 'burn' ? 'Verbrennung' : 'Vergiftung'} fügt dir ${effect.power} Schaden zu.`, 'player');
                         state.player.health -= effect.power;
                         effect.duration -= 1;
+                    } else if (effect.type === 'paralyze') {
+                        logMessage(`⚡ Du bist paralysiert und kannst nur 3 Karten spielen. (${effect.duration} Runden)`, 'system');
+                        effect.duration -= 1;
                     }
                 }
+
+                // Entferne abgelaufene Effekte
                 state.player.statusEffects = state.player.statusEffects.filter(e => e.duration > 0);
             }
             updatePlayerStatusDisplay();
@@ -3308,6 +3782,7 @@ function executeCardEffect(card) {
              updatePlayerStatusDisplay();
     
         }
+
     
         // Prüft, ob der aktuelle Gegner besiegt ist
         function checkEnemyDefeat() {
@@ -3324,6 +3799,10 @@ function executeCardEffect(card) {
             if (defeatedName === 'Drache') {
                 localStorage.setItem('unlockedDragonscale', 'true');
                 logMessage('🗝️ Passive "Drachenschuppen" freigeschaltet!', 'system');
+            }
+            if (defeatedName === 'Teufel') {
+                localStorage.setItem('unlockedUndead', 'true');
+                logMessage('🗝️ Passive "Totenbeschwörer" freigeschaltet!', 'system');
             }
 
             const xpGained = state.currentEnemy.xp || 50;
@@ -3424,8 +3903,18 @@ function executeCardEffect(card) {
                 };
 
                 const availableUpgrades = UPGRADE_TYPES.filter(upg => upg.type !== 'gain_gold');
-                const weightedPool = getWeightedUpgrades(availableUpgrades, 0.2, 1, 5); //Upgrade wahrscheinlichkeit
+                const weightedPool = getWeightedUpgrades(availableUpgrades, 0.4, 1, 5); //Upgrade wahrscheinlichkeit
                 const chosenUpgrades = [goldOption, ...weightedPool.slice(0, 2)];
+
+                // Zusätzliche Option "Totenkeule" nur für Untoten
+                if (state.player.passive === 'undead') {
+                    chosenUpgrades.push({
+                        type: 'hellhoundBoost',
+                        title: '🍗 Totenkeule 🍗',
+                        description: 'Dein Höllenhund verursacht +2 Schaden.',
+                        rarity: 'rare'
+                    });
+                }
 
 
                 // Upgrade-Karten rendern
@@ -3450,32 +3939,185 @@ function executeCardEffect(card) {
                 upgradeContainerElem.style.display = 'flex';
             }
 
-            function promptShopQuestion(callback) {
-                const closeBtn = document.getElementById('closeShopBtn');
-                if (!closeBtn || !shopContainerElem) {
-                    console.warn('Shop-Elemente nicht gefunden.');
-                    if (typeof callback === 'function') callback(); // Notfall: Upgrade trotzdem zeigen
-                    return;
-                }
-
-                shopContainerElem.style.display = 'flex';
-
-                // Nur einmal registrieren, falls mehrfach aufgerufen
-                closeBtn.onclick = () => {
-                    shopContainerElem.style.display = 'none';
-                    if (typeof callback === 'function') {
-                        callback(); // Upgrade danach anzeigen
-                    }
-                };
-            }
 
     
           // Wendet das gewählte Upgrade an (PLATZHALTER - HIER MUSS DIE LOGIK REIN!)
          function applyUpgrade(upgrade) {
              logMessage(`Upgrade gewählt: ${upgrade.title}`, 'system');
-    
-             // --- HIER DIE LOGIK FÜR JEDEN UPGRADE-TYP EINFÜGEN ---
-              switch(upgrade.type) {
+         switch(upgrade.type) {  
+
+        case 'blackMarketGold': {
+                    logMessage(`🖤 Willkommen beim Schwarzmarkt! Verkaufe eine Karte *für dieses Spiel* gegen Gold.`, 'system');
+
+                    upgradeOptionsElem.innerHTML = '';
+                    upgradeTitleElem.textContent = 'Schwarzmarkt – Das heutige Angebot:';
+
+                    const forbiddenCardIds = [1]; // Schwert darf niemals verkauft werden
+
+                    // Karten im Deck, die NICHT das Schwert sind
+                    const unlockedNonSwordCards = CARD_TYPES.filter(card =>
+                        state.unlockedCardIds.has(card.id) &&
+                        !forbiddenCardIds.includes(card.id)
+                    );
+
+                    if (unlockedNonSwordCards.length === 0) {
+                        logMessage(`⚠️ Keine verkaufbaren Karten verfügbar.`, 'system');
+                        return;
+                    }
+
+                    shuffleArray(unlockedNonSwordCards);
+                    const offeredCards = unlockedNonSwordCards.slice(0, 3);
+
+                    offeredCards.forEach(card => {
+                        const sellPrice = getRandomInt(50, 700);
+
+                        const cardDiv = document.createElement('div');
+                        cardDiv.classList.add('card', 'card-choice');
+                        if (card.rarity === 'rare') cardDiv.classList.add('rare');
+                        if (card.rarity === 'superrare') cardDiv.classList.add('superrare');
+
+                        cardDiv.innerHTML = `
+                            <div class="card-mana">${card.manaCost}</div>
+                            <div class="card-name">${card.name}</div>
+                            <div class="card-icon">${card.icon}</div>
+                            <div class="card-description">${card.description}</div>
+                            <div class="card-power">${card.power ?? ''}</div>
+                            <div class="sell-price">💰 ${sellPrice} Gold</div>
+                        `;
+
+                        cardDiv.querySelector('.sell-price').style.marginTop = '8px';
+                        cardDiv.querySelector('.sell-price').style.fontWeight = 'bold';
+                        cardDiv.querySelector('.sell-price').style.color = '#ffd700';
+
+                        cardDiv.addEventListener('click', () => {
+                            // Entferne nur aus Deck/Hand/Discard – unlocked bleibt!
+                            ['deck', 'hand', 'discardPile'].forEach(pile => {
+                                state.player[pile] = state.player[pile].filter(c => c.id !== card.id);
+                            });
+
+                            state.player.gold += sellPrice;
+                            logMessage(`💸 ${card.name} wurde für ${sellPrice} Gold verkauft.`, 'gold');
+
+                            upgradeContainerElem.style.display = 'none';
+                            updateUIDisplay();
+                            updateHandUI();
+                            state.turnInProgress = false;
+                        });
+
+                        upgradeOptionsElem.appendChild(cardDiv);
+                    });
+
+                    // Ablehnen-Button
+                    const cancelBtn = document.createElement('button');
+                    cancelBtn.textContent = '❌ Angebote ablehnen';
+                    cancelBtn.style.marginTop = '20px';
+                    cancelBtn.style.padding = '6px 12px';
+                    cancelBtn.style.fontSize = '14px';
+                    cancelBtn.style.backgroundColor = '#444';
+                    cancelBtn.style.color = '#fff';
+                    cancelBtn.style.border = '1px solid #888';
+                    cancelBtn.style.borderRadius = '6px';
+                    cancelBtn.style.cursor = 'pointer';
+
+                    cancelBtn.addEventListener('click', () => {
+                        logMessage(`🚫 Du hast die Schwarzmarkt-Angebote abgelehnt.`, 'system');
+                        upgradeContainerElem.style.display = 'none';
+                        state.turnInProgress = false;
+                    });
+
+                    upgradeOptionsElem.appendChild(cancelBtn);
+                    upgradeContainerElem.style.display = 'flex';
+                    return;
+                }
+
+
+            case 'swapCard': {
+                logMessage(`🔁 Wähle eine freigeschaltete Karte, die du dauerhaft entfernen möchtest.`, 'system');
+
+                upgradeOptionsElem.innerHTML = '';
+                upgradeTitleElem.textContent = 'Karte zum Entfernen wählen';
+
+                const forbiddenCardIds = [1]; // Schwert darf nicht gelöscht werden
+
+                const ownedCardIds = new Set(state.player.deck.map(c => c.id));
+                const removableCards = CARD_TYPES.filter(card =>
+                    state.unlockedCardIds.has(card.id) &&
+                    !forbiddenCardIds.includes(card.id)
+                );
+
+                if (removableCards.length === 0) {
+                    logMessage('⚠️ Keine entfernbare Karte verfügbar.', 'system');
+                    return;
+                }
+
+                shuffleArray(removableCards);
+                const choicesToRemove = removableCards.slice(0, 6);
+
+                // Zeige Karten zur Auswahl
+                choicesToRemove.forEach(card => {
+                    const cardDiv = createCardElement(card);
+                    cardDiv.addEventListener('click', () => {
+                        // Entferne die Karte aus Deck, Hand, Ablage
+                        ['deck', 'hand', 'discardPile'].forEach(pile => {
+                            state.player[pile] = state.player[pile].filter(c => c.id !== card.id);
+                        });
+
+                        // Entferne aus freigeschaltetem Pool nur für diese Session
+                        state.unlockedCardIds.delete(card.id);
+                        logMessage(`❌ ${card.name} wurde dauerhaft aus deinem Deck entfernt.`, 'discard');
+
+                        // Jetzt neue Karten anbieten (nicht besessen + nicht verboten)
+                        const forbiddenCardIdsAdd = [17, 18, 19]; // keine Ultra-Karten
+                        const addableCards = CARD_TYPES.filter(c =>
+                            !forbiddenCardIdsAdd.includes(c.id) &&
+                            !state.unlockedCardIds.has(c.id)
+                        );
+
+                        if (addableCards.length === 0) {
+                            logMessage(`⚠️ Keine neuen Karten mehr verfügbar zum Hinzufügen.`, 'system');
+                            upgradeContainerElem.style.display = 'none';
+                            return;
+                        }
+
+                        shuffleArray(addableCards);
+                        const choicesToAdd = addableCards.slice(0, 6);
+
+                        upgradeOptionsElem.innerHTML = '';
+                        upgradeTitleElem.textContent = 'Neue Karte wählen';
+
+                        choicesToAdd.forEach(newCard => {
+                            const newCardDiv = createCardElement(newCard);
+                            newCardDiv.addEventListener('click', () => {
+                                const instance = createCardInstance(newCard);
+                                state.player.deck.push(instance);
+                                state.unlockedCardIds.add(newCard.id);
+
+                                logMessage(`✨ ${newCard.name} wurde deinem Deck hinzugefügt und freigeschaltet.`, 'system');
+
+                                upgradeContainerElem.style.display = 'none';
+                                updateUIDisplay();
+                                updateHandUI();
+                                state.turnInProgress = false;
+                            });
+                            upgradeOptionsElem.appendChild(newCardDiv);
+                        });
+                    });
+
+                    upgradeOptionsElem.appendChild(cardDiv);
+                });
+
+                upgradeContainerElem.style.display = 'flex';
+                return;
+            }
+
+            case 'hellhoundBoost':
+                if (state.player.hellhound) {
+                    state.player.hellhound.damage += 2;
+                    logMessage('🔥 Dein Teufelshund wird stärker – +2 Schaden!', 'system');
+                    updatePetDisplay(); // 🧩 HIER HINZUFÜGEN
+                }
+                break;
+
               case 'upgradeSwordPower':
                     state.player.swordBonus = (state.player.swordBonus || 0) + 1;
                     logMessage(`Schwertbonus dauerhaft auf +${state.player.swordBonus} erhöht.`, 'system');
@@ -3596,14 +4238,16 @@ function executeCardEffect(card) {
                 }
 
                 optionDiv.innerHTML = `
-                    <h3>${card.name}</h3>
-                    <p>${card.description}</p>
-                    <div style="font-size: 24px; margin-top: 5px;">${card.icon}</div>
-                `;
+                <h3>${card.name}</h3>
+                <p>${card.description}</p>
+                <div style="font-size: 24px; margin-top: 5px;">${card.icon}</div>
+                <p style="margin-top: 4px; font-size: 12px; color: #ccc;"> Manakosten: ${card.manaCost}</p>
+            `;
 
                 optionDiv.addEventListener('click', () => {
                     const newCard = createCardInstance(card);
                     state.player.deck.push(newCard);
+                    state.unlockedCardIds.add(card.id); 
                     shuffleArray(state.player.deck);
                     upgradeContainerElem.style.display = 'none';
                     state.turnInProgress = false;
