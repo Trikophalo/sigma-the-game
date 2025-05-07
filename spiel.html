@@ -1951,6 +1951,7 @@ h2 {
                  { type: 'regenManaPassive', title: 'Mana-Regen +1', description: 'Du erhältst pro Runde +1 zusätzliches Mana zurück.', rarity: 'rare' },
                  { type: 'regenManaPassive3', title: 'Mana-Regen +3', description: 'Du erhältst pro Runde +3 zusätzliches Mana zurück.', rarity: 'superrare' },
                  { type: 'newUltraCardSpecific', title: 'Eine Ultra Karte wählen', description: 'Wähle 1 von 3 Ultra Karten.', rarity: 'superrare' }, // Komplexer zu implementieren
+                 { type: 'fuseCards', title: '🧬 Kartenfusion',  description: 'Fusioniere zwei Karten aus deinem Deck zu einer neuen.', rarity: 'common'},
         ];
     
         // --- XP & Level Konstanten ---
@@ -2590,76 +2591,128 @@ h2 {
              currentHandSizeElem.textContent = state.player.hand.length;
              updatePlayerStatusDisplay();
         }
+
     
-        // Erstellt das DOM-Element für eine einzelne Karte
-        function createCardElement(card) {
-            const cardDiv = document.createElement('div');
-            cardDiv.classList.add('card', 'card-animation');
-            cardDiv.dataset.uniqueId = card.uniqueId;
+function createCardElement(card) {
+    const cardDiv = document.createElement('div');
+    cardDiv.classList.add('card', 'card-animation');
+    cardDiv.dataset.uniqueId = card.uniqueId;
 
-            if (card.rarity === 'rare') {
-                cardDiv.classList.add('rare');
-            } else if (card.rarity === 'superrare') {
-                cardDiv.classList.add('superrare');
-            }
+    if (card.rarity === 'rare') cardDiv.classList.add('rare');
+    if (card.rarity === 'superrare') cardDiv.classList.add('superrare');
 
-            // Berechnung der tatsächlichen Angriffskraft
-            let calculatedPower = card.basePower ?? card.power; // Falls basePower nicht existiert
-            let powerHint = '';
+    const EFFECT_ICONS = {
+        damage: '💥',
+        block: '🛡️',
+        heal: '❤️',
+        lifesteal: '💥',
+        poison: '☠️',
+        damage_paralyze: '💥',
+        whirlwind: '💥',
+        firearrow: '💥',
+        gamble: '💥'
+    };
 
-            if (card.name === 'Schwert') {
-                if (state.player?.swordBonus) {
-                    calculatedPower += state.player.swordBonus;
-                    powerHint += `+${state.player.swordBonus} durch Schwertkämpfer `;
+    let powerHint = '';
+    let formattedPower = '';
+
+    if (typeof card.power === 'object' && card.power !== null) {
+        const enhanced = {};
+
+        for (const [eff, val] of Object.entries(card.power)) {
+            let result = val || 0;
+
+            if (eff === 'damage') {
+                if (card.name.includes('Schwert') || card.name === 'Schwert') {
+                    if (state.player?.swordBonus) {
+                        result += state.player.swordBonus;
+                        powerHint += `+${state.player.swordBonus} durch Schwertkämpfer `;
+                    }
+                    if (state.player?.isShieldmaster) {
+                        result -= 1;
+                        powerHint += `-1 durch Schildmeister `;
+                    }
                 }
-                if (state.player?.isShieldmaster) {
-                    calculatedPower -= 1;
-                    powerHint += `-1 durch Schildmeister`;
-                }
             }
 
-            cardDiv.innerHTML = `
-                <div class="card-mana">${card.manaCost === 'X' ? 'X' : card.manaCost}</div>
-                <div class="card-name">${card.name}</div>
-                <div class="card-icon">
-                    ${card.icon.endsWith('.png') ? `<img src="${card.icon}" class="card-icon-image" alt="${card.name}">` : card.icon}
-                </div>
-                <div class="card-description">
-                    ${card.description}
-                    ${card.name === 'Schwert' && state.player?.isShieldmaster ? `<br><span style="color:orange;">-1 wegen Schildmeister</span>` : ''}
-                </div>
-                <div class="card-power ${
-                    ['damage_paralyze', 'whirlwind', 'firearrow', 'gamble', 'damage', 'block', 'heal', 'lifesteal', 'poison'].includes(card.effect) ? '' : 'hidden-power'
-                }" title="${powerHint.trim()}">
-                    ${['damage_paralyze', 'whirlwind', 'firearrow', 'gamble', 'damage', 'block', 'heal', 'lifesteal', 'poison'].includes(card.effect) ? calculatedPower : ''}
-                </div>
-            `;
-            
-            if (!state.player.frozen){
-                cardDiv.addEventListener('click', () => playCard(card.uniqueId));
+            if (result > 0) {
+                enhanced[eff] = result;
             }
-
-           // cardDiv.addEventListener('click', () => playCard(card.uniqueId));
-            return cardDiv;
         }
+
+        formattedPower = Object.entries(enhanced)
+            .map(([eff, val]) => `<span style="font-size: 16px;">${EFFECT_ICONS[eff] || eff}</span> ${val}`)
+            .join(' / ');
+    } else {
+        let base = card.basePower ?? card.power ?? 0;
+
+        if (card.effect === 'damage' && (card.name.includes('Schwert') || card.name === 'Schwert')) {
+            if (state.player?.swordBonus) {
+                base += state.player.swordBonus;
+                powerHint += `+${state.player.swordBonus} durch Schwertkämpfer `;
+            }
+            if (state.player?.isShieldmaster) {
+                base -= 1;
+                powerHint += `-1 durch Schildmeister `;
+            }
+        }
+
+        if (base > 0) {
+            formattedPower = `<span style="font-size: 20px;">${EFFECT_ICONS[card.effect] || ''}</span> ${base}`;
+        }
+    }
+
+    cardDiv.innerHTML = `
+        <div class="card-mana">${card.manaCost === 'X' ? 'X' : card.manaCost}</div>
+        <div class="card-name">${card.name}</div>
+        <div class="card-icon">
+        ${card.icon.endsWith('.png') 
+            ? `<img src="${card.icon}" style="width: 42px; height: 42px;" alt="${card.name}">` 
+            : card.icon}
+        </div>
+        <div class="card-description">
+            ${card.description}
+            ${card.name === 'Schwert' && state.player?.isShieldmaster 
+                ? `<br><span style="color:orange;">-1 wegen Schildmeister</span>` 
+                : ''}
+        </div>
+        <div class="card-power" title="${powerHint.trim()}">${formattedPower}</div>
+    `;
+
+    if (!state.player.frozen) {
+        cardDiv.addEventListener('click', () => playCard(card.uniqueId));
+    }
+
+    return cardDiv;
+}
+
+
 
     
         // Aktualisiert den 'disabled'-Status der Karten basierend auf Manakosten
         function updateCardAvailability() {
             const cards = document.querySelectorAll('.card');
+
             cards.forEach(cardElem => {
                 const card = state.player.hand.find(c => c.uniqueId == cardElem.dataset.uniqueId);
                 if (!card) return;
 
-                // Karten mit "X" als Mana-Kosten zählen als 1 Mindestkosten
-                const isPowerSurge = card.name === 'Kraft Sammeln';
-                const rawManaCost = card.manaCost === 'X' ? 1 : Number(card.manaCost);
+                // "Kraft Sammeln" = Spezialfall mit X -> zählt als 1 Mana
+                let manaCost = 0;
+                if (card.manaCost === 'X') {
+                    manaCost = 1;
+                } else if (typeof card.manaCost === 'number') {
+                    manaCost = card.manaCost;
+                } else if (!isNaN(parseInt(card.manaCost))) {
+                    manaCost = parseInt(card.manaCost);
+                } else {
+                    manaCost = 0; // Fallback falls gar nichts angegeben ist
+                }
 
-                // Nur deaktivieren, wenn Kosten > 0 und Spieler zu wenig Mana hat
-                const needsMana = rawManaCost > 0;
-                const hasEnoughMana = state.player.mana >= rawManaCost;
+                const hasEnoughMana = state.player.mana >= manaCost;
+                const shouldDisable = (manaCost > 0 && !hasEnoughMana) || state.player.frozen;
 
-                if (needsMana && !hasEnoughMana || state.player.frozen) {
+                if (shouldDisable) {
                     cardElem.classList.add('disabled');
                 } else {
                     cardElem.classList.remove('disabled');
@@ -2668,8 +2721,8 @@ h2 {
 
             endTurnBtn.disabled = state.turnInProgress;
             manaBoostBtn.disabled = state.turnInProgress || cardsPlayedThisTurn > 0 || state.player.frozen;
-
         }
+
         
         //Pet
         function updatePetDisplay() {
@@ -2810,104 +2863,214 @@ h2 {
         // --- Platzhalter für weitere Spiellogik (wird später benötigt) ---
     
         function playCard(uniqueCardId) {
-            if (state.gameOver || state.turnInProgress) return;
+    if (state.gameOver || state.turnInProgress) return;
 
-            const paralyzeEffect = state.player.statusEffects?.find(e => e.type === 'paralyze');
-            if (paralyzeEffect && cardsPlayedThisTurn >= 2) {
-                logMessage("⚡ Du bist paralysiert und kannst diese Runde nur 2 Karten spielen!", 'system');
-                return;
-            }
+    const paralyzeEffect = state.player.statusEffects?.find(e => e.type === 'paralyze');
+    if (paralyzeEffect && cardsPlayedThisTurn >= 2) {
+        logMessage("⚡ Du bist paralysiert und kannst diese Runde nur 2 Karten spielen!", 'system');
+        return;
+    }
 
-            const cardIndex = state.player.hand.findIndex(c => c.uniqueId === uniqueCardId);
-            if (cardIndex === -1) {
-                console.error("Karte zum Spielen nicht in der Hand gefunden:", uniqueCardId);
-                return;
-            }
-            const card = state.player.hand[cardIndex];
+    const cardIndex = state.player.hand.findIndex(c => c.uniqueId === uniqueCardId);
+    if (cardIndex === -1) {
+        console.error("Karte zum Spielen nicht in der Hand gefunden:", uniqueCardId);
+        return;
+    }
+    const card = state.player.hand[cardIndex];
 
-            // Genug Mana?
-            const isPowerSurge = card.name === 'Kraft Sammeln';
-            const requiredMana = card.manaCost === 'X' ? 1 : card.manaCost;
+    const isPowerSurge = card.name === 'Kraft Sammeln';
+    const requiredMana = card.manaCost === 'X' ? 1 : card.manaCost;
 
-            // 0-Mana-Karten dürfen immer gespielt werden
-            if (requiredMana > 0 && state.player.mana < requiredMana) {
-                logMessage(`Nicht genug Mana für ${card.name}! (${requiredMana} benötigt)`, 'player');
-                const cardElement = cardHandElem.querySelector(`.card[data-unique-id="${uniqueCardId}"]`);
-                if (cardElement) {
-                    cardElement.classList.add('shake');
-                    setTimeout(() => cardElement.classList.remove('shake'), 250);
-                }
-                return;
-            }
+    if (requiredMana > 0 && state.player.mana < requiredMana) {
+        logMessage(`Nicht genug Mana für ${card.name}! (${requiredMana} benötigt)`, 'player');
+        const cardElement = cardHandElem.querySelector(`.card[data-unique-id="${uniqueCardId}"]`);
+        if (cardElement) {
+            cardElement.classList.add('shake');
+            setTimeout(() => cardElement.classList.remove('shake'), 250);
+        }
+        return;
+    }
 
-            state.turnInProgress = true;
-            updateCardAvailability();
+    if (isPowerSurge && state.usedPowerSurgeThisTurn) {
+        logMessage(`🔋 Kraft Sammeln kann nur einmal pro Runde genutzt werden.`, 'system');
+        return;
+    }
 
-            console.log("Spiele Karte:", card.name);
+    state.turnInProgress = true;
+    updateCardAvailability();
+    cardsPlayedThisTurn++;
 
-            if (card.name === 'Kraft Sammeln' && state.usedPowerSurgeThisTurn) {
-                logMessage(`🔋 Kraft Sammeln kann nur einmal pro Runde gespielt werden.`, 'system');
-                return;
-            }
+    // Mana abziehen (außer für oneShot)
+    if (!card.oneShot) {
+        state.player.mana -= requiredMana;
+    }
 
-            // 1. Mana abziehen – außer für oneShot Karten
-            if (!card.oneShot) {
-                state.player.mana -= requiredMana;
-            }
-
-            cardsPlayedThisTurn++;
-
-            // 3. Animation anzeigen (Entfernen übernimmt updateHandUI)
-            const cardElement = cardHandElem.querySelector(`.card[data-unique-id="${uniqueCardId}"]`);
-            if (cardElement) {
-                cardElement.classList.add('played');
-                setTimeout(() => {
-                    updateHandUI();
-                    updateUIDisplay();
-                }, 300);
-            } else {
-                updateHandUI();
-                updateUIDisplay();
-            }
-
-            //Kraft sammeln nur einmal pro runde
-            if (card.name === 'Kraft Sammeln' && state.usedPowerSurgeThisTurn) {
-                logMessage(`🔋 Kraft Sammeln kann nur einmal pro Runde genutzt werden.`, 'system');
-                return;
-            }
-
-            // 4. Karteneffekt ausführen
-            logMessage(`Spieler spielt ${card.name}.`, 'player');
-            executeCardEffect(card);
-
-            if (card.name === 'Kraft Sammeln') {
-                state.usedPowerSurgeThisTurn = true;
-            }
-
-            // 💥 One-Shot Karte entfernen, sonst in Ablagestapel
-            state.player.hand.splice(cardIndex, 1);
-            if (card.oneShot) {
-                logMessage(`${card.name} verschwindet nach der Benutzung.`, 'system');
-
-                // Entferne Donner-Zauber aus dem Inventar (damit das Icon verschwindet)
-                playerInventory.delete('donner');
-                playerInventory.delete('lotus');
-
-                updatePlayerItemIcons(); // UI-Update
-            } else {
-                state.player.discardPile.push(card);
-            }
-
-            // 5. UI aktualisieren
+    const cardElement = cardHandElem.querySelector(`.card[data-unique-id="${uniqueCardId}"]`);
+    if (cardElement) {
+        cardElement.classList.add('played');
+        setTimeout(() => {
+            updateHandUI();
             updateUIDisplay();
-            updateEnemyUI();
+        }, 300);
+    } else {
+        updateHandUI();
+        updateUIDisplay();
+    }
 
-            // 6. Gegner besiegt prüfen
-            setTimeout(() => {
-                checkEnemyDefeat();
-            }, 400);
+    logMessage(`Spieler spielt ${card.name}.`, 'player');
+
+    // ➕ Fusionierte Karten mit mehreren Effekten
+    if (card.effect.includes('_') && typeof card.power === 'object') {
+        for (const [effect, value] of Object.entries(card.power)) {
+            playSingleEffect(effect, value, card);
+        }
+    } else {
+        executeCardEffect(card); // normale Karte
+    }
+
+    // Spezialfall: Kraft Sammeln
+    if (isPowerSurge) {
+        state.usedPowerSurgeThisTurn = true;
+    }
+
+    // Ablage oder Entfernen bei oneShot
+    state.player.hand.splice(cardIndex, 1);
+    if (card.oneShot) {
+        logMessage(`${card.name} verschwindet nach der Benutzung.`, 'system');
+        playerInventory.delete('donner');
+        playerInventory.delete('lotus');
+        updatePlayerItemIcons();
+    } else {
+        state.player.discardPile.push(card);
+    }
+
+    updateUIDisplay();
+    updateEnemyUI();
+
+    setTimeout(() => {
+        checkEnemyDefeat();
+    }, 400);
+}
+
+
+function playSingleEffect(effect, power, card) {
+    const enemy = state.currentEnemy;
+    let remaining = power;
+
+    switch (effect) {
+        case 'draw':
+                drawCards(power);
+                logMessage(`📜 Du ziehst ${power} Karte(n).`, 'system');
+                break;
+        case 'damage': {
+            const blockUsed = Math.min(enemy.block || 0, remaining);
+            if (blockUsed > 0) {
+                enemy.block -= blockUsed;
+                logMessage(`${enemy.name} blockt ${blockUsed} Schaden.`, 'block');
+            }
+
+            const finalDamage = remaining - blockUsed;
+            if (finalDamage > 0) {
+                enemy.health -= finalDamage;
+                logMessage(`${enemy.name} erleidet ${finalDamage} Schaden.`, 'enemy');
+            }
+            enemyContainerElem.classList.add('hit');
+            setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
+            break;
+        }
+        case 'block': {
+            state.player.block = (state.player.block || 0) + remaining;
+            logMessage(`🛡️ Du erhältst ${remaining} Block.`, 'block');
+            break;
+        }
+        case 'heal': {
+            const healAmount = Math.min(remaining, state.player.maxHealth - state.player.health);
+            if (healAmount > 0) {
+                state.player.health += healAmount;
+                logMessage(`❤️ Du heilst ${healAmount} Leben.`, 'heal');
+            }
+            break;
+        }
+        case 'lifesteal': {
+            const blockUsed = Math.min(enemy.block || 0, remaining);
+            if (blockUsed > 0) {
+                enemy.block -= blockUsed;
+                logMessage(`${enemy.name} blockt ${blockUsed} Schaden.`, 'block');
+            }
+            const finalDamage = remaining - blockUsed;
+            if (finalDamage > 0) {
+                enemy.health -= finalDamage;
+                const heal = Math.min(finalDamage, state.player.maxHealth - state.player.health);
+                state.player.health += heal;
+                logMessage(`🧛 Du stiehlst ${heal} Leben.`, 'lifesteal');
+            }
+
+            enemyContainerElem.classList.add('hit');
+            setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
+            break;
+        }
+        case 'poison': {
+            const existing = enemy.statusEffects?.find(e => e.type === 'poison');
+            if (existing) {
+                enemy.health -= 3;
+                logMessage(`☠️ Vergiftet – ${enemy.name} nimmt 3 extra Schaden.`, 'enemy');
+            } else {
+                addStatusEffect(enemy, { type: 'poison', damagePerTurn: power, duration: 3 });
+                logMessage(`☠️ ${enemy.name} ist nun vergiftet (${power} für 3 Runden).`, 'effect');
+            }
+            break;
+        }
+        case 'damage_paralyze': {
+            enemy.health -= power;
+            logMessage(`⚡ ${enemy.name} erleidet ${power} Schaden.`, 'enemy');
+
+            const chance = Math.random();
+            if (chance < 0.45) {
+                addStatusEffect(enemy, { type: 'paralyze', duration: 2 });
+                logMessage(`⚡ ${enemy.name} ist paralysiert (Angriff halbiert).`, 'effect');
+            }
+
+            enemyContainerElem.classList.add('hit');
+            setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
+            break;
+        }
+        case 'firearrow': {
+            enemy.health -= power;
+            logMessage(`🔥 ${enemy.name} erleidet ${power} Schaden durch Feuerpfeil.`, 'enemy');
+
+            if (Math.random() < 0.5) {
+                addStatusEffect(enemy, { type: 'burn', damagePerTurn: 5, duration: 2 });
+                logMessage(`🔥 ${enemy.name} brennt! (5 Schaden für 2 Runden)`, 'effect');
+            }
+
+            enemyContainerElem.classList.add('hit');
+            setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
+            break;
+        }
+        case 'gamble': {
+            const roll = Math.random();
+            if (roll < 0.5) {
+                enemy.health -= power;
+                state.player.gold += 100;
+                logMessage(`🎲 Glück gehabt! ${enemy.name} verliert ${power} Leben. Du erhältst 100 Gold.`, 'gold');
+            } else {
+                state.player.health -= power;
+                logMessage(`🎲 Verloren! Du verlierst ${power} Leben.`, 'enemy');
+            }
+            break;
+        }
+        case 'whirlwind': {
+            // Annahme: ein Ziel
+            enemy.health -= power;
+            logMessage(`🌀 Klingenwirbel trifft ${enemy.name} für ${power} Schaden.`, 'enemy');
+            break;
         }
 
+        default:
+            console.warn("Unbekannter Effekt:", effect);
+            logMessage(`⚠️ Effekt ${effect} konnte nicht ausgeführt werden.`, 'system');
+    }
+}
 
     
 function executeCardEffect(card) {
@@ -3979,7 +4142,7 @@ if (state.player.hellhound) {
                     description: 'Erhalte 350 Gold.',
                     rarity: 'common'
                 };
-
+                
                 // Upgrade-Pool filtern und gewichten
                 const availableUpgrades = UPGRADE_TYPES.filter(upg => upg.type !== 'gain_gold');
                 const weightedPool = getWeightedUpgrades(availableUpgrades, 1.5, 15, 45);
@@ -3994,6 +4157,7 @@ if (state.player.hellhound) {
                         rarity: 'rare'
                     });
                 }
+
 
                 // Upgrade-Optionen erzeugen
                 chosenUpgrades.forEach(upgrade => {
@@ -4296,6 +4460,9 @@ if (state.player.hellhound) {
                     state.player.gold += 350;
                     logMessage(`Du erhältst 350 Gold. Aktuell: ${state.player.gold} Gold.`, 'system');
                     break;
+                case 'fuseCards':
+                        showFusionModal();
+                    return;
                  // --- Implementiere andere Upgrades ---
                  default:
                      logMessage(`Upgrade-Typ '${upgrade.type}' noch nicht implementiert.`, 'system');
@@ -4410,6 +4577,7 @@ if (state.player.hellhound) {
 
     </script>
     <script src="shop.js"></script>
+    <script src="fusion.js"></script>
 
 </body>
 </html>
