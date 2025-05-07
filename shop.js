@@ -4,8 +4,8 @@ const SHOP_ITEMS = [
     {
       id: 'blut',
       name: 'Doanels Blutrüstung',
-      cost: 1000,
-      description: 'Regeneriert jede Runde 2 Leben.',
+      cost: 1500,
+      description: 'Regeneriert jede Runde 3 Leben.',
       icon: 'images/blutrüstung.png',
       effect: 'regen'
     },
@@ -71,10 +71,10 @@ const SHOP_ITEMS = [
   const playerInventory = new Set(); // Gekaufte Items speichern
   
   // Shop-Overlay vorbereiten
-  const shopContainer = document.createElement('div');
-  shopContainer.id = 'shopContainer';
-  shopContainer.style.display = 'none';
-  document.body.appendChild(shopContainer);
+ // const shopContainer = document.createElement('div');
+ // shopContainer.id = 'shopContainer';
+ // shopContainer.style.display = 'none';
+//  document.body.appendChild(shopContainer);
   
   // Shop-Öffnungsfrage
   function promptShopQuestion() {
@@ -125,13 +125,17 @@ const SHOP_ITEMS = [
 
     // Shop öffnen mit optionalem Callback
     function openShop(callback) {
-        afterShopCallback = callback || null;
-        showShopItems();
-    }
-
-    document.getElementById('skipShopBtn').onclick = () => {
-      closeShop();
-  };  
+      afterShopCallback = callback || null;
+  
+      const shopElem = document.getElementById('shopScreen'); // 🔁 geändert
+      if (shopElem) {
+        shopElem.classList.add('visible');
+      }
+  
+      showShopItems();
+  }
+  
+  
     
     function showShopItems() {
       const shopItems = document.getElementById('shopItems');
@@ -163,40 +167,59 @@ const SHOP_ITEMS = [
     
       shopItems.appendChild(itemGrid);
     
-      // Shop sichtbar machen
-      document.getElementById('shopContainer').classList.add('visible');
+
     }
     
-  
   
     
     // Shop schließen und ggf. Callback ausführen
     function closeShop() {
-      const shopContainer = document.getElementById('shopContainer');
-      shopContainer.classList.remove('visible');
-      shopContainer.style.display = 'none'; // Fallback für ältere Browser
-    
-      if (typeof afterShopCallback === 'function') {
-        afterShopCallback();
-        afterShopCallback = null;
+      const shopElem = document.getElementById('shopScreen'); // 🔁 geändert
+      if (shopElem) {
+        shopElem.classList.remove('visible');
       }
-    }
+  
+      if (afterShopCallback) {
+          afterShopCallback();
+          afterShopCallback = null;
+      }
+  }
+  
+ // Event Listener für den "Shop schließen" Button
+window.addEventListener('DOMContentLoaded', () => {
+  const skipShopBtn = document.getElementById('skipShopBtn');
+  if (skipShopBtn) {
+    skipShopBtn.addEventListener('click', closeShop);
+  }
+}); 
     
   
-    
-  
-  function buyItem(item) {
-    if (state.player.gold >= item.cost && !playerInventory.has(item.id)) {
+    function buyItem(item) {
+      if (playerInventory.has(item.id)) {
+        logMessage('⚠️ Dieses Item wurde bereits gekauft.', 'system');
+        return;
+      }
+
+      if (state.player.gold < item.cost) {
+        logMessage('💸 Nicht genug Gold.', 'system');
+        return;
+      }
+
+      // Kauf durchführen
       state.player.gold -= item.cost;
       playerInventory.add(item.id);
       logMessage(`🛒 Gekauft: ${item.name}`, 'system');
       applyShopItemEffect(item);
       closeShop();
-    } else {
-      logMessage('Nicht genug Gold oder bereits gekauft.', 'system');
+
+      // Upgrade-Overlay schließen (falls noch offen)
+      const upgradeOverlay = document.getElementById('upgradeContainer');
+      if (upgradeOverlay) {
+        upgradeOverlay.classList.remove('visible');
+        upgradeOverlay.style.display = 'none';
+      }
     }
-  }
-  
+
   function applyShopItemEffect(item) {
     switch (item.effect) {
       case 'regen':
@@ -286,7 +309,7 @@ const SHOP_ITEMS = [
 
     if (state.player.hasBloodArmor) {
         icons.push(`
-            <span class="item-icon-wrapper" data-tooltip="Regeneriert jede Runde 2 Leben.">
+            <span class="item-icon-wrapper" data-tooltip="Regeneriert jede Runde 3 Leben.">
                 <img src="images/blutrüstung.png" alt="Blutrüstung" class="item-icon" />
             </span>
         `);
@@ -327,4 +350,13 @@ const SHOP_ITEMS = [
     container.innerHTML = icons.join('');
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+  const icon = document.getElementById('shopIconBtn');
+  if (icon) {
+    icon.addEventListener('click', () => {
+      document.getElementById('upgradeContainer').classList.remove('visible'); // Upgrade ausblenden
+      openShop(); // Shop öffnen
+    });
+  }
+});
   

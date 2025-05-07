@@ -391,6 +391,43 @@
 </head>
 <body>
   <div class="particles" id="particles"></div>
+
+  <!-- Patch Notes Button -->
+<div style="position: fixed; top: 15px; right: 15px; z-index: 999;">
+  <button onclick="openPatchNotes()" title="Patch Notes anzeigen" style="padding: 6px 14px; font-size: 14px;">📝 Patch Notes</button>
+</div>
+
+<!-- Patch Notes Modal -->
+<div id="patchNotesModal" style="display: none;">
+  <div style="
+    position: fixed;
+    top: 10%;
+    right: 5%;
+    width: 90%;
+    max-width: 500px;
+    max-height: 70vh;
+    overflow-y: auto;
+    background-color: var(--card-bg);
+    color: var(--text-primary);
+    border: 2px solid var(--accent-color);
+    border-radius: 12px;
+    padding: 20px;
+    z-index: 1001;
+    box-shadow: 0 0 25px var(--accent-glow);
+  ">
+    <h2 style="margin-bottom: 10px;">📝 Patch Notes</h2>
+    <div id="patchNotesContent" style="text-align: left; font-family: monospace; font-size: 14px;">
+      <p><strong>v1.21</strong> – 07. Mai 2025</p>
+      <ul>
+        <li>🔧 Neues Shop-Icon eingebaut</li>
+        <li>🛠️ Upgrade-Auswahl schließt jetzt Shop</li>
+        <li>⚖️ Balancing bei Kartenanpassung</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
   
   <div class="menu-container" id="mainMenu">
     <h1>SIGMA THE GAME</h1>
@@ -748,25 +785,25 @@ db.collection("highscores")
 
 
   const monsters = [
-                { name: 'Goblin', health: 20, attack: 5, levelMin: 1, levelMax: 5, xp: 35, gold: 70, pixelImageKey: 'Goblin', description: 'Ein kleiner, flinker Goblin.', traits: ['Keine Fähigkeit'] },
+                { name: 'Goblin', health: 20, attack: 5, levelMin: 1, levelMax: 5, xp: 35, gold: 70, pixelImageKey: 'goblin', description: 'Ein kleiner, flinker Goblin.', traits: ['Keine Fähigkeit'] },
                 { name: 'Gepanzertes Skelett', health: 25, attack: 4, levelMin: 2, levelMax: 6, xp: 55, gold: 85, pixelImageKey: 'armorskelett', description: 'Ein ehmaliger stolzer Krieger.', traits: ['Rüstung'] },
-                { name: 'Ork', health: 35, attack: 5, levelMin: 3, levelMax: 7, xp: 60, gold: 65, pixelImageKey: 'Ork', description: 'Ein brutaler Ork-Krieger.', traits: ['Stark'] },
+                { name: 'Ork', health: 35, attack: 5, levelMin: 3, levelMax: 7, xp: 60, gold: 65, pixelImageKey: 'ork', description: 'Ein brutaler Ork-Krieger.', traits: ['Stark'] },
                 { name: 'Riesen Spinne', health: 40, attack: 6, levelMin: 4, levelMax: 7, xp: 65, gold: 110, pixelImageKey: 'spinne', description: 'Spuckt lähmendes Gift.', traits: ['Giftig'] }, // 'Netzwerfer' Effekt muss implementiert werden
-                { name: 'Troll', health: 50, attack: 8, levelMin: 5, levelMax: 9, xp: 70, gold: 120, pixelImageKey: 'Troll', description: 'Regeneriert 3 Leben pro Runde.', traits: ['Regeneration', 'Massiv'], regen: 3 }, // Regeneration implementiert
+                { name: 'Troll', health: 50, attack: 8, levelMin: 5, levelMax: 9, xp: 70, gold: 120, pixelImageKey: 'troll', description: 'Regeneriert 3 Leben pro Runde.', traits: ['Regeneration', 'Massiv'], regen: 3 }, // Regeneration implementiert
                 { name: 'Donnerschlange', health: 45, attack: 9, levelMin: 6, levelMax: 10, xp: 120, gold: 135, pixelImageKey: 'snake', description: 'Eine lähmende Donnerschlange', traits: ['Statisch'] },
-                { name: 'Nekromant', health: 50, attack: 7, levelMin: 8, levelMax: 12, xp: 80, gold: 160, pixelImageKey: 'Nekromant', description: 'Schwächt dich oder ruft Diener.', traits: ['Untotenbeschwörer'] }, // Effekte müssen implementiert werden
-                { name: 'Eiskönig', health: 65, attack: 9, levelMin: 9, levelMax: 13, xp: 100, gold: 180, pixelImageKey: 'Eiskönig', description: 'Verlangsamt dich mit Kälte.', traits: ['Eis-Elementar', 'Frost-Aura'] }, // Effekte müssen implementiert werden
-                { name: 'Baby Drache', health: 60, attack: 11, levelMin: 10, levelMax: 14, xp: 120, gold: 230, pixelImageKey: 'BabyDrache', description: 'Speit Feuerstöße.', traits: ['Verspielt', 'Feueratem'] }, // Effekte müssen implementiert werden
+                { name: 'Nekromant', health: 50, attack: 7, levelMin: 8, levelMax: 12, xp: 80, gold: 160, pixelImageKey: 'nekromant', description: 'Schwächt dich oder ruft Diener.', traits: ['Untotenbeschwörer'] }, // Effekte müssen implementiert werden
+                { name: 'Eiskönig', health: 65, attack: 9, levelMin: 9, levelMax: 13, xp: 100, gold: 180, pixelImageKey: 'eiskönig', description: 'Verlangsamt dich mit Kälte.', traits: ['Eis-Elementar', 'Frost-Aura'] }, // Effekte müssen implementiert werden
+                { name: 'Baby Drache', health: 60, attack: 11, levelMin: 10, levelMax: 14, xp: 120, gold: 230, pixelImageKey: 'babydrache', description: 'Speit Feuerstöße.', traits: ['Verspielt', 'Feueratem'] }, // Effekte müssen implementiert werden
                 { name: 'Charged Golem', health: 70, attack: 9, levelMin: 11, levelMax: 15, xp: 170, gold: 260, pixelImageKey: 'golem', description: 'Mächtiger Elementar Golem.', traits: ['Statisch', 'Regeneration'], regen: 3 }, // Effekte müssen implementiert werden
                 { name: 'Dracula', health: 65, attack: 9, levelMin: 12, levelMax: 16, xp: 190, gold: 300, pixelImageKey: 'drakula', description: 'Dein Blut macht ihn stärker.', traits: ['Vamp', 'Stark'] }, // Effekte müssen implementiert werden
                 { name: 'Dämon', health: 75, attack: 12, levelMin: 13, levelMax: 18, xp: 280, gold: 360, pixelImageKey: 'demon', description: 'Feuer und Schatten. Resistent.', traits: ['Höllen Krallen'] }, // Effekte müssen implementiert werden
-                { name: 'Verfluchter Ritter', health: 70, attack: 9, levelMin: 14, levelMax: 18, xp: 360, gold: 400, pixelImageKey: 'CursedKnight', description: 'Ein wandelnde Geisterrüstung', traits: ['Rüstung', 'Krieger']}, // Effekte müssen implementiert werden
-                { name: 'Erzengel', health: 90, attack: 12, levelMin: 15, levelMax: 19, xp: 400, gold: 450, pixelImageKey: 'Erzengel', description: 'Ein mächtiger gefallener Engel.', traits: ['Segen', 'Fliegend'] }, // Effekte müssen implementiert werden
-                { name: 'Gargoyle', health: 95, attack: 14, levelMin: 16, levelMax: 20, xp: 450, gold: 480, pixelImageKey: 'Gargoyle', description: 'Einst da um die Menschen zu beschützen. Jetzt ein unbändiges Monster', traits: ['Gepanzerte Schuppen'] }, 
-                { name: 'Drache', health: 110, attack: 16, levelMin: 17, levelMax: 21, xp: 650, gold: 600, pixelImageKey: 'Drache', description: 'Ein mächtiger, alter Drache.', traits: ['Feueratem', 'Fliegend', 'Gepanzerte Schuppen'] }, 
-                { name: 'Teufel', health: 70, attack: 5, levelMin: 18, levelMax: 23, xp: 750, gold: 800, pixelImageKey: 'Teufel', description: 'Der Herrscher der Unterwelt.', traits: ['Höllenwache'] },
-                { name: 'Rainbow', health: 80, attack: 10, levelMin: 19, levelMax: 24, xp: 800, gold: 800, pixelImageKey: 'Rainbow', description: 'Der einzig wahre Elementar Herrscher', traits: ['Frost-Aura', 'Giftig', 'Feueratem'] },
-                { name: 'Yagdril', health: 130, attack: 15, levelMin: 20, levelMax: 100, xp: 1000, gold: 1000, pixelImageKey: 'Yagdril', description: 'Ein Wesen dessen Macht unbeschreiblich ist', traits: ['Fliegend', 'Segen'] } 
+                { name: 'Verfluchter Ritter', health: 70, attack: 9, levelMin: 14, levelMax: 18, xp: 360, gold: 400, pixelImageKey: 'cursedknight', description: 'Ein wandelnde Geisterrüstung', traits: ['Rüstung', 'Krieger']}, // Effekte müssen implementiert werden
+                { name: 'Erzengel', health: 90, attack: 12, levelMin: 15, levelMax: 19, xp: 400, gold: 450, pixelImageKey: 'erzengel', description: 'Ein mächtiger gefallener Engel.', traits: ['Segen', 'Fliegend'] }, // Effekte müssen implementiert werden
+                { name: 'Gargoyle', health: 95, attack: 14, levelMin: 16, levelMax: 20, xp: 450, gold: 480, pixelImageKey: 'gargoyle', description: 'Einst da um die Menschen zu beschützen. Jetzt ein unbändiges Monster', traits: ['Gepanzerte Schuppen'] }, 
+                { name: 'Drache', health: 110, attack: 16, levelMin: 17, levelMax: 21, xp: 650, gold: 600, pixelImageKey: 'drache', description: 'Ein mächtiger, alter Drache.', traits: ['Feueratem', 'Fliegend', 'Gepanzerte Schuppen'] }, 
+                { name: 'Teufel', health: 70, attack: 5, levelMin: 18, levelMax: 23, xp: 750, gold: 800, pixelImageKey: 'teufel', description: 'Der Herrscher der Unterwelt.', traits: ['Höllenwache'] },
+                { name: 'Rainbow', health: 80, attack: 10, levelMin: 19, levelMax: 24, xp: 800, gold: 800, pixelImageKey: 'rainbow', description: 'Der einzig wahre Elementar Herrscher', traits: ['Frost-Aura', 'Giftig', 'Feueratem'] },
+                { name: 'Yagdril', health: 130, attack: 15, levelMin: 20, levelMax: 100, xp: 1000, gold: 1000, pixelImageKey: 'yagdril', description: 'Ein Wesen dessen Macht unbeschreiblich ist', traits: ['Fliegend', 'Segen'] } 
 ];
 
 document.getElementById("monsterWikiButton").addEventListener("click", function () {
@@ -839,6 +876,11 @@ function closeCardWiki() {
   document.getElementById("cardWikiModal").style.display = "none";
 }
 
+function openPatchNotes() {
+  const modal = document.getElementById("patchNotesModal");
+  const isOpen = modal.style.display === "block";
+  modal.style.display = isOpen ? "none" : "block";
+}
 
   </script>
 </body>
