@@ -14,19 +14,24 @@ const EFFECT_ICONS = {
   
   function fuseCards(cardA, cardB) {
     const power = {};
-
-    // Effekt 1
-    if (cardA.power || cardA.healAmount) {
-      const value = cardA.power || cardA.healAmount || 0;
-      power[cardA.effect] = value + (cardA.effect === 'damage' && state.player.swordBonus ? state.player.swordBonus : 0);
+    const durations = {};
+  
+    // Effektwerte vorbereiten
+    for (const card of [cardA, cardB]) {
+      const effect = card.effect;
+      const value = card.power ?? card.healAmount ?? 0;
+      power[effect] = (power[effect] || 0) + value;
+  
+      // Dauer für Status-Effekte merken
+      if (card.duration) {
+        durations[effect] = Math.max(durations[effect] || 0, card.duration);
+      }
     }
-    
-    // Effekt 2
-    if (cardB.power || cardB.healAmount) {
-      const value = cardB.power || cardB.healAmount || 0;
-      power[cardB.effect] = value + (cardB.effect === 'damage' && state.player.swordBonus ? state.player.swordBonus : 0);
+  
+    // Bonus nur einmal bei damage
+    if (power['damage'] && state.player.swordBonus) {
+      power['damage'] += state.player.swordBonus;
     }
-    
   
     const description = `${cardA.description}<br><br>${cardB.description}`;
   
@@ -38,13 +43,15 @@ const EFFECT_ICONS = {
       effect: `${cardA.effect}_${cardB.effect}`,
       manaCost: Math.max(cardA.manaCost || 0, cardB.manaCost || 0) + 2,
       power,
+      effectDurations: durations,
       rarity: 'fusion',
       description,
       healAmount: (cardA.healAmount || 0) + (cardB.healAmount || 0),
-      duration: Math.max(cardA.duration || 0, cardB.duration || 0),
-      isFusion: true // Marker für Effektbehandlung
+      duration: Math.max(cardA.duration || 0, cardB.duration || 0), // optional global
+      isFusion: true
     };
   }
+  
   
   // CSS für die Animationen einfügen
   function insertFusionStyles() {
