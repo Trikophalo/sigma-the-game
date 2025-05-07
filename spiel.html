@@ -2955,13 +2955,29 @@ function createCardElement(card) {
 
 function playSingleEffect(effect, power, card) {
     const enemy = state.currentEnemy;
+
+    // Kombinierte Effekte aufteilen und rekursiv verarbeiten
+    if (effect.includes('_') && typeof power === 'object') {
+        const effects = effect.split('_');
+        for (const e of effects) {
+            playSingleEffect(e, power[e] || 0, card);
+        }
+        return;
+    }
+
     let remaining = power;
+
+    const hitAnimation = () => {
+        enemyContainerElem.classList.add('hit');
+        setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
+    };
 
     switch (effect) {
         case 'draw':
-                drawCards(power);
-                logMessage(`📜 Du ziehst ${power} Karte(n).`, 'system');
-                break;
+            drawCards(remaining);
+            logMessage(`📜 Du ziehst ${remaining} Karte(n).`, 'system');
+            break;
+
         case 'damage': {
             const blockUsed = Math.min(enemy.block || 0, remaining);
             if (blockUsed > 0) {
@@ -2974,15 +2990,15 @@ function playSingleEffect(effect, power, card) {
                 enemy.health -= finalDamage;
                 logMessage(`${enemy.name} erleidet ${finalDamage} Schaden.`, 'enemy');
             }
-            enemyContainerElem.classList.add('hit');
-            setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
+            hitAnimation();
             break;
         }
-        case 'block': {
+
+        case 'block':
             state.player.block = (state.player.block || 0) + remaining;
             logMessage(`🛡️ Du erhältst ${remaining} Block.`, 'block');
             break;
-        }
+
         case 'heal': {
             const healAmount = Math.min(remaining, state.player.maxHealth - state.player.health);
             if (healAmount > 0) {
@@ -2991,12 +3007,14 @@ function playSingleEffect(effect, power, card) {
             }
             break;
         }
+
         case 'lifesteal': {
             const blockUsed = Math.min(enemy.block || 0, remaining);
             if (blockUsed > 0) {
                 enemy.block -= blockUsed;
                 logMessage(`${enemy.name} blockt ${blockUsed} Schaden.`, 'block');
             }
+
             const finalDamage = remaining - blockUsed;
             if (finalDamage > 0) {
                 enemy.health -= finalDamage;
@@ -3004,73 +3022,70 @@ function playSingleEffect(effect, power, card) {
                 state.player.health += heal;
                 logMessage(`🧛 Du stiehlst ${heal} Leben.`, 'lifesteal');
             }
-
-            enemyContainerElem.classList.add('hit');
-            setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
+            hitAnimation();
             break;
         }
+
         case 'poison': {
             const existing = enemy.statusEffects?.find(e => e.type === 'poison');
             if (existing) {
                 enemy.health -= 3;
                 logMessage(`☠️ Vergiftet – ${enemy.name} nimmt 3 extra Schaden.`, 'enemy');
             } else {
-                addStatusEffect(enemy, { type: 'poison', damagePerTurn: power, duration: 3 });
-                logMessage(`☠️ ${enemy.name} ist nun vergiftet (${power} für 3 Runden).`, 'effect');
+                addStatusEffect(enemy, { type: 'poison', damagePerTurn: remaining, duration: 3 });
+                logMessage(`☠️ ${enemy.name} ist nun vergiftet (${remaining} für 3 Runden).`, 'effect');
             }
             break;
         }
-        case 'damage_paralyze': {
-            enemy.health -= power;
-            logMessage(`⚡ ${enemy.name} erleidet ${power} Schaden.`, 'enemy');
 
-            const chance = Math.random();
-            if (chance < 0.45) {
+        case 'damage_paralyze': {
+            enemy.health -= remaining;
+            logMessage(`⚡ ${enemy.name} erleidet ${remaining} Schaden.`, 'enemy');
+
+            if (Math.random() < 0.45) {
                 addStatusEffect(enemy, { type: 'paralyze', duration: 2 });
                 logMessage(`⚡ ${enemy.name} ist paralysiert (Angriff halbiert).`, 'effect');
             }
-
-            enemyContainerElem.classList.add('hit');
-            setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
+            hitAnimation();
             break;
         }
+
         case 'firearrow': {
-            enemy.health -= power;
-            logMessage(`🔥 ${enemy.name} erleidet ${power} Schaden durch Feuerpfeil.`, 'enemy');
+            enemy.health -= remaining;
+            logMessage(`🔥 ${enemy.name} erleidet ${remaining} Schaden durch Feuerpfeil.`, 'enemy');
 
             if (Math.random() < 0.5) {
                 addStatusEffect(enemy, { type: 'burn', damagePerTurn: 5, duration: 2 });
                 logMessage(`🔥 ${enemy.name} brennt! (5 Schaden für 2 Runden)`, 'effect');
             }
-
-            enemyContainerElem.classList.add('hit');
-            setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
+            hitAnimation();
             break;
         }
+
         case 'gamble': {
             const roll = Math.random();
             if (roll < 0.5) {
-                enemy.health -= power;
+                enemy.health -= remaining;
                 state.player.gold += 100;
-                logMessage(`🎲 Glück gehabt! ${enemy.name} verliert ${power} Leben. Du erhältst 100 Gold.`, 'gold');
+                logMessage(`🎲 Glück gehabt! ${enemy.name} verliert ${remaining} Leben. Du erhältst 100 Gold.`, 'gold');
             } else {
-                state.player.health -= power;
-                logMessage(`🎲 Verloren! Du verlierst ${power} Leben.`, 'enemy');
+                state.player.health -= remaining;
+                logMessage(`🎲 Verloren! Du verlierst ${remaining} Leben.`, 'enemy');
             }
             break;
         }
-        case 'whirlwind': {
-            // Annahme: ein Ziel
-            enemy.health -= power;
-            logMessage(`🌀 Klingenwirbel trifft ${enemy.name} für ${power} Schaden.`, 'enemy');
+
+        case 'whirlwind':
+            enemy.health -= remaining;
+            logMessage(`🌀 Klingenwirbel trifft ${enemy.name} für ${remaining} Schaden.`, 'enemy');
             break;
-        }
 
         default:
             console.warn("Unbekannter Effekt:", effect);
             logMessage(`⚠️ Effekt ${effect} konnte nicht ausgeführt werden.`, 'system');
     }
 }
+
 
     
 function executeCardEffect(card) {
