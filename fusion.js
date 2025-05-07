@@ -14,8 +14,19 @@ const EFFECT_ICONS = {
   
   function fuseCards(cardA, cardB) {
     const power = {};
-    if (cardA.power) power[cardA.effect] = (cardA.power || 0) + (cardA.effect === 'damage' && state.player.swordBonus ? state.player.swordBonus : 0);
-    if (cardB.power) power[cardB.effect] = (cardB.power || 0) + (cardB.effect === 'damage' && state.player.swordBonus ? state.player.swordBonus : 0);
+
+    // Effekt 1
+    if (cardA.power || cardA.healAmount) {
+      const value = cardA.power || cardA.healAmount || 0;
+      power[cardA.effect] = value + (cardA.effect === 'damage' && state.player.swordBonus ? state.player.swordBonus : 0);
+    }
+    
+    // Effekt 2
+    if (cardB.power || cardB.healAmount) {
+      const value = cardB.power || cardB.healAmount || 0;
+      power[cardB.effect] = value + (cardB.effect === 'damage' && state.player.swordBonus ? state.player.swordBonus : 0);
+    }
+    
   
     const description = `${cardA.description}<br><br>${cardB.description}`;
   
