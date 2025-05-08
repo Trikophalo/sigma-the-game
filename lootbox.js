@@ -724,23 +724,23 @@ document.head.appendChild(style);
 if (typeof reward.item === 'string') {
   switch (reward.item) {
     case '🪨':
-      addSigmaCoins(5);
-      animateSigmaDrop(5);
+      addSigmaCoins(10);
+      animateSigmaDrop(10);
       break;
     case '🪙':
       switch (reward.rarity) {
         case 'common':
-          addSigmaCoins(10);
-          animateSigmaDrop(10);
-          break;
-        case 'uncommon':
           addSigmaCoins(25);
           animateSigmaDrop(25);
           break;
+        case 'uncommon':
+          addSigmaCoins(50);
+          animateSigmaDrop(50);
+          break;
         case 'rare':
-          addSigmaCoins(150);
+          addSigmaCoins(200);
           addGems(1);
-          animateSigmaDrop(150);
+          animateSigmaDrop(200);
           break;
         case 'epic':
           addSigmaCoins(500);
