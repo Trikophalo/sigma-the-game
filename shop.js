@@ -36,7 +36,7 @@ const SHOP_ITEMS = [
     {
       id: 'zeitklinge',
       name: 'Zeitklinge',
-      cost: 1500,
+      cost: 2500,
       description: 'Macht mehr Schaden je früher du sie kaufst.',
       icon: 'images/zeitklinge.png',
       effect: 'zeitklinge'
