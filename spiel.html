@@ -2182,7 +2182,7 @@ h2 {
 
 
         function getThreeUniqueNewCards() {
-            const forbiddenCardIds = [17, 18, 19, 21, 22, 23];
+            const forbiddenCardIds = [17, 18, 19, 21, 22, 23, 1777];
             const ownedCardIds = new Set(state.player.deck.map(card => card.id));
             const unlockedIds = state.unlockedCardIds;
 
@@ -4663,7 +4663,7 @@ if (state.player.hellhound) {
                         logMessage(`❌ ${card.name} wurde dauerhaft aus deinem Deck entfernt.`, 'discard');
 
                         // Jetzt neue Karten anbieten (nicht besessen + nicht verboten)
-                        const forbiddenCardIdsAdd = [17, 18, 19, 21, 22, 23]; // keine Ultra-Karten
+                        const forbiddenCardIdsAdd = [17, 18, 19, 21, 22, 23, 1777]; // keine Ultra-Karten
                         const addableCards = CARD_TYPES.filter(c =>
                             !forbiddenCardIdsAdd.includes(c.id) &&
                             !state.unlockedCardIds.has(c.id)
