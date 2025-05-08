@@ -333,14 +333,16 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const icons = [];
 
-    if (playerInventory && playerInventory.has('zeitklinge')) {
-      const bonus = state?.player?.zeitklingeBonus || 0;
-      icons.push(`
-          <span class="item-icon-wrapper" data-tooltip="Zeitklinge: +${bonus} Schaden. Wird mehr alle 5 Kills.">
-             <img src="images/zeitklinge.png" alt="Zeitklinge" class="item-icon">
-          </span>
-      `);      
-    }    
+  if (playerInventory && playerInventory.has('zeitklinge')) {
+    const bonus = Math.min(state.player.zeitklingeBonus || 0, 13);
+    const tooltipText = `Zeitklinge-Bonus: ${bonus} / 13 (+${bonus} Schaden)`;
+
+    icons.push(`
+        <span class="item-icon-wrapper" data-tooltip="${tooltipText}">
+          <img src="images/zeitklinge.png" alt="Zeitklinge" class="item-icon">
+        </span>
+    `);
+  }
     
     if (state.player.hasBloodArmor) {
         icons.push(`

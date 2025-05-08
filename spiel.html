@@ -3768,8 +3768,9 @@ function executeCardEffect(card) {
             }
 
             if (state.player.zeitklingeBonus) {
-                damage += state.player.zeitklingeBonus;
-                logMessage(`🕰️ Zeitklingen-Bonus: +${state.player.zeitklingeBonus} Schaden.`, 'buff');
+                const cappedBonus = Math.min(state.player.zeitklingeBonus, 13);
+                damage += cappedBonus;
+                logMessage(`🕰️ Zeitklingen-Bonus: +${cappedBonus} Schaden.`, 'buff');
             }
 
             return damage;
@@ -4336,8 +4337,8 @@ if (state.player.hellhound) {
         // 🕰 Zeitklingenpassiv: alle 5 Kills → +1 Damage Bonus
         state.player.zeitklingeKills += 1;
 
-        if (state.player.zeitklingeKills % 5 === 0) {
-            state.player.zeitklingeBonus += 1;
+        if (state.player.zeitklingeKills % 5 === 0 && state.player.zeitklingeBonus < 13) {
+            state.player.zeitklingeBonus++;
             logMessage(`🕰 Zeitklinge-Buff: +1 permanenter Schaden! (gesamt ${state.player.zeitklingeBonus})`, 'buff');
         }
 
