@@ -1898,7 +1898,7 @@ h2 {
                  {id: 20, name: 'Unwetter', icon: '🌩️', description: 'Paralysiere den Gegner (Halbiert den Angriff 2 Runden)', power: 0, effect: 'paralyze', manaCost: 1, weight: 2 },
                  {id: 21, name: 'Ansturm', icon: '🐗', description: 'Ein Rücksichtsloser Angriff, 15 schaden aber 5 Schaden Rückstoß', power: 15, selfDamage: 5, effect: 'damage_selfhit', manaCost: 3, weight: 1 },
                  {id: 22, name: 'Tornado', icon: '🌪️', description: 'Kann 2-3x treffen je 5 Schaden. Umgeht Block', power: 5, effect: 'multi_hit', hits: 3, minHits: 2, manaCost: 3, weight: 2 },
-                 {id: 23, name: 'The Knive', icon: '🗡️', description: 'Verursacht Blutungen. Der Gegner bekommt durch The Knive doppelten Schaden bis zum Tod', power: 12, effect: 'bleed', manaCost: 4, weight: 2 },
+                 {id: 23, name: 'The Knive', icon: '🗡️', description: 'Verursacht Blutungen. Der Gegner bekommt durch The Knive doppelten Schaden bis zum Tod', power: 12, effect: 'bleed', manaCost: 4, weight: 3 },
 
         ];
         window.cards = CARD_TYPES;
@@ -1945,27 +1945,27 @@ h2 {
         // --- Gegnertypen ---
         const ENEMY_TYPES = [
             // ... (deine Gegnertypen bleiben hier unverändert) ...
-                { name: 'Goblin', health: 20, attack: 5, levelMin: 1, levelMax: 5, xp: 35, gold: 70, pixelImageKey: 'Goblin', gemChance: 1, description: 'Ein kleiner, flinker Goblin.', traits: ['Rachsüchtig'] },
-                { name: 'Gepanzertes Skelett', health: 25, attack: 4, levelMin: 2, levelMax: 6, xp: 55, gold: 85, pixelImageKey: 'Gepanzertes Skelett', gemChance: 2, description: 'Ein ehmaliger stolzer Krieger.', traits: ['Rüstung'] },
+                { name: 'Goblin', health: 20, attack: 5, levelMin: 1, levelMax: 5, xp: 35, gold: 60, pixelImageKey: 'Goblin', gemChance: 1, description: 'Ein kleiner, flinker Goblin.', traits: ['Rachsüchtig'] },
+                { name: 'Gepanzertes Skelett', health: 25, attack: 4, levelMin: 2, levelMax: 6, xp: 55, gold: 75, pixelImageKey: 'Gepanzertes Skelett', gemChance: 2, description: 'Ein ehmaliger stolzer Krieger.', traits: ['Rüstung'] },
                 { name: 'Ork', health: 35, attack: 5, levelMin: 3, levelMax: 7, xp: 60, gold: 65, pixelImageKey: 'Ork', gemChance: 4, description: 'Ein brutaler Ork-Krieger.', traits: ['Stark'] },
-                { name: 'Riesen Spinne', health: 40, attack: 6, levelMin: 4, levelMax: 7, xp: 65, gold: 110, pixelImageKey: 'Riesen Spinne', gemChance: 4, description: 'Spuckt lähmendes Gift.', traits: ['Giftig'] }, // 'Netzwerfer' Effekt muss implementiert werden
-                { name: 'Troll', health: 50, attack: 8, levelMin: 5, levelMax: 9, xp: 70, gold: 120, pixelImageKey: 'Troll', gemChance: 5, description: 'Regeneriert 3 Leben pro Runde.', traits: ['Regeneration', 'Massiv'], regen: 3 }, // Regeneration implementiert
-                { name: 'Donnerschlange', health: 45, attack: 11, levelMin: 6, levelMax: 10, xp: 120, gold: 135, pixelImageKey: 'Donnerschlange', gemChance: 5, description: 'Eine lähmende Donnerschlange', traits: ['Statisch'] },
-                { name: 'Nekromant', health: 50, attack: 7, levelMin: 8, levelMax: 12, xp: 80, gold: 160, pixelImageKey: 'Nekromant', gemChance: 6, description: 'Schwächt dich oder ruft Diener.', traits: ['Untotenbeschwörer'] }, // Effekte müssen implementiert werden
-                { name: 'Eiskönig', health: 65, attack: 10, levelMin: 9, levelMax: 13, xp: 100, gold: 180, pixelImageKey: 'Eiskönig', gemChance: 6, description: 'Verlangsamt dich mit Kälte.', traits: ['Eis-Elementar', 'Frost-Aura'] }, // Effekte müssen implementiert werden
-                { name: 'Baby Drache', health: 60, attack: 12, levelMin: 10, levelMax: 14, xp: 120, gold: 210, pixelImageKey: 'Baby Drache', gemChance: 7, description: 'Speit Feuerstöße.', traits: ['Verspielt', 'Feueratem'] }, // Effekte müssen implementiert werden
-                { name: 'Charged Golem', health: 75, attack: 11, levelMin: 11, levelMax: 15, xp: 170, gold: 240, pixelImageKey: 'Charged Golem', gemChance: 7, description: 'Mächtiger Elementar Golem.', traits: ['Statisch', 'Regeneration'], regen: 3 }, // Effekte müssen implementiert werden
-                { name: 'Dracula', health: 65, attack: 10, levelMin: 12, levelMax: 16, xp: 190, gold: 280, pixelImageKey: 'Dracula', gemChance: 8, description: 'Dein Blut macht ihn stärker.', traits: ['Vamp', 'Stark'] }, // Effekte müssen implementiert werden
-                { name: 'Dämon', health: 75, attack: 12, levelMin: 13, levelMax: 18, xp: 280, gold: 330, pixelImageKey: 'Dämon', gemChance: 9, description: 'Feuer und Schatten. Resistent.', traits: ['Höllen Krallen'] }, // Effekte müssen implementiert werden
-                { name: 'Verfluchter Ritter', health: 75, attack: 9, levelMin: 14, levelMax: 18, xp: 360, gold: 400, pixelImageKey: 'Verfluchter Ritter', gemChance: 10, description: 'Ein wandelnde Geisterrüstung', traits: ['Rüstung', 'Krieger']}, // Effekte müssen implementiert werden
-                { name: 'Erzengel', health: 90, attack: 12, levelMin: 15, levelMax: 19, xp: 400, gold: 450, pixelImageKey: 'Erzengel', gemChance: 10, description: 'Ein mächtiger gefallener Engel.', traits: ['Segen', 'Fliegend'] }, // Effekte müssen implementiert werden
-                { name: 'Gargoyle', health: 95, attack: 14, levelMin: 16, levelMax: 20, xp: 450, gold: 480, pixelImageKey: 'Gargoyle', gemChance: 11, description: 'Einst da um die Menschen zu beschützen. Jetzt ein unbändiges Monster', traits: ['Gepanzerte Schuppen'] }, 
-                { name: 'Drache', health: 110, attack: 16, levelMin: 17, levelMax: 21, xp: 650, gold: 520, pixelImageKey: 'Drache', gemChance: 12, description: 'Ein mächtiger, alter Drache.', traits: ['Feueratem', 'Fliegend', 'Gepanzerte Schuppen'] }, 
-                { name: 'Teufel', health: 70, attack: 5, levelMin: 18, levelMax: 23, xp: 750, gold: 600, pixelImageKey: 'Teufel', gemChance: 13, description: 'Der Herrscher der Unterwelt.', traits: ['Höllenwache'] },
+                { name: 'Riesen Spinne', health: 40, attack: 6, levelMin: 4, levelMax: 7, xp: 65, gold: 80, pixelImageKey: 'Riesen Spinne', gemChance: 4, description: 'Spuckt lähmendes Gift.', traits: ['Giftig'] }, // 'Netzwerfer' Effekt muss implementiert werden
+                { name: 'Troll', health: 50, attack: 8, levelMin: 5, levelMax: 9, xp: 70, gold: 100, pixelImageKey: 'Troll', gemChance: 5, description: 'Regeneriert 3 Leben pro Runde.', traits: ['Regeneration', 'Massiv'], regen: 3 }, // Regeneration implementiert
+                { name: 'Donnerschlange', health: 45, attack: 11, levelMin: 6, levelMax: 10, xp: 120, gold: 105, pixelImageKey: 'Donnerschlange', gemChance: 5, description: 'Eine lähmende Donnerschlange', traits: ['Statisch'] },
+                { name: 'Nekromant', health: 50, attack: 7, levelMin: 8, levelMax: 12, xp: 80, gold: 120, pixelImageKey: 'Nekromant', gemChance: 6, description: 'Schwächt dich oder ruft Diener.', traits: ['Untotenbeschwörer'] }, // Effekte müssen implementiert werden
+                { name: 'Eiskönig', health: 65, attack: 10, levelMin: 9, levelMax: 13, xp: 100, gold: 130, pixelImageKey: 'Eiskönig', gemChance: 6, description: 'Verlangsamt dich mit Kälte.', traits: ['Eis-Elementar', 'Frost-Aura'] }, // Effekte müssen implementiert werden
+                { name: 'Baby Drache', health: 60, attack: 12, levelMin: 10, levelMax: 14, xp: 120, gold: 150, pixelImageKey: 'Baby Drache', gemChance: 7, description: 'Speit Feuerstöße.', traits: ['Verspielt', 'Feueratem'] }, // Effekte müssen implementiert werden
+                { name: 'Charged Golem', health: 75, attack: 11, levelMin: 11, levelMax: 15, xp: 170, gold: 180, pixelImageKey: 'Charged Golem', gemChance: 7, description: 'Mächtiger Elementar Golem.', traits: ['Statisch', 'Regeneration'], regen: 3 }, // Effekte müssen implementiert werden
+                { name: 'Dracula', health: 65, attack: 10, levelMin: 12, levelMax: 16, xp: 190, gold: 200, pixelImageKey: 'Dracula', gemChance: 8, description: 'Dein Blut macht ihn stärker.', traits: ['Vamp', 'Stark'] }, // Effekte müssen implementiert werden
+                { name: 'Dämon', health: 75, attack: 12, levelMin: 13, levelMax: 18, xp: 280, gold: 250, pixelImageKey: 'Dämon', gemChance: 9, description: 'Feuer und Schatten. Resistent.', traits: ['Höllen Krallen'] }, // Effekte müssen implementiert werden
+                { name: 'Verfluchter Ritter', health: 75, attack: 9, levelMin: 14, levelMax: 18, xp: 360, gold: 300, pixelImageKey: 'Verfluchter Ritter', gemChance: 10, description: 'Ein wandelnde Geisterrüstung', traits: ['Rüstung', 'Krieger']}, // Effekte müssen implementiert werden
+                { name: 'Erzengel', health: 90, attack: 12, levelMin: 15, levelMax: 19, xp: 400, gold: 390, pixelImageKey: 'Erzengel', gemChance: 10, description: 'Ein mächtiger gefallener Engel.', traits: ['Segen', 'Fliegend'] }, // Effekte müssen implementiert werden
+                { name: 'Gargoyle', health: 95, attack: 14, levelMin: 16, levelMax: 20, xp: 450, gold: 400, pixelImageKey: 'Gargoyle', gemChance: 11, description: 'Einst da um die Menschen zu beschützen. Jetzt ein unbändiges Monster', traits: ['Gepanzerte Schuppen'] }, 
+                { name: 'Drache', health: 110, attack: 16, levelMin: 17, levelMax: 21, xp: 650, gold: 500, pixelImageKey: 'Drache', gemChance: 12, description: 'Ein mächtiger, alter Drache.', traits: ['Feueratem', 'Fliegend', 'Gepanzerte Schuppen'] }, 
+                { name: 'Teufel', health: 70, attack: 5, levelMin: 18, levelMax: 23, xp: 750, gold: 520, pixelImageKey: 'Teufel', gemChance: 13, description: 'Der Herrscher der Unterwelt.', traits: ['Höllenwache'] },
                 { name: 'Spinnenkönigin', health: 100, attack: 12, levelMin: 19, levelMax: 25, xp: 750, gold: 600, pixelImageKey: 'Spinnenkönigin', gemChance: 14, description: 'Eine Spinne die selbst der Teufel fürchtet.', traits: ['Stark', 'Giftig'] },
-                { name: 'Rainbow', health: 110, attack: 10, levelMin: 20, levelMax: 26, xp: 900, gold: 750, pixelImageKey: 'Rainbow', gemChance: 15, description: 'Meister über alle Elemente', traits: ['Frost-Aura', 'Giftig', 'Feueratem', 'Statisch'] },
-                { name: 'Yokai', health: 100, attack: 15, levelMin: 21, levelMax: 27, xp: 1100, gold: 950, pixelImageKey: 'Yokai', gemChance: 16, description: 'Ein hochrangiger fliegender Yokai-Demon', traits: ['Fliegend', 'Höllenkrallen','Untotenbeschwörer'] },
-                { name: 'Yagdril', health: 130, attack: 27, levelMin: 22, levelMax: 100, xp: 1300, gold: 1000, pixelImageKey: 'Yagdril', gemChance: 17, description: 'Ein Wesen dessen Macht unbeschreiblich ist', traits: ['Fliegend', 'Segen'] },
+                { name: 'Rainbow', health: 110, attack: 10, levelMin: 20, levelMax: 26, xp: 900, gold: 650, pixelImageKey: 'Rainbow', gemChance: 15, description: 'Meister über alle Elemente', traits: ['Frost-Aura', 'Giftig', 'Feueratem', 'Statisch'] },
+                { name: 'Yokai', health: 100, attack: 15, levelMin: 21, levelMax: 27, xp: 1100, gold: 750, pixelImageKey: 'Yokai', gemChance: 16, description: 'Ein hochrangiger fliegender Yokai-Demon', traits: ['Fliegend', 'Höllenkrallen','Untotenbeschwörer'] },
+                { name: 'Yagdril', health: 130, attack: 27, levelMin: 22, levelMax: 100, xp: 1300, gold: 800, pixelImageKey: 'Yagdril', gemChance: 17, description: 'Ein Wesen dessen Macht unbeschreiblich ist', traits: ['Fliegend', 'Segen'] },
         ];
     
         // --- Upgrade-Typen ---
@@ -2711,6 +2711,7 @@ function createCardElement(card) {
         damage_selfhit: '💥',
         multi_hit: '💥',
         bleed: '🩸',
+        zeitklinge_damage: '💥',
     };
 
     let powerHint = '';
@@ -2765,11 +2766,11 @@ function createCardElement(card) {
     cardDiv.innerHTML = `
         <div class="card-mana">${card.manaCost === 'X' ? 'X' : card.manaCost}</div>
         <div class="card-name">${card.name}</div>
-        <div class="card-icon">
-        ${card.icon.endsWith('.png') 
-            ? `<img src="${card.icon}" style="width: 42px; height: 42px;" alt="${card.name}">` 
-            : card.icon}
-        </div>
+            <div class="card-icon">
+            ${card.icon.endsWith('.png') 
+                ? `<img src="${card.icon}" style="width: ${card.name === 'Zeitklinge' ? '72px' : '42px'}; height: ${card.name === 'Zeitklinge' ? '72px' : '42px'}; image-rendering: pixelated;" alt="${card.name}">` 
+                : card.icon}
+            </div>
         <div class="card-description">
             ${card.description}
             ${card.name === 'Schwert' && state.player?.isShieldmaster 
@@ -2884,6 +2885,7 @@ function createCardElement(card) {
 
         // Lädt einen neuen Gegner basierend auf dem Spielerlevel
         function loadEnemy() {
+
             const possibleEnemies = ENEMY_TYPES.filter(enemy =>
                 state.player.level >= enemy.levelMin && state.player.level <= enemy.levelMax
             );
@@ -2916,7 +2918,9 @@ function createCardElement(card) {
             enemyContainerElem.style.transform = 'none';
             updateEnemyUI(); // Anzeige aktualisieren
         }
-    
+
+        state.player.deck.push(createCardInstance(state.player.zeitklingeCard));
+
         function drawCards(numCards) {
             let drawnCount = 0;
 
@@ -3604,6 +3608,59 @@ function executeCardEffect(card) {
                 break;
 
 
+         case 'zeitklinge_damage': {
+                let rawDamage = card.power;
+
+                // Schaden anwenden (inkl. Block)
+                let blockUsed = Math.min(state.currentEnemy.block || 0, rawDamage);
+                if (blockUsed > 0) {
+                    state.currentEnemy.block -= blockUsed;
+                    logMessage(`${state.currentEnemy.name} blockt ${blockUsed} Schaden.`, 'block');
+                }
+
+                const netDamage = rawDamage - blockUsed;
+
+                if (netDamage > 0) {
+                    state.currentEnemy.health -= netDamage;
+                    logMessage(`⏳ Zeitklinge trifft ${state.currentEnemy.name} für ${netDamage} Schaden!`, 'player');
+                } else {
+                    logMessage(`${state.currentEnemy.name} blockt den gesamten Schaden der Zeitklinge.`, 'block');
+                }
+
+                // Kill-Check → Karte verstärken
+                if (state.currentEnemy.health <= 0) {
+                    card.kills = (card.kills || 0) + 1;
+                    card.power += 1;
+                    card.description = `Stärker bei Kills: ${card.power} Schaden`;
+
+                    // 🛠️ Vorlage aktualisieren
+                    if (state.player.zeitklingeCard) {
+                        state.player.zeitklingeCard.power = card.power;
+                        state.player.zeitklingeCard.kills = card.kills;
+                        state.player.zeitklingeCard.description = card.description;
+                    }
+
+                    // Karte in der Hand visuell aktualisieren
+                    const cardElem = document.querySelector(`.card[data-unique-id="${card.uniqueId}"]`);
+                    if (cardElem) {
+                        const powerElem = cardElem.querySelector('.card-power');
+                        if (powerElem) {
+                            powerElem.textContent = `💥 ${card.power}`;
+                        }
+
+                        const descElem = cardElem.querySelector('.card-description');
+                        if (descElem) {
+                            descElem.textContent = card.description;
+                        }
+                    }
+                }
+
+                enemyContainerElem.classList.add('hit');
+                setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
+                break;
+            }
+
+
             case 'firearrow':
                     let baseFireDamage = card.power;
 
@@ -3843,9 +3900,9 @@ function executeCardEffect(card) {
 
                     enemy.minions.push({
                         name: 'Höllenhund',
-                        health: 60,
+                        health: 55,
                         maxHealth: 60,
-                        attack: 18,
+                        attack: 16,
                         pixelImageKey: 'hund'
                     });
 
@@ -4166,7 +4223,9 @@ function executeCardEffect(card) {
                 logMessage('🛡️ Schildmeister: Du erhältst 5 Block.', 'block');
                 }
 
-
+           if (state.player.zeitklingeCard) {
+                    state.player.deck.push(createCardInstance(state.player.zeitklingeCard));
+                }                  
   
             state.currentEnemy.block = 0;
 

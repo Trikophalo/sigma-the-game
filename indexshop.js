@@ -68,7 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
         { id: "card_4", type: "card", cardId: 4, name: "Gift", price: cardPriceMap[4], description: "Vergiftet den Gegner", icon: "☠️" },
         { id: "card_5", type: "card", cardId: 5, name: "Blitz", price: cardPriceMap[5], description: "12 dmg. Kann Gegner Paralysieren.", icon: "⚡" },
         { id: "card_8", type: "card", cardId: 8, name: "Vampirbiss", price: cardPriceMap[8], description: "8 schaden, heilt 8", icon: "🧛" },
-        { id: "card_12", type: "card", cardId: 12, name: "Vampirbiss", price: cardPriceMap[12], description: "Heilt 15 Leben", icon: "💖" },
+        { id: "card_12", type: "card", cardId: 12, name: "Genesung", price: cardPriceMap[12], description: "Heilt 15 Leben", icon: "💖" },
       ...playerSkinFiles.map(filename => {
         const id = filename.replace(/\.[^/.]+$/, "");
         return {

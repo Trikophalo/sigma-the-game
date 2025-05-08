@@ -34,6 +34,14 @@ const SHOP_ITEMS = [
       effect: 'thorns'
     },
     {
+      id: 'zeitklinge',
+      name: 'Zeitklinge',
+      cost: 1500,
+      description: 'Macht mehr Schaden je früher du sie kaufst.',
+      icon: 'images/zeitklinge.png',
+      effect: 'zeitklinge'
+    },    
+    {
       id: 'lotus',
       name: 'Lotus Trank',
       cost: 350,
@@ -241,7 +249,38 @@ window.addEventListener('DOMContentLoaded', () => {
               state.player.deck.push(createCardInstance(spell));
               playerInventory.add(item.id); // sichert, dass 'donner' korrekt gespeichert ist              
             break;
-          
+
+       case 'zeitklinge': {
+            const maxLevel = 30;
+            const currentLevel = state.runLevel || 1;
+            const levelsRemaining = Math.max(0, maxLevel - currentLevel);
+            const bonusDamage = levelsRemaining * 0.5;
+            const totalDamage = 1 + bonusDamage;
+            
+            const zeitklingenCard = {
+              id: 1777,
+              name: 'Zeitklinge',
+              icon: 'images/zeitklinge.png',
+              description: `Wird stärker je mehr Gegner sie tötet.`,
+              power: 3,
+              effect: 'zeitklinge_damage', // <- Wichtig: eigener Effektname
+              manaCost: 2,
+              tags: ['scaling'],
+              oneShot: false,
+              kills: 0 // <- Tracke wie viele Kills die Karte gemacht hat
+            };
+
+            // Einmal in Deck legen
+            state.player.deck.push(createCardInstance(zeitklingenCard));
+        
+            // Vorlage speichern
+            state.player.zeitklingeCard = zeitklingenCard;
+        
+            logMessage(`⏳ Zeitklinge erhalten (2 Schaden).`, 'system');
+            break;
+        }
+            
+            
       case 'crit':
         state.player.critChance = 0.3;
         break;
@@ -307,6 +346,14 @@ window.addEventListener('DOMContentLoaded', () => {
 
     const icons = [];
 
+    if (playerInventory && playerInventory.has('zeitklinge')) {
+      icons.push(`
+          <span class="item-icon-wrapper" data-tooltip="Wird stärker je mehr Gegner sie tötet.">
+             <img src="images/zeitklinge.png" alt="Zeitklinge" class="item-icon">
+          </span>
+      `);
+    }    
+    
     if (state.player.hasBloodArmor) {
         icons.push(`
             <span class="item-icon-wrapper" data-tooltip="Regeneriert jede Runde 3 Leben.">
@@ -359,4 +406,5 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
-  
+
+
