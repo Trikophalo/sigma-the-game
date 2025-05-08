@@ -3234,6 +3234,7 @@ function playSingleEffect(effect, power, card) {
                 enemies.forEach(target => {
                     target.health -= remaining;
                     logMessage(`🌀 ${target.name} wird von Klingenwirbel getroffen und erleidet ${remaining} Schaden (ignoriert Block).`, 'enemy');
+                    state.currentEnemy.minions = state.currentEnemy.minions.filter(m => m.health > 0);
                 });
 
                 hitAnimation();
@@ -3858,7 +3859,7 @@ function executeCardEffect(card) {
                 }
 
                 // FLIEGEND – ignoriert Block (25%)
-                if (enemy.traits?.includes('Fliegend') && Math.random() < 0.75) {
+                if (enemy.traits?.includes('Fliegend') && Math.random() < 0.50) {
                     logMessage(`${enemy.name} greift aus der Luft an – dein Block wird ignoriert!`, 'enemy');
                     state.player.block = 0;
                 }
