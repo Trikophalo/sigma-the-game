@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sigma The Game</title>
@@ -1690,7 +1691,20 @@ h2 {
             box-shadow: 0 0 10px rgba(255, 50, 50, 0.7);
         }
 
-    
+        @keyframes gemPulse {
+        0%   { text-shadow: 0 0 0px gold; }
+        50%  { text-shadow: 0 0 25px gold, 0 0 40px gold; }
+        100% { text-shadow: 0 0 0px gold; }
+        }
+
+        @keyframes gemShake {
+        0% { transform: translate(-50%, -50%) scale(2) rotate(0deg); }
+        25% { transform: translate(-52%, -50%) scale(2) rotate(-3deg); }
+        50% { transform: translate(-48%, -50%) scale(2) rotate(3deg); }
+        75% { transform: translate(-51%, -50%) scale(2) rotate(-2deg); }
+        100% { transform: translate(-50%, -50%) scale(2) rotate(0deg); }
+        }
+
     </style>
 </head>
 <body>
@@ -1862,7 +1876,7 @@ h2 {
         // --- Spielkonstanten ---
         const CARD_TYPES = [
             // ... (deine Kartendefinitionen bleiben hier unverändert) ...
-                 { id: 1, name: 'Schwert', icon: '⚔️', description: 'Ein einfaches Schwert.', power: 5, effect: 'damage', manaCost: 2, weight: 11, tags: ['sword'] },
+                 { id: 1, name: 'Schwert', icon: '⚔️', description: 'Ein einfaches Schwert.', power: 5, effect: 'damage', manaCost: 2, weight: 11, tags: ['damage'] },
                  { id: 2, name: 'Schild', icon: '🛡️', description: 'Erhalte 5 Block', power: 5, effect: 'block', manaCost: 2, weight: 1 },
                  { id: 3, name: 'Heilung', icon: '❤️', description: 'Heilt 8 Leben', power: 8, effect: 'heal', manaCost: 3, weight: 1 },
                  { id: 4, name: 'Gift', icon: '☠️', description: 'Vergiftet (2 Schaden, 3 Rd.) Falls bereit Vergiftet mache 3 Schaden', power: 2, duration: 3, effect: 'poison', manaCost: 1, weight: 1 },
@@ -1881,10 +1895,15 @@ h2 {
                  {id: 17, name: 'Todesklinge', icon: '⚔️', description: 'Die stärkste aller Schwerter. 25 Schaden.', power: 25, effect: 'damage', manaCost: 4, weight: 1, tags: ['sword'], rarity: 'superrare'},
                  {id: 18, name: 'Mana Oase', icon: '🧪', description: 'Erhalte 5 Mana', power: 5, effect: 'gain_mana', manaCost: 0, weight: 1, rarity: 'superrare'},
                  {id: 19, name: 'Blutrausch', icon: '🧛', description: '20 Schaden, heilt 12', power: 20, healAmount: 12, effect: 'lifesteal', manaCost: 7, weight: 1, rarity: 'superrare'},
-                 { id: 20, name: 'Unwetter', icon: '🌩️', description: 'Paralysiere den Gegner (Halbiert den Angriff 2 Runden)', power: 0, effect: 'paralyze', manaCost: 1, weight: 2 },
+                 {id: 20, name: 'Unwetter', icon: '🌩️', description: 'Paralysiere den Gegner (Halbiert den Angriff 2 Runden)', power: 0, effect: 'paralyze', manaCost: 1, weight: 2 },
+                 {id: 21, name: 'Ansturm', icon: '🐗', description: 'Ein Rücksichtsloser Angriff, 15 schaden aber 5 Schaden Rückstoß', power: 15, selfDamage: 5, effect: 'damage_selfhit', manaCost: 3, weight: 1 },
+                 {id: 22, name: 'Tornado', icon: '🌪️', description: 'Kann 2-3x treffen je 5 Schaden. Umgeht Block', power: 5, effect: 'multi_hit', hits: 3, minHits: 2, manaCost: 3, weight: 2 },
+                 {id: 23, name: 'The Knive', icon: '🗡️', description: 'Verursacht Blutungen. Der Gegner bekommt durch The Knive doppelten Schaden bis zum Tod', power: 12, effect: 'bleed', manaCost: 4, weight: 2 },
 
         ];
-    
+        window.cards = CARD_TYPES;
+        localStorage.setItem('allCards', JSON.stringify(CARD_TYPES));
+
         // --- Bildpfade ---
         const IMAGE_FOLDER = 'images/';
         const ENEMY_PIXEL_PLACEHOLDERS = {
@@ -1908,32 +1927,44 @@ h2 {
                 'hund': IMAGE_FOLDER + 'hund.png',
                 'Teufel': IMAGE_FOLDER + 'teufel.png',
                 'Rainbow': IMAGE_FOLDER + 'rainbow.png',
-                'Yagdril': IMAGE_FOLDER + 'yagdril.png'
+                'Yagdril': IMAGE_FOLDER + 'yagdril.png',
+                'Spinnenkönigin': IMAGE_FOLDER + 'spinnenboss.png'            
         };
-        const PLAYER_PIXEL_IMAGE = IMAGE_FOLDER + 'Spieler.png';
+
+        console.log("selectedSkinRaw:", localStorage.getItem('selectedSkinPath'));
+
+        const selectedSkin = localStorage.getItem('selectedSkinPath');
+            // wenn selectedSkin schon ein kompletter Pfad ist (z.B. "images/players/hoodie.png")
+            const PLAYER_PIXEL_IMAGE = selectedSkin
+            ? selectedSkin
+            : `${IMAGE_FOLDER}players/Spieler.png`;
+
+
     
         // --- Gegnertypen ---
         const ENEMY_TYPES = [
             // ... (deine Gegnertypen bleiben hier unverändert) ...
-                { name: 'Goblin', health: 20, attack: 5, levelMin: 1, levelMax: 5, xp: 35, gold: 70, pixelImageKey: 'Goblin', description: 'Ein kleiner, flinker Goblin.', traits: ['Keine Fähigkeit'] },
-                { name: 'Gepanzertes Skelett', health: 25, attack: 4, levelMin: 2, levelMax: 6, xp: 55, gold: 85, pixelImageKey: 'Gepanzertes Skelett', description: 'Ein ehmaliger stolzer Krieger.', traits: ['Rüstung'] },
-                { name: 'Ork', health: 35, attack: 5, levelMin: 3, levelMax: 7, xp: 60, gold: 65, pixelImageKey: 'Ork', description: 'Ein brutaler Ork-Krieger.', traits: ['Stark'] },
-                { name: 'Riesen Spinne', health: 40, attack: 6, levelMin: 4, levelMax: 7, xp: 65, gold: 110, pixelImageKey: 'Riesen Spinne', description: 'Spuckt lähmendes Gift.', traits: ['Giftig'] }, // 'Netzwerfer' Effekt muss implementiert werden
-                { name: 'Troll', health: 50, attack: 8, levelMin: 5, levelMax: 9, xp: 70, gold: 120, pixelImageKey: 'Troll', description: 'Regeneriert 3 Leben pro Runde.', traits: ['Regeneration', 'Massiv'], regen: 3 }, // Regeneration implementiert
-                { name: 'Donnerschlange', health: 45, attack: 9, levelMin: 6, levelMax: 10, xp: 120, gold: 135, pixelImageKey: 'Donnerschlange', description: 'Eine lähmende Donnerschlange', traits: ['Statisch'] },
-                { name: 'Nekromant', health: 50, attack: 7, levelMin: 8, levelMax: 12, xp: 80, gold: 160, pixelImageKey: 'Nekromant', description: 'Schwächt dich oder ruft Diener.', traits: ['Untotenbeschwörer'] }, // Effekte müssen implementiert werden
-                { name: 'Eiskönig', health: 65, attack: 9, levelMin: 9, levelMax: 13, xp: 100, gold: 180, pixelImageKey: 'Eiskönig', description: 'Verlangsamt dich mit Kälte.', traits: ['Eis-Elementar', 'Frost-Aura'] }, // Effekte müssen implementiert werden
-                { name: 'Baby Drache', health: 60, attack: 11, levelMin: 10, levelMax: 14, xp: 120, gold: 210, pixelImageKey: 'Baby Drache', description: 'Speit Feuerstöße.', traits: ['Verspielt', 'Feueratem'] }, // Effekte müssen implementiert werden
-                { name: 'Charged Golem', health: 70, attack: 9, levelMin: 11, levelMax: 15, xp: 170, gold: 240, pixelImageKey: 'Charged Golem', description: 'Mächtiger Elementar Golem.', traits: ['Statisch', 'Regeneration'], regen: 3 }, // Effekte müssen implementiert werden
-                { name: 'Dracula', health: 65, attack: 9, levelMin: 12, levelMax: 16, xp: 190, gold: 280, pixelImageKey: 'Dracula', description: 'Dein Blut macht ihn stärker.', traits: ['Vamp', 'Stark'] }, // Effekte müssen implementiert werden
-                { name: 'Dämon', health: 75, attack: 12, levelMin: 13, levelMax: 18, xp: 280, gold: 330, pixelImageKey: 'Dämon', description: 'Feuer und Schatten. Resistent.', traits: ['Höllen Krallen'] }, // Effekte müssen implementiert werden
-                { name: 'Verfluchter Ritter', health: 70, attack: 9, levelMin: 14, levelMax: 18, xp: 360, gold: 400, pixelImageKey: 'Verfluchter Ritter', description: 'Ein wandelnde Geisterrüstung', traits: ['Rüstung', 'Krieger']}, // Effekte müssen implementiert werden
-                { name: 'Erzengel', health: 90, attack: 12, levelMin: 15, levelMax: 19, xp: 400, gold: 450, pixelImageKey: 'Erzengel', description: 'Ein mächtiger gefallener Engel.', traits: ['Segen', 'Fliegend'] }, // Effekte müssen implementiert werden
-                { name: 'Gargoyle', health: 95, attack: 14, levelMin: 16, levelMax: 20, xp: 450, gold: 480, pixelImageKey: 'Gargoyle', description: 'Einst da um die Menschen zu beschützen. Jetzt ein unbändiges Monster', traits: ['Gepanzerte Schuppen'] }, 
-                { name: 'Drache', health: 110, attack: 16, levelMin: 17, levelMax: 21, xp: 650, gold: 520, pixelImageKey: 'Drache', description: 'Ein mächtiger, alter Drache.', traits: ['Feueratem', 'Fliegend', 'Gepanzerte Schuppen'] }, 
-                { name: 'Teufel', health: 70, attack: 5, levelMin: 18, levelMax: 23, xp: 750, gold: 600, pixelImageKey: 'Teufel', description: 'Der Herrscher der Unterwelt.', traits: ['Höllenwache'] },
-                { name: 'Rainbow', health: 90, attack: 10, levelMin: 19, levelMax: 24, xp: 800, gold: 750, pixelImageKey: 'Rainbow', description: 'Meister über alle Elemente', traits: ['Frost-Aura', 'Giftig', 'Feueratem', 'Statisch'] },
-                { name: 'Yagdril', health: 130, attack: 20, levelMin: 20, levelMax: 100, xp: 1000, gold: 1000, pixelImageKey: 'Yagdril', description: 'Ein Wesen dessen Macht unbeschreiblich ist', traits: ['Fliegend', 'Segen'] } 
+                { name: 'Goblin', health: 20, attack: 5, levelMin: 1, levelMax: 5, xp: 35, gold: 70, pixelImageKey: 'Goblin', gemChance: 1, description: 'Ein kleiner, flinker Goblin.', traits: ['Rachsüchtig'] },
+                { name: 'Gepanzertes Skelett', health: 25, attack: 4, levelMin: 2, levelMax: 6, xp: 55, gold: 85, pixelImageKey: 'Gepanzertes Skelett', gemChance: 1, description: 'Ein ehmaliger stolzer Krieger.', traits: ['Rüstung'] },
+                { name: 'Ork', health: 35, attack: 5, levelMin: 3, levelMax: 7, xp: 60, gold: 65, pixelImageKey: 'Ork', gemChance: 2, description: 'Ein brutaler Ork-Krieger.', traits: ['Stark'] },
+                { name: 'Riesen Spinne', health: 40, attack: 6, levelMin: 4, levelMax: 7, xp: 65, gold: 110, pixelImageKey: 'Riesen Spinne', gemChance: 2, description: 'Spuckt lähmendes Gift.', traits: ['Giftig'] }, // 'Netzwerfer' Effekt muss implementiert werden
+                { name: 'Troll', health: 50, attack: 8, levelMin: 5, levelMax: 9, xp: 70, gold: 120, pixelImageKey: 'Troll', gemChance: 3, description: 'Regeneriert 3 Leben pro Runde.', traits: ['Regeneration', 'Massiv'], regen: 3 }, // Regeneration implementiert
+                { name: 'Donnerschlange', health: 45, attack: 11, levelMin: 6, levelMax: 10, xp: 120, gold: 135, pixelImageKey: 'Donnerschlange', gemChance: 3, description: 'Eine lähmende Donnerschlange', traits: ['Statisch'] },
+                { name: 'Nekromant', health: 50, attack: 7, levelMin: 8, levelMax: 12, xp: 80, gold: 160, pixelImageKey: 'Nekromant', gemChance: 4, description: 'Schwächt dich oder ruft Diener.', traits: ['Untotenbeschwörer'] }, // Effekte müssen implementiert werden
+                { name: 'Eiskönig', health: 65, attack: 10, levelMin: 9, levelMax: 13, xp: 100, gold: 180, pixelImageKey: 'Eiskönig', gemChance: 4, description: 'Verlangsamt dich mit Kälte.', traits: ['Eis-Elementar', 'Frost-Aura'] }, // Effekte müssen implementiert werden
+                { name: 'Baby Drache', health: 60, attack: 12, levelMin: 10, levelMax: 14, xp: 120, gold: 210, pixelImageKey: 'Baby Drache', gemChance: 5, description: 'Speit Feuerstöße.', traits: ['Verspielt', 'Feueratem'] }, // Effekte müssen implementiert werden
+                { name: 'Charged Golem', health: 75, attack: 11, levelMin: 11, levelMax: 15, xp: 170, gold: 240, pixelImageKey: 'Charged Golem', gemChance: 5, description: 'Mächtiger Elementar Golem.', traits: ['Statisch', 'Regeneration'], regen: 3 }, // Effekte müssen implementiert werden
+                { name: 'Dracula', health: 65, attack: 10, levelMin: 12, levelMax: 16, xp: 190, gold: 280, pixelImageKey: 'Dracula', gemChance: 6, description: 'Dein Blut macht ihn stärker.', traits: ['Vamp', 'Stark'] }, // Effekte müssen implementiert werden
+                { name: 'Dämon', health: 75, attack: 12, levelMin: 13, levelMax: 18, xp: 280, gold: 330, pixelImageKey: 'Dämon', gemChance: 6, description: 'Feuer und Schatten. Resistent.', traits: ['Höllen Krallen'] }, // Effekte müssen implementiert werden
+                { name: 'Verfluchter Ritter', health: 75, attack: 9, levelMin: 14, levelMax: 18, xp: 360, gold: 400, pixelImageKey: 'Verfluchter Ritter', gemChance: 7, description: 'Ein wandelnde Geisterrüstung', traits: ['Rüstung', 'Krieger']}, // Effekte müssen implementiert werden
+                { name: 'Erzengel', health: 90, attack: 12, levelMin: 15, levelMax: 19, xp: 400, gold: 450, pixelImageKey: 'Erzengel', gemChance: 7, description: 'Ein mächtiger gefallener Engel.', traits: ['Segen', 'Fliegend'] }, // Effekte müssen implementiert werden
+                { name: 'Gargoyle', health: 95, attack: 14, levelMin: 16, levelMax: 20, xp: 450, gold: 480, pixelImageKey: 'Gargoyle', gemChance: 8, description: 'Einst da um die Menschen zu beschützen. Jetzt ein unbändiges Monster', traits: ['Gepanzerte Schuppen'] }, 
+                { name: 'Drache', health: 110, attack: 16, levelMin: 17, levelMax: 21, xp: 650, gold: 520, pixelImageKey: 'Drache', gemChance: 8, description: 'Ein mächtiger, alter Drache.', traits: ['Feueratem', 'Fliegend', 'Gepanzerte Schuppen'] }, 
+                { name: 'Teufel', health: 70, attack: 5, levelMin: 18, levelMax: 23, xp: 750, gold: 600, pixelImageKey: 'Teufel', gemChance: 9, description: 'Der Herrscher der Unterwelt.', traits: ['Höllenwache'] },
+                { name: 'Spinnenkönigin', health: 100, attack: 12, levelMin: 19, levelMax: 25, xp: 750, gold: 600, pixelImageKey: 'Spinnenkönigin', gemChance: 10, description: 'Eine Spinne die selbst der Teufel fürchtet.', traits: ['Stark', 'Giftig'] },
+                { name: 'Rainbow', health: 110, attack: 10, levelMin: 20, levelMax: 26, xp: 900, gold: 750, pixelImageKey: 'Rainbow', gemChance: 10, description: 'Meister über alle Elemente', traits: ['Frost-Aura', 'Giftig', 'Feueratem', 'Statisch'] },
+                { name: 'Yokai', health: 100, attack: 15, levelMin: 21, levelMax: 27, xp: 1100, gold: 950, pixelImageKey: 'Yokai', gemChance: 11, description: 'Ein hochrangiger fliegender Yokai-Demon', traits: ['Fliegend', 'Höllenkrallen','Untotenbeschwörer'] },
+                { name: 'Yagdril', health: 130, attack: 27, levelMin: 22, levelMax: 100, xp: 1300, gold: 1000, pixelImageKey: 'Yagdril', gemChance: 11, description: 'Ein Wesen dessen Macht unbeschreiblich ist', traits: ['Fliegend', 'Segen'] },
         ];
     
         // --- Upgrade-Typen ---
@@ -1947,7 +1978,7 @@ h2 {
                  { type: 'upgradeMana', title: 'Max Mana +1', description: 'Erhöhe dein maximales Mana um 1.', rarity: 'rare' }, // Seltener
                  { type: 'swapCard', title: 'Kartentausch', description: 'Lösche eine Karte aus deinem Deck und wähle eine neue.', rarity: 'rare' }, 
                  { type: 'increaseHandSize', title: 'Handgröße +1', description: 'Du kannst 1 Karte mehr halten.', rarity: 'rare' },
-                 { type: 'addLifestealFlat', title: 'Lebensraub +1', description: 'Du bekommst 20% Lifesteal.', rarity: 'rare' }, // Geändert zu festem Wert pro Schadenspunkt
+                 { type: 'addLifestealFlat', title: 'Lebensraub +1', description: 'Du bekommst 15% Lifesteal.', rarity: 'rare' }, // Geändert zu festem Wert pro Schadenspunkt
                  { type: 'regenManaPassive', title: 'Mana-Regen +1', description: 'Du erhältst pro Runde +1 zusätzliches Mana zurück.', rarity: 'rare' },
                  { type: 'regenManaPassive3', title: 'Mana-Regen +3', description: 'Du erhältst pro Runde +3 zusätzliches Mana zurück.', rarity: 'superrare' },
                  { type: 'newUltraCardSpecific', title: 'Eine Ultra Karte wählen', description: 'Wähle 1 von 3 Ultra Karten.', rarity: 'superrare' }, // Komplexer zu implementieren
@@ -2036,6 +2067,92 @@ h2 {
             }
         }
 
+        //Gem chance
+        function handleGemDrop(enemy) {
+        const chance = enemy.gemChance || 0;
+        const roll = Math.random() * 100;
+
+        if (roll < chance) {
+            addGems(1);
+            logMessage(`💎 Du hast 1 Edelstein vom ${enemy.name} erhalten!`, 'gem');
+            animateGemDrop();
+            updateGemDisplay(); 
+        }
+        }
+
+         //Gems speichern   
+         function getGems() {
+                return parseInt(localStorage.getItem('gems') || '0', 10);
+                }
+
+                function setGems(amount) {
+                localStorage.setItem('gems', amount);
+                }
+
+                function addGems(amount) {
+                const current = getGems();
+                setGems(current + amount);
+                }
+
+         function updateGemDisplay() {
+                const gemElem = document.getElementById('gemDisplay');
+                if (gemElem) {
+                    gemElem.innerHTML = `💎 <strong>${getGems()}</strong>`;
+                }
+                }
+
+        const gemDisplay = document.createElement('div');
+            gemDisplay.id = 'gemDisplay';
+            gemDisplay.innerHTML = `💎 <strong>${getGems()}</strong>`;
+            gemDisplay.style = `
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 999;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            color: gold;
+            font-family: 'Orbitron', sans-serif;
+            box-shadow: 0 0 8px rgba(255, 206, 0, 0.5);
+            `;
+            document.body.appendChild(gemDisplay);
+
+            //Gem Animation
+        function animateGemDrop() {
+            const gem = document.createElement('div');
+            gem.textContent = '💎';
+            gem.style.position = 'fixed';
+            gem.style.left = '50%';
+            gem.style.top = '50%';
+            gem.style.transform = 'translate(-50%, -50%) scale(2)';
+            gem.style.fontSize = '48px';
+            gem.style.opacity = '1';
+            gem.style.zIndex = 9999;
+            gem.style.pointerEvents = 'none';
+            gem.style.animation = 'gemPulse 0.4s ease, gemShake 0.6s ease';
+
+            document.body.appendChild(gem);
+
+            const target = document.getElementById('gemDisplay');
+            const targetRect = target.getBoundingClientRect();
+
+            // Starte Flug nach kurzer Verzögerung
+            setTimeout(() => {
+                gem.style.transition = 'all 1.2s ease';
+                gem.style.left = `${targetRect.left + targetRect.width / 2}px`;
+                gem.style.top = `${targetRect.top + targetRect.height / 2}px`;
+                gem.style.transform = 'translate(-50%, -50%) scale(0.5)';
+                gem.style.opacity = '0';
+            }, 700);
+
+            setTimeout(() => {
+                gem.remove();
+            }, 1800);
+        }
+
+
         // Hilfsfunktion für gewichtete Upgrade-Auswahl
         function getWeightedUpgrades(pool, superRareWeight = 1, rareWeight = 10, commonWeight = 50) {
             const weighted = [];
@@ -2064,7 +2181,7 @@ h2 {
 
 
         function getThreeUniqueNewCards() {
-            const forbiddenCardIds = [17, 18, 19];
+            const forbiddenCardIds = [17, 18, 19, 21, 22, 23];
             const ownedCardIds = new Set(state.player.deck.map(card => card.id));
             const unlockedIds = state.unlockedCardIds;
 
@@ -2129,174 +2246,145 @@ h2 {
     
     
         // --- Kern Initialisierungsfunktion ---
-        function initGame() {
+function initGame() {
+    console.log('Gibt es shopContainerElem?', document.getElementById('shopContainer'));
 
-            console.log('Gibt es shopContainerElem?', document.getElementById('shopContainer'));
-            // 🛠️ Fix: Alle Overlays verstecken, falls sie versehentlich offen geblieben sind
-            if (typeof upgradeContainerElem !== 'undefined') upgradeContainerElem.style.display = 'none';
-            if (typeof shopContainerElem !== 'undefined') shopContainerElem.style.display = 'none';
-            if (typeof gameOverContainerElem !== 'undefined') gameOverContainerElem.style.display = 'none';
+    if (typeof upgradeContainerElem !== 'undefined') upgradeContainerElem.style.display = 'none';
+    if (typeof shopContainerElem !== 'undefined') shopContainerElem.style.display = 'none';
+    if (typeof gameOverContainerElem !== 'undefined') gameOverContainerElem.style.display = 'none';
 
-            const playerName = localStorage.getItem('playerName') || 'Spieler';
-            const selectedPassive = localStorage.getItem('selectedPassive') || 'swordfighter';
+    const savedStarterDeck = JSON.parse(localStorage.getItem('starterDeck') || '[]');
+    if (savedStarterDeck.length !== 5) {
+        alert("Bitte wähle dein Starterdeck zuerst aus.");
+        showStarterDeckSelection();
+        return;
+    }
 
-            console.log("🧠 Geladene Passive:", selectedPassive);
+    const playerName = localStorage.getItem('playerName') || 'Spieler';
+    const selectedPassive = localStorage.getItem('selectedPassive') || 'swordfighter';
 
-            console.log("Initialisiere Spiel...");
-            cardUniqueCounter = 0; // Eindeutige ID zurücksetzen
-    
-            // 1. Spielzustand zurücksetzen
-            state = {
-                round: 1,
-                defeatedEnemies: 0,
-                player: {
-                    level: 1,
-                    xp: 0,
-                    xpToNextLevel: BASE_XP_TO_LEVEL_UP,
-                    maxHealth: 50,
-                    health: 50,
-                    maxMana: 10,
-                    mana: 10,
-                    block: 0,
-                    deck: [],
-                    hand: [],
-                    discardPile: [],
-                    maxHandSize: 5,
-                    lifestealFlat: 0,
-                    gold: 0, // 💰 Start-Gold
-                    statusEffects: [], // Für zukünftige Effekte
-                    swordBonus: 0
-                },
-                currentEnemy: null,
-                gameOver: false,
-                turnInProgress: false, // Verhindert Aktionen während Animationen/Gegnerzug
-                highScore: parseInt(localStorage.getItem('pixelKartenspielHighScore') || '0') // Highscore laden
+    console.log("🧠 Geladene Passive:", selectedPassive);
+    console.log("Initialisiere Spiel...");
+    cardUniqueCounter = 0;
+
+    state = {
+        round: 1,
+        defeatedEnemies: 0,
+        player: {
+            level: 1,
+            xp: 0,
+            xpToNextLevel: BASE_XP_TO_LEVEL_UP,
+            maxHealth: 50,
+            health: 50,
+            maxMana: 10,
+            mana: 10,
+            block: 0,
+            deck: [],
+            hand: [],
+            discardPile: [],
+            maxHandSize: 5,
+            lifestealFlat: 0,
+            gold: 0,
+            statusEffects: [],
+            swordBonus: 0
+        },
+        currentEnemy: null,
+        gameOver: false,
+        turnInProgress: false,
+        highScore: parseInt(localStorage.getItem('pixelKartenspielHighScore') || '0')
+    };
+
+    const savedWonCards = JSON.parse(localStorage.getItem('wonCards') || '[]');
+    state.wonCards = new Set(savedWonCards);
+
+    const combinedUnlocked = new Set([...savedStarterDeck, ...savedWonCards]);
+    state.unlockedCardIds = combinedUnlocked;
+
+    const starterCardIds = savedStarterDeck;
+    state.player.deck = [];
+
+    starterCardIds.forEach(id => {
+        const base = CARD_TYPES.find(c => c.id === id);
+        const count = base.weight || 1;
+        for (let i = 0; i < count; i++) {
+            state.player.deck.push(createCardInstance(base));
+        }
+    });
+
+    shuffleArray(state.player.deck);
+    state.player.name = playerName;
+
+    switch (selectedPassive) {
+        case 'swordfighter':
+            state.player.swordBonus = 2;
+            break;
+        case 'goldboy':
+            state.player.gold = 1500;
+            break;
+        case 'dragonscale':
+            state.player.immuneToStatus = true;
+            state.player.hasDragonscale = true;
+            break;
+        case 'shieldmaster':
+            state.player.isShieldmaster = true;
+            state.player.swordPenalty = 1;
+            state.player.block = 5;
+            logMessage('🛡️ Schildmeister: Du startest mit 5 Block.', 'block');
+            break;
+        case 'martyr':
+            state.player.isMartyr = true;
+            break;
+        case 'undead':
+            state.player.passive = 'undead';
+            state.player.hellhound = {
+                damage: 2,
+                icon: 'images/hellhound.png'
             };
-    
-            if (selectedPassive === 'shieldmaster') {
-                state.player.isShieldmaster = true;
-                state.player.block = 5; // Direkt zu Beginn 5 Block
-                logMessage('🛡️ Schildmeister: Du startest mit 5 Block.', 'block');
-                }
+            break;
+    }
 
-            // Pasiven
-            const savedCardIds = localStorage.getItem('unlockedCardIds');
-            if (savedCardIds) {
-                state.unlockedCardIds = new Set(JSON.parse(savedCardIds));
-            } else {
-                state.unlockedCardIds = new Set([1, 2, 3, 7, 15, 16]);
-            }
+    playerImageElem.style.backgroundImage = `url(${PLAYER_PIXEL_IMAGE})`;
+    playerImageElem.style.backgroundColor = '#444';
 
-            state.player.name = localStorage.getItem('playerName') || 'Spieler';
+    messageLogElem.innerHTML = '';
+    logMessage("Neues Spiel gestartet. Viel Glück!", "system");
+    updateUIDisplay();
+    updatePetDisplay();
+    updateHandUI();
+    loadEnemy();
+    drawCards(3);
+    updateEnemyUI();
 
-            switch (selectedPassive) {
-            case 'swordfighter':
-                state.player.swordBonus = 2;
-                break;
+    gameOverContainerElem.style.display = 'none';
+    upgradeContainerElem.style.display = 'none';
+    endTurnBtn.disabled = false;
+    manaBoostBtn.disabled = false;
+    state.turnInProgress = false;
 
-            case 'goldboy':
-                state.player.gold = 1500;
-                break;
+    console.log("Spiel initialisiert. Aktueller Status:", state);
+    logMessage(`🧠 Aktive Passive: ${selectedPassive}`, 'system');
 
-            case 'dragonscale':
-                state.player.immuneToStatus = true;
-                state.player.hasDragonscale = true;
-                break;
+    db.collection("highscores")
+        .orderBy("score", "desc")
+        .limit(10)
+        .get()
+        .then(snapshot => {
+            const list = document.getElementById('leaderboardList');
+            if (!list) return;
 
-            case 'shieldmaster':
-                state.player.isShieldmaster = true;
-                state.player.swordPenalty = 1;
-                break;
-
-            case 'martyr':
-                state.player.isMartyr = true;
-                break;
-            case 'undead':
-                state.player.passive = 'undead';
-                state.player.hellhound = {
-                    damage: 2,
-                    icon: 'images/hellhound.png'
-                };
-                break;
-            }
-
-            state.unlockedCardIds.add(1); // Schwert hat id 1
-
-            // Spielerbild setzen
-            playerImageElem.style.backgroundImage = `url(${PLAYER_PIXEL_IMAGE})`;
-            playerImageElem.style.backgroundColor = '#444'; // Fallback-Farbe
-
-            // Freigeschaltete Karten definieren, Start karten
-            const unlockedCards = CARD_TYPES.filter(card => state.unlockedCardIds.has(card.id));
-
-
-            // Gewichteten Pool erstellen
-            let weightedPool = [];
-
-            unlockedCards.forEach(card => {
-                const count = card.weight || 1; // falls kein weight vorhanden, 1 als Standard
-                for (let i = 0; i < count; i++) {
-                    weightedPool.push(card);
-                }
-            });
-
-            // 10 Karten ziehen – gewichtet
-            for (let i = 0; i < 10; i++) {
-                const randomCardType = weightedPool[getRandomInt(0, weightedPool.length - 1)];
-                state.player.deck.push(createCardInstance(randomCardType));
-            }
-
-            shuffleArray(state.player.deck); // Deck mischen
-
-
-    
-            // 3. Ersten Gegner laden
-            loadEnemy(); // Lädt einen passenden Gegner für Level 1
-    
-            // 4. Starthand ziehen
-            drawCards(3); // Nur 3 Karten zum Start
-    
-            // 5. UI Aktualisieren
-            messageLogElem.innerHTML = ''; // Log leeren
-            logMessage("Neues Spiel gestartet. Viel Glück!", "system");
-            updateUIDisplay(); // Zeigt alle Startwerte an
-            updatePetDisplay();
-            updateHandUI(); // Zeigt die Handkarten an
-            updateEnemyUI(); // Zeigt den Gegner an
-    
-            // 6. Overlays & Buttons zurücksetzen
-            gameOverContainerElem.style.display = 'none';
-            upgradeContainerElem.style.display = 'none';
-            endTurnBtn.disabled = false;
-            manaBoostBtn.disabled = false;
-            state.turnInProgress = false; // Sicherstellen, dass der Spieler agieren kann
-    
-            console.log("Spiel initialisiert. Aktueller Status:", state);
-            logMessage(`🧠 Aktive Passive: ${selectedPassive}`, 'system');
-
-            // Globale Highscore-Liste laden
-            db.collection("highscores")
-            .orderBy("score", "desc")
-            .limit(10)
-            .get()
-            .then(snapshot => {
-                const list = document.getElementById('leaderboardList');
-                if (!list) return;
-
-                list.innerHTML = '';
-                snapshot.forEach(doc => {
+            list.innerHTML = '';
+            snapshot.forEach(doc => {
                 const entry = doc.data();
                 const li = document.createElement('li');
                 li.textContent = `${entry.name}: ${entry.score} besiegte Gegner (Lvl ${entry.level})`;
                 list.appendChild(li);
-                });
-            })
-            .catch(err => {
-                console.warn("⚠️ Highscore-Liste konnte nicht geladen werden:", err);
             });
+        })
+        .catch(err => {
+            console.warn("⚠️ Highscore-Liste konnte nicht geladen werden:", err);
+        });
+}
 
-
-        }
     
         // --- UI Update Funktionen ---
 
@@ -2541,6 +2629,14 @@ h2 {
                         tooltip = `Paralyse – halbiert den Angriff (${effect.duration} Runden)`;
                         text = `${icon} (${effect.duration})`;
                         break;
+
+                    case 'bleed':
+                        icon = '🩸';
+                        bgColor = '#8B0000'; // Dunkelrot
+                        tooltip = `Blutung – 2x schaden durch The Knive`;
+                        text = `${icon} (∞)`;
+                        break;
+
                 }
 
                 span.style.backgroundColor = bgColor;
@@ -2610,7 +2706,10 @@ function createCardElement(card) {
         damage_paralyze: '💥',
         whirlwind: '💥',
         firearrow: '💥',
-        gamble: '💥'
+        gamble: '💥',
+        damage_selfhit: '💥',
+        multi_hit: '💥',
+        bleed: '🩸',
     };
 
     let powerHint = '';
@@ -2973,6 +3072,39 @@ function playSingleEffect(effect, power, card) {
     };
 
     switch (effect) {
+        case 'damage_selfhit': {
+                const blockUsed = Math.min(enemy.block || 0, remaining);
+                if (blockUsed > 0) {
+                    enemy.block -= blockUsed;
+                    logMessage(`${enemy.name} blockt ${blockUsed} Schaden.`, 'block');
+                }
+
+                const finalDamage = remaining - blockUsed;
+                if (finalDamage > 0) {
+                    enemy.health -= finalDamage;
+                    logMessage(`${enemy.name} erleidet ${finalDamage} Schaden durch Ansturm.`, 'enemy');
+                }
+
+                const selfDamage = card.selfDamage || 0;
+                if (selfDamage > 0) {
+                    state.player.health -= selfDamage;
+                    logMessage(`💢 Du nimmst ${selfDamage} Rückstoß-Schaden.`, 'player');
+                }
+
+                hitAnimation();
+                break;
+            }
+        case 'gain_mana': {
+            const gain = power || 0;
+            const manaGained = Math.min(gain, state.player.maxMana - state.player.mana);
+            if (manaGained > 0) {
+                state.player.mana += manaGained;
+                logMessage(`🔷 Du erhältst ${manaGained} Mana.`, 'mana');
+            } else {
+                logMessage(`🔷 Mana ist bereits voll.`, 'mana');
+            }
+            break;
+            }
         case 'draw':
             drawCards(remaining);
             logMessage(`📜 Du ziehst ${remaining} Karte(n).`, 'system');
@@ -3061,7 +3193,29 @@ function playSingleEffect(effect, power, card) {
             hitAnimation();
             break;
         }
+        case 'multi_hit': {
+            const hits = card.minHits && card.hits
+                ? getRandomInt(card.minHits, card.hits)
+                : 2 + Math.floor(Math.random() * 2); // fallback 2–3
 
+            for (let i = 0; i < hits; i++) {
+                const ignoreBlock = card.ignoreBlock;
+                const blockUsed = ignoreBlock ? 0 : Math.min(enemy.block || 0, remaining);
+                if (!ignoreBlock && blockUsed > 0) {
+                    enemy.block -= blockUsed;
+                    logMessage(`${enemy.name} blockt ${blockUsed} Schaden.`, 'block');
+                }
+
+                const finalDamage = remaining - blockUsed;
+                if (finalDamage > 0) {
+                    enemy.health -= finalDamage;
+                    logMessage(`🌪️ ${enemy.name} wird vom Tornado getroffen und erleidet ${finalDamage} Schaden.`, 'enemy');
+                }
+
+                hitAnimation();
+            }
+            break;
+        }
         case 'gamble': {
             const roll = Math.random();
             if (roll < 0.5) {
@@ -3075,11 +3229,16 @@ function playSingleEffect(effect, power, card) {
             break;
         }
 
-        case 'whirlwind':
-            enemy.health -= remaining;
-            logMessage(`🌀 Klingenwirbel trifft ${enemy.name} für ${remaining} Schaden.`, 'enemy');
-            break;
+        case 'whirlwind': {
+                const enemies = [state.currentEnemy, ...(state.currentEnemy.minions || [])];
+                enemies.forEach(target => {
+                    target.health -= remaining;
+                    logMessage(`🌀 ${target.name} wird von Klingenwirbel getroffen und erleidet ${remaining} Schaden (ignoriert Block).`, 'enemy');
+                });
 
+                hitAnimation();
+                break;
+            }
         default:
             console.warn("Unbekannter Effekt:", effect);
             logMessage(`⚠️ Effekt ${effect} konnte nicht ausgeführt werden.`, 'system');
@@ -3090,6 +3249,83 @@ function playSingleEffect(effect, power, card) {
     
 function executeCardEffect(card) {
     switch (card.effect) {
+            case 'bleed': {
+                    let rawDamage = card.power;
+
+                    // Prüfe, ob der Gegner in dieser Runde bereits Schaden erlitten hat
+                    const alreadyDamaged = state.currentEnemy.damagedThisTurn === true;
+
+                    // Wenn ja, Schaden verdoppeln
+                    if (alreadyDamaged) {
+                        rawDamage *= 2;
+                        logMessage(`🩸 Blutung! Schaden verdoppelt.`, 'effect');
+                    }
+
+                    // Bonus-Schaden durch Effekte anwenden
+                    const totalDamage = applyDamageBonuses(rawDamage);
+
+                    // Block berücksichtigen
+                    const blockUsed = Math.min(state.currentEnemy.block || 0, totalDamage);
+                    if (blockUsed > 0) {
+                        state.currentEnemy.block -= blockUsed;
+                        logMessage(`${state.currentEnemy.name} blockt ${blockUsed} Schaden.`, 'block');
+                    }
+
+                    const netDamage = totalDamage - blockUsed;
+                    if (netDamage > 0) {
+                        state.currentEnemy.health -= netDamage;
+                        logMessage(`${state.currentEnemy.name} erleidet ${netDamage} Schaden durch Blutung.`, 'enemy');
+                    } else {
+                        logMessage(`${state.currentEnemy.name} blockt den gesamten Blutungsschaden!`, 'block');
+                    }
+
+                    // Gegner gilt nun als verletzt für diese Runde
+                    state.currentEnemy.damagedThisTurn = true;
+
+                    // 🩸 Blutung als Statuseffekt für 1 Runde anzeigen
+                    if (!state.currentEnemy.statusEffects) {
+                        state.currentEnemy.statusEffects = [];
+                    }
+                    const alreadyBleeding = state.currentEnemy.statusEffects.some(e => e.type === 'bleed');
+                    if (!alreadyBleeding) {
+                        state.currentEnemy.statusEffects.push({
+                            type: 'bleed',
+                            duration: 1
+                        });
+                    }
+
+                    // Trefferanimation
+                    enemyContainerElem.classList.add('hit');
+                    setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
+                    break;
+                }
+        case 'damage_selfhit': {
+                let damage = applyDamageBonuses(card.power);
+                let recoil = card.selfDamage || 0;
+
+                // Gegner treffen (ggf. Block berücksichtigen)
+                let blockUsed = Math.min(state.currentEnemy.block || 0, damage);
+                if (blockUsed > 0) {
+                    state.currentEnemy.block -= blockUsed;
+                    logMessage(`${state.currentEnemy.name} blockt ${blockUsed} Schaden.`, 'block');
+                }
+
+                const finalDamage = damage - blockUsed;
+                if (finalDamage > 0) {
+                    state.currentEnemy.health -= finalDamage;
+                    logMessage(`${state.currentEnemy.name} erleidet ${finalDamage} Schaden durch Ansturm.`, 'enemy');
+                }
+
+                // Rückstoß-Schaden auf Spieler
+                if (recoil > 0) {
+                    state.player.health -= recoil;
+                    logMessage(`💢 Du erleidest ${recoil} Rückstoß-Schaden.`, 'player');
+                }
+
+                enemyContainerElem.classList.add('hit');
+                setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
+                break;
+            }
         case 'paralyze':
                 tryApplyParalyze(state.currentEnemy); // 100 % Chance
                 break;
@@ -3156,6 +3392,7 @@ function executeCardEffect(card) {
 
             let damageDealt = applyDamageBonuses(rawDamage);
 
+            
             if (state.currentEnemy.minions?.length > 0) {
                 const target = state.currentEnemy.minions[0];
                 target.health -= damageDealt;
@@ -3214,6 +3451,7 @@ function executeCardEffect(card) {
                     }
                 }
 
+                
             // Prozentualer Lifesteal (aus Upgrade)
             const lifestealPercent = state.player.lifestealPercent || 0;
 
@@ -3231,7 +3469,31 @@ function executeCardEffect(card) {
                 setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
                 break;
 
+        case 'multi_hit': {
+                const hits = card.minHits && card.hits
+                    ? getRandomInt(card.minHits, card.hits)
+                    : 2 + Math.floor(Math.random() * 2); // fallback
 
+                for (let i = 0; i < hits; i++) {
+                    const baseDamage = applyDamageBonuses(card.power);
+                    const block = card.ignoreBlock ? 0 : Math.min(state.currentEnemy.block || 0, baseDamage);
+                    if (block > 0 && !card.ignoreBlock) {
+                        state.currentEnemy.block -= block;
+                        logMessage(`${state.currentEnemy.name} blockt ${block} Schaden.`, 'block');
+                    }
+
+                    const final = baseDamage - block;
+                    if (final > 0) {
+                        state.currentEnemy.health -= final;
+                        logMessage(`🌪️ Tornado trifft (${i + 1}) – ${state.currentEnemy.name} nimmt ${final} Schaden.`, 'enemy');
+                    }
+
+                    enemyContainerElem.classList.add('hit');
+                    setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
+                }
+                break;
+            }
+        
         case 'block':
             state.player.block += card.power;
             logMessage(`Spieler erhält ${card.power} Block.`, 'block');
@@ -3579,9 +3841,9 @@ function executeCardEffect(card) {
 
                     enemy.minions.push({
                         name: 'Höllenhund',
-                        health: 50,
-                        maxHealth: 50,
-                        attack: 15,
+                        health: 60,
+                        maxHealth: 60,
+                        attack: 18,
                         pixelImageKey: 'hund'
                     });
 
@@ -3683,6 +3945,7 @@ function executeCardEffect(card) {
 
                 state.turnInProgress = true;
                 state.player.frozen = false;
+                state.currentEnemy.damagedThisTurn = false;
 
                 logMessage("🔁 Gegner ist am Zug...", 'enemy');
 
@@ -4044,70 +4307,71 @@ if (state.player.hellhound) {
     
         // Prüft, ob der aktuelle Gegner besiegt ist
         function checkEnemyDefeat() {
-            if (state.currentEnemy && state.currentEnemy.health <= 0) {
-            const defeatedName = state.currentEnemy.name;
-            logMessage(`${defeatedName} besiegt!`, 'system');
-            state.defeatedEnemies++;
+    if (state.currentEnemy && state.currentEnemy.health <= 0) {
+        const defeatedName = state.currentEnemy.name;
+        logMessage(`${defeatedName} besiegt!`, 'system');
+        state.defeatedEnemies++;
 
-            // 🔓 Direkt beim Besiegen speichern!
-            if (defeatedName === 'Nekromant') {
-                localStorage.setItem('unlockedGoldboy', 'true');
-                logMessage('🗝️ Passive "Goldjunge" freigeschaltet!', 'system');
-            }
-            if (defeatedName === 'Drache') {
-                localStorage.setItem('unlockedDragonscale', 'true');
-                logMessage('🗝️ Passive "Drachenschuppen" freigeschaltet!', 'system');
-            }
-            if (defeatedName === 'Teufel') {
-                localStorage.setItem('unlockedUndead', 'true');
-                logMessage('🗝️ Passive "Totenbeschwörer" freigeschaltet!', 'system');
-            }
+        // 💎 Gems check direkt hier:
+        handleGemDrop(state.currentEnemy); // 👈 HIER!
 
-            const xpGained = state.currentEnemy.xp || 50;
-            gainXP(xpGained);
-
-            const goldEarned = state.currentEnemy.gold || 0;
-            state.player.gold += goldEarned;
-            logMessage(`💰 Du erhältst ${goldEarned} Gold.`, 'system');
-            updateUIDisplay();
-
-            // NEU: Volles Mana wiederherstellen
-            state.player.mana = state.player.maxMana;
-            logMessage(`🔋 Dein Mana wurde vollständig aufgefüllt.`, 'mana');
-
-            enemyContainerElem.classList.add('defeat');
-
-                setTimeout(() => {
-                    // UI zurücksetzen + Suche anzeigen
-                    state.currentEnemy = null;
-                    enemyNameElem.textContent = '🔍 Suche nach neuem Gegner...';
-                    enemyHealthElem.textContent = '-';
-                    enemyMaxHealthElem.textContent = '-';
-                    enemyHealthBarElem.style.width = '0%';
-                    enemyAttackElem.textContent = '-';
-                    monsterImageElem.style.backgroundImage = 'none';
-                    monsterImageElem.style.backgroundColor = '#333';
-                    enemyInfoElem.textContent = '';
-                    monsterTraitsElem.innerHTML = '';
-                    document.getElementById('enemyMinions').innerHTML = '';
-                }, 400);
-
-                // Nach 3 Sekunden neuen Gegner laden + neue Runde starten
-                setTimeout(() => {
-                    loadEnemy(); 
-                    state.turnInProgress = false;
-                    updateUIDisplay();
-                    updateEnemyUI();
-                    startNewTurn();
-                }, 2000);
-
-                return true;
-            } else {
-                state.turnInProgress = false;
-                updateCardAvailability();
-                return false;
-            }
+        // 🔓 Unlocks
+        if (defeatedName === 'Nekromant') {
+            localStorage.setItem('unlockedGoldboy', 'true');
+            logMessage('🗝️ Passive "Goldjunge" freigeschaltet!', 'system');
         }
+        if (defeatedName === 'Drache') {
+            localStorage.setItem('unlockedDragonscale', 'true');
+            logMessage('🗝️ Passive "Drachenschuppen" freigeschaltet!', 'system');
+        }
+        if (defeatedName === 'Teufel') {
+            localStorage.setItem('unlockedUndead', 'true');
+            logMessage('🗝️ Passive "Totenbeschwörer" freigeschaltet!', 'system');
+        }
+
+        const xpGained = state.currentEnemy.xp || 50;
+        gainXP(xpGained);
+
+        const goldEarned = state.currentEnemy.gold || 0;
+        state.player.gold += goldEarned;
+        logMessage(`💰 Du erhältst ${goldEarned} Gold.`, 'system');
+        updateUIDisplay();
+
+        state.player.mana = state.player.maxMana;
+        logMessage(`🔋 Dein Mana wurde vollständig aufgefüllt.`, 'mana');
+
+        enemyContainerElem.classList.add('defeat');
+
+        setTimeout(() => {
+            state.currentEnemy = null;
+            enemyNameElem.textContent = '🔍 Suche nach neuem Gegner...';
+            enemyHealthElem.textContent = '-';
+            enemyMaxHealthElem.textContent = '-';
+            enemyHealthBarElem.style.width = '0%';
+            enemyAttackElem.textContent = '-';
+            monsterImageElem.style.backgroundImage = 'none';
+            monsterImageElem.style.backgroundColor = '#333';
+            enemyInfoElem.textContent = '';
+            monsterTraitsElem.innerHTML = '';
+            document.getElementById('enemyMinions').innerHTML = '';
+        }, 400);
+
+        setTimeout(() => {
+            loadEnemy(); 
+            state.turnInProgress = false;
+            updateUIDisplay();
+            updateEnemyUI();
+            startNewTurn();
+        }, 2000);
+
+        return true;
+    } else {
+        state.turnInProgress = false;
+        updateCardAvailability();
+        return false;
+    }
+}
+
 
     
             // Verarbeitet erhaltene XP und prüft auf Level Up
@@ -4338,7 +4602,7 @@ if (state.player.hellhound) {
                         logMessage(`❌ ${card.name} wurde dauerhaft aus deinem Deck entfernt.`, 'discard');
 
                         // Jetzt neue Karten anbieten (nicht besessen + nicht verboten)
-                        const forbiddenCardIdsAdd = [17, 18, 19]; // keine Ultra-Karten
+                        const forbiddenCardIdsAdd = [17, 18, 19, 21, 22, 23]; // keine Ultra-Karten
                         const addableCards = CARD_TYPES.filter(c =>
                             !forbiddenCardIdsAdd.includes(c.id) &&
                             !state.unlockedCardIds.has(c.id)
@@ -4468,8 +4732,8 @@ if (state.player.hellhound) {
                         if (!state.player.lifestealPercent) {
                             state.player.lifestealPercent = 0;
                         }
-                        state.player.lifestealPercent += 0.20;
-                        logMessage(`Lebensraub um 20 % erhöht. Aktuell: ${(state.player.lifestealPercent * 100).toFixed(0)} %`, 'lifesteal');
+                        state.player.lifestealPercent += 0.15;
+                        logMessage(`Lebensraub um 15 % erhöht. Aktuell: ${(state.player.lifestealPercent * 100).toFixed(0)} %`, 'lifesteal');
                         break;
                   case 'gainGoldFixed':
                     state.player.gold += 350;
@@ -4593,6 +4857,7 @@ if (state.player.hellhound) {
     </script>
     <script src="shop.js"></script>
     <script src="fusion.js"></script>
+    <script src="lootbox.js"></script>
 
 </body>
 </html>
