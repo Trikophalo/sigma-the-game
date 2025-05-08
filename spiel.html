@@ -1705,6 +1705,15 @@ h2 {
         100% { transform: translate(-50%, -50%) scale(2) rotate(0deg); }
         }
 
+        .card.pulse {
+        animation: pulse-scale 0.3s ease;
+        }
+        @keyframes pulse-scale {
+        0%   { transform: scale(1); }
+        50%  { transform: scale(1.08); }
+        100% { transform: scale(1); }
+        }
+
     </style>
 </head>
 <body>
@@ -3608,11 +3617,11 @@ function executeCardEffect(card) {
                 break;
 
 
-         case 'zeitklinge_damage': {
+        case 'zeitklinge_damage': {
                 let rawDamage = card.power;
 
-                // Schaden anwenden (inkl. Block)
-                let blockUsed = Math.min(state.currentEnemy.block || 0, rawDamage);
+                // Block berücksichtigen
+                const blockUsed = Math.min(state.currentEnemy.block || 0, rawDamage);
                 if (blockUsed > 0) {
                     state.currentEnemy.block -= blockUsed;
                     logMessage(`${state.currentEnemy.name} blockt ${blockUsed} Schaden.`, 'block');
@@ -3627,38 +3636,43 @@ function executeCardEffect(card) {
                     logMessage(`${state.currentEnemy.name} blockt den gesamten Schaden der Zeitklinge.`, 'block');
                 }
 
-                // Kill-Check → Karte verstärken
+                // Gegner getötet? → Upgrade auslösen
                 if (state.currentEnemy.health <= 0) {
                     card.kills = (card.kills || 0) + 1;
                     card.power += 1;
                     card.description = `Stärker bei Kills: ${card.power} Schaden`;
 
-                    // 🛠️ Vorlage aktualisieren
+                    // Zeitklingen-Vorlage im Spielerzustand aktualisieren
                     if (state.player.zeitklingeCard) {
                         state.player.zeitklingeCard.power = card.power;
                         state.player.zeitklingeCard.kills = card.kills;
                         state.player.zeitklingeCard.description = card.description;
                     }
 
-                    // Karte in der Hand visuell aktualisieren
-                    const cardElem = document.querySelector(`.card[data-unique-id="${card.uniqueId}"]`);
-                    if (cardElem) {
-                        const powerElem = cardElem.querySelector('.card-power');
-                        if (powerElem) {
-                            powerElem.textContent = `💥 ${card.power}`;
-                        }
+                    // Alle Zeitklingen in der Hand optisch + inhaltlich aktualisieren
+                    document.querySelectorAll('.card').forEach(cardElem => {
+                        const nameElem = cardElem.querySelector('.card-name');
+                        if (nameElem?.textContent === 'Zeitklinge') {
+                            const powerElem = cardElem.querySelector('.card-power');
+                            const descElem = cardElem.querySelector('.card-description');
 
-                        const descElem = cardElem.querySelector('.card-description');
-                        if (descElem) {
-                            descElem.textContent = card.description;
+                            if (powerElem) powerElem.textContent = `💥 ${card.power}`;
+                            if (descElem) descElem.textContent = card.description;
+
+                            // Animation für Feedback
+                            cardElem.classList.add('pulse');
+                            setTimeout(() => cardElem.classList.remove('pulse'), 300);
                         }
-                    }
+                    });
+
+                    logMessage(`⚔️ Zeitklinge tötet ${state.currentEnemy.name} und wird stärker! (${card.power} Schaden)`, 'system');
                 }
 
                 enemyContainerElem.classList.add('hit');
                 setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
                 break;
             }
+
 
 
             case 'firearrow':
