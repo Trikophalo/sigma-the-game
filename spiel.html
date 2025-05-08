@@ -2191,7 +2191,7 @@ h2 {
 
 
         function getThreeUniqueNewCards() {
-            const forbiddenCardIds = [17, 18, 19, 21, 22, 23, 1777];
+            const forbiddenCardIds = [17, 18, 19, 21, 22, 23];
             const ownedCardIds = new Set(state.player.deck.map(card => card.id));
             const unlockedIds = state.unlockedCardIds;
 
@@ -2296,7 +2296,9 @@ function initGame() {
             lifestealFlat: 0,
             gold: 0,
             statusEffects: [],
-            swordBonus: 0
+            swordBonus: 0,
+            zeitklingeKills: 0,
+            zeitklingeBonus: 0
         },
         currentEnemy: null,
         gameOver: false,
@@ -2320,6 +2322,7 @@ function initGame() {
             state.player.deck.push(createCardInstance(base));
         }
     });
+
 
     shuffleArray(state.player.deck);
     state.player.name = playerName;
@@ -2687,16 +2690,16 @@ function initGame() {
     
         // Aktualisiert die Anzeige der Handkarten
         function updateHandUI() {
-            cardHandElem.innerHTML = ''; // Alte Karten entfernen
-            state.player.hand.forEach(card => {
-                const cardDiv = createCardElement(card); // Eigene Funktion für Kartenerstellung
-                cardHandElem.appendChild(cardDiv);
-            });
-            updateCardAvailability(); // Verfügbarkeit nach dem Neuzeichnen prüfen
-            // Handgrößenanzeige auch hier aktualisieren
-             currentHandSizeElem.textContent = state.player.hand.length;
-             updatePlayerStatusDisplay();
-        }
+    cardHandElem.innerHTML = ''; // Alte Karten entfernen
+    state.player.hand.forEach(card => {
+        const cardDiv = createCardElement(card); // Eigene Funktion für Kartenerstellung
+        cardHandElem.appendChild(cardDiv);
+    });
+    updateCardAvailability(); // Verfügbarkeit nach dem Neuzeichnen prüfen
+    currentHandSizeElem.textContent = state.player.hand.length;
+    updatePlayerStatusDisplay();
+}
+
 
     
 function createCardElement(card) {
@@ -2928,49 +2931,42 @@ function createCardElement(card) {
             updateEnemyUI(); // Anzeige aktualisieren
         }
 
-        state.player.deck.push(createCardInstance(state.player.zeitklingeCard));
 
         function drawCards(numCards) {
-            let drawnCount = 0;
+    let drawnCount = 0;
 
-            while (drawnCount < numCards) {
-                const handCount = state.player.hand.filter(c => c.name !== 'Donner-Zauber').length;
-                if (handCount >= state.player.maxHandSize) {
-                    logMessage(`Hand ist voll. Ziehen gestoppt.`, 'discard');
-                    break;
-                }
+    while (drawnCount < numCards) {
+        const handCount = state.player.hand.filter(c => c.name !== 'Donner-Zauber' && c.name !== 'Lotus Trank').length;
+        if (handCount >= state.player.maxHandSize) {
+            logMessage(`Hand ist voll. Ziehen gestoppt.`, 'discard');
+            break;
+        }
 
-                while (drawnCount < numCards) {
-                const handCount = state.player.hand.filter(c => c.name !== 'Lotus Trank').length;
-                if (handCount >= state.player.maxHandSize) {
-                    logMessage(`Hand ist voll. Ziehen gestoppt.`, 'discard');
-                    break;
-                }
-
-                // Deck leer → Mische Ablagestapel
-                if (state.player.deck.length === 0) {
-                    if (state.player.discardPile.length === 0) {
-                        logMessage("Deck und Ablagestapel sind leer. Keine Karte gezogen.", 'system');
-                        break;
-                    }
-                    logMessage("Deck leer. Mische Ablagestapel...", 'system');
-                    state.player.deck = [...state.player.discardPile];
-                    state.player.discardPile = [];
-                    shuffleArray(state.player.deck);
-                }
-
-                const card = state.player.deck.pop();
-                state.player.hand.push(card);
-                drawnCount++;
+        // Deck leer → Mische Ablagestapel
+        if (state.player.deck.length === 0) {
+            if (state.player.discardPile.length === 0) {
+                logMessage("Deck und Ablagestapel sind leer. Keine Karte gezogen.", 'system');
+                break;
             }
+            logMessage("Deck leer. Mische Ablagestapel...", 'system');
+            state.player.deck = [...state.player.discardPile];
+            state.player.discardPile = [];
+            shuffleArray(state.player.deck);
+        }
 
-            if (drawnCount > 0) {
-                updateHandUI();
-                updateUIDisplay();
-            }
+        const card = state.player.deck.pop();
+        state.player.hand.push(card);
+        drawnCount++;
+    }
 
-            return drawnCount;
-        }}
+    if (drawnCount > 0) {
+        updateHandUI();
+        updateUIDisplay();
+    }
+
+    return drawnCount;
+}
+
 
     
         // --- Platzhalter für weitere Spiellogik (wird später benötigt) ---
@@ -3617,64 +3613,6 @@ function executeCardEffect(card) {
                 break;
 
 
-        case 'zeitklinge_damage': {
-                let rawDamage = card.power;
-
-                // Block berücksichtigen
-                const blockUsed = Math.min(state.currentEnemy.block || 0, rawDamage);
-                if (blockUsed > 0) {
-                    state.currentEnemy.block -= blockUsed;
-                    logMessage(`${state.currentEnemy.name} blockt ${blockUsed} Schaden.`, 'block');
-                }
-
-                const netDamage = rawDamage - blockUsed;
-
-                if (netDamage > 0) {
-                    state.currentEnemy.health -= netDamage;
-                    logMessage(`⏳ Zeitklinge trifft ${state.currentEnemy.name} für ${netDamage} Schaden!`, 'player');
-                } else {
-                    logMessage(`${state.currentEnemy.name} blockt den gesamten Schaden der Zeitklinge.`, 'block');
-                }
-
-                // Gegner getötet? → Upgrade auslösen
-                if (state.currentEnemy.health <= 0) {
-                    card.kills = (card.kills || 0) + 1;
-                    card.power += 1;
-                    card.description = `Stärker bei Kills: ${card.power} Schaden`;
-
-                    // Zeitklingen-Vorlage im Spielerzustand aktualisieren
-                    if (state.player.zeitklingeCard) {
-                        state.player.zeitklingeCard.power = card.power;
-                        state.player.zeitklingeCard.kills = card.kills;
-                        state.player.zeitklingeCard.description = card.description;
-                    }
-
-                    // Alle Zeitklingen in der Hand optisch + inhaltlich aktualisieren
-                    document.querySelectorAll('.card').forEach(cardElem => {
-                        const nameElem = cardElem.querySelector('.card-name');
-                        if (nameElem?.textContent === 'Zeitklinge') {
-                            const powerElem = cardElem.querySelector('.card-power');
-                            const descElem = cardElem.querySelector('.card-description');
-
-                            if (powerElem) powerElem.textContent = `💥 ${card.power}`;
-                            if (descElem) descElem.textContent = card.description;
-
-                            // Animation für Feedback
-                            cardElem.classList.add('pulse');
-                            setTimeout(() => cardElem.classList.remove('pulse'), 300);
-                        }
-                    });
-
-                    logMessage(`⚔️ Zeitklinge tötet ${state.currentEnemy.name} und wird stärker! (${card.power} Schaden)`, 'system');
-                }
-
-                enemyContainerElem.classList.add('hit');
-                setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
-                break;
-            }
-
-
-
             case 'firearrow':
                     let baseFireDamage = card.power;
 
@@ -3827,6 +3765,11 @@ function executeCardEffect(card) {
                 const martyrBonus = Math.floor(damage * lostPercent);
                 damage += martyrBonus;
                 logMessage(`⚔️ Märtyrer: +${martyrBonus} Bonus-Schaden durch erlittenen Schmerz.`, 'system');
+            }
+
+            if (state.player.zeitklingeBonus) {
+                damage += state.player.zeitklingeBonus;
+                logMessage(`🕰️ Zeitklingen-Bonus: +${state.player.zeitklingeBonus} Schaden.`, 'buff');
             }
 
             return damage;
@@ -4237,10 +4180,6 @@ function executeCardEffect(card) {
                 logMessage('🛡️ Schildmeister: Du erhältst 5 Block.', 'block');
                 }
 
-           if (state.player.zeitklingeCard) {
-                    state.player.deck.push(createCardInstance(state.player.zeitklingeCard));
-                }                  
-  
             state.currentEnemy.block = 0;
 
                  // RÜSTUNG: 5 Block pro Runde
@@ -4267,13 +4206,20 @@ function executeCardEffect(card) {
                 );
 
                 state.usedPowerSurgeThisTurn = false;
+                
 
-        // Zieht so viele Karten, bis die Hand (ohne Sonderkarten) voll ist
-            const handCount = state.player.hand.filter(c => c.name !== 'Donner-Zauber').length;
-            const missingCards = state.player.maxHandSize - handCount;
-            if (missingCards > 0) {
-                drawCards(missingCards);
-            }
+
+                // Ziehe immer mindestens 1 Karte, auch wenn Hand voll ist
+                drawCards(1);
+
+                // Danach wie gewohnt auffüllen, falls Platz
+                const handCount = state.player.hand.filter(c => c.name !== 'Donner-Zauber').length;
+                const missingCards = state.player.maxHandSize - handCount;
+
+                if (missingCards > 0) {
+                    drawCards(missingCards);
+                }
+
 
              // PET-AKTION MIT ANIMATION
              if (state.player.activePet) {
@@ -4386,6 +4332,14 @@ if (state.player.hellhound) {
         const defeatedName = state.currentEnemy.name;
         logMessage(`${defeatedName} besiegt!`, 'system');
         state.defeatedEnemies++;
+
+        // 🕰 Zeitklingenpassiv: alle 5 Kills → +1 Damage Bonus
+        state.player.zeitklingeKills += 1;
+
+        if (state.player.zeitklingeKills % 5 === 0) {
+            state.player.zeitklingeBonus += 1;
+            logMessage(`🕰 Zeitklinge-Buff: +1 permanenter Schaden! (gesamt ${state.player.zeitklingeBonus})`, 'buff');
+        }
 
         // 💎 Gems check direkt hier:
         handleGemDrop(state.currentEnemy); // 👈 HIER!
@@ -4677,7 +4631,7 @@ if (state.player.hellhound) {
                         logMessage(`❌ ${card.name} wurde dauerhaft aus deinem Deck entfernt.`, 'discard');
 
                         // Jetzt neue Karten anbieten (nicht besessen + nicht verboten)
-                        const forbiddenCardIdsAdd = [17, 18, 19, 21, 22, 23, 1777]; // keine Ultra-Karten
+                        const forbiddenCardIdsAdd = [17, 18, 19, 21, 22, 23]; // keine Ultra-Karten
                         const addableCards = CARD_TYPES.filter(c =>
                             !forbiddenCardIdsAdd.includes(c.id) &&
                             !state.unlockedCardIds.has(c.id)

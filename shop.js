@@ -159,7 +159,11 @@ const SHOP_ITEMS = [
       SHOP_ITEMS.forEach(item => {
         const itemBox = document.createElement('div');
         itemBox.classList.add('shop-item');
-        itemBox.setAttribute('data-tooltip', item.description);
+        let tooltip = item.description;
+        if (item.id === 'zeitklinge' && state?.player?.zeitklingeBonus >= 0) {
+            tooltip += ` Aktueller Bonus: +${state.player.zeitklingeBonus} Schaden.`;
+        }
+        itemBox.setAttribute('data-tooltip', tooltip);
     
         itemBox.innerHTML = `
           <img src="${item.icon}" class="shop-image" alt="${item.name}">
@@ -234,7 +238,6 @@ window.addEventListener('DOMContentLoaded', () => {
         state.player.hasBloodArmor = true;
         break;
       case 'spell':
-        case 'spell':
             const spell = {
                 id: 999,
                 name: 'Donner-Zauber',
@@ -250,36 +253,20 @@ window.addEventListener('DOMContentLoaded', () => {
               playerInventory.add(item.id); // sichert, dass 'donner' korrekt gespeichert ist              
             break;
 
-       case 'zeitklinge': {
-            const maxLevel = 30;
-            const currentLevel = state.runLevel || 1;
-            const levelsRemaining = Math.max(0, maxLevel - currentLevel);
-            const bonusDamage = levelsRemaining * 0.5;
-            const totalDamage = 1 + bonusDamage;
-            
-            const zeitklingenCard = {
-              id: 1777,
-              name: 'Zeitklinge',
-              icon: 'images/zeitklinge.png',
-              description: `Wird stärker je mehr Gegner sie tötet.`,
-              power: 3,
-              effect: 'zeitklinge_damage', // <- Wichtig: eigener Effektname
-              manaCost: 2,
-              tags: ['scaling'],
-              oneShot: false,
-              kills: 0 // <- Tracke wie viele Kills die Karte gemacht hat
-            };
-
-            // Einmal in Deck legen
-            state.player.deck.push(createCardInstance(zeitklingenCard));
-        
-            // Vorlage speichern
-            state.player.zeitklingeCard = zeitklingenCard;
-        
-            logMessage(`⏳ Zeitklinge erhalten (2 Schaden).`, 'system');
-            break;
-        }
-            
+      case 'zeitklinge': {
+              const maxLevel = 5;
+              const currentLevel = state.player.level || 1;
+              const levelsRemaining = Math.max(0, maxLevel - currentLevel);
+              const initialBonus = levelsRemaining * 1;
+          
+              state.player.hasZeitklingePassive = true; // Neuer Flag für Tooltip o.ä.
+              state.player.zeitklingeKills = 0;
+              state.player.zeitklingeBonus = initialBonus;
+          
+              logMessage(`⏳ Zeitklinge erhalten! Startbonus: +${initialBonus} Schaden.`, 'buff');
+              break;
+          }
+          
             
       case 'crit':
         state.player.critChance = 0.3;
@@ -347,11 +334,12 @@ window.addEventListener('DOMContentLoaded', () => {
     const icons = [];
 
     if (playerInventory && playerInventory.has('zeitklinge')) {
+      const bonus = state?.player?.zeitklingeBonus || 0;
       icons.push(`
-          <span class="item-icon-wrapper" data-tooltip="Wird stärker je mehr Gegner sie tötet.">
+          <span class="item-icon-wrapper" data-tooltip="Zeitklinge: +${bonus} Schaden. Wird mehr alle 5 Kills.">
              <img src="images/zeitklinge.png" alt="Zeitklinge" class="item-icon">
           </span>
-      `);
+      `);      
     }    
     
     if (state.player.hasBloodArmor) {
