@@ -126,7 +126,7 @@ function animateGemDrop(amount = 1) {
   // Lootbox Definitionen mit Wahrscheinlichkeiten für verschiedene Seltenheitsstufen
   const LOOTBOXES = {
     daily: {
-      name: 'Free Case - 0.5%',
+      name: 'Free Case (Alle 30 Min.)',
       cost: 0,
       cooldown: 24,
       chances: { common: 730, uncommon: 220, rare: 45, epic: 5 }
