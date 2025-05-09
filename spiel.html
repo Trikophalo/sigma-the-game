@@ -3597,9 +3597,6 @@ function executeCardEffect(card) {
                 break;
 
             case 'multi_hit': {
-                // Hilfsfunktion zum Warten
-                const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
                 // Trefferanzahl sicher bestimmen
                 let hits;
                 if (card.minHits != null && card.hits != null && card.minHits <= card.hits) {
@@ -3628,9 +3625,11 @@ function executeCardEffect(card) {
                         logMessage(`🌪️ Tornado trifft (${i + 1}) – ${state.currentEnemy.name} nimmt ${final} Schaden.`, 'enemy');
                     }
 
+                    // Nur Animation, blockiert nicht
                     enemyContainerElem.classList.add('hit');
-                    await wait(300);
-                    enemyContainerElem.classList.remove('hit');
+                    setTimeout(() => {
+                        enemyContainerElem.classList.remove('hit');
+                    }, 300);
                 }
 
                 // 🔥 Drachenschuppen-Effekt
