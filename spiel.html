@@ -3171,10 +3171,10 @@ function playSingleEffect(effect, power, card) {
         case 'poison': {
             const existing = enemy.statusEffects?.find(e => e.type === 'poison');
             if (existing) {
-                enemy.health -= 3;
-                logMessage(`☠️ Vergiftet – ${enemy.name} nimmt 3 extra Schaden.`, 'enemy');
+                enemy.health -= 4;
+                logMessage(`☠️ Vergiftet – ${enemy.name} nimmt 4 extra Schaden.`, 'enemy');
             } else {
-                addStatusEffect(enemy, { type: 'poison', damagePerTurn: 3, duration: 3 });
+                addStatusEffect(enemy, { type: 'poison', damagePerTurn: 4, duration: 3 });
                 logMessage(`☠️ ${enemy.name} ist nun vergiftet (${remaining} für 3 Runden).`, 'effect');
             }
             break;
@@ -3566,7 +3566,7 @@ function executeCardEffect(card) {
 
             const existingPoison = state.currentEnemy.statusEffects.find(e => e.type === 'poison');
             if (existingPoison) {
-                const bonusPoisonDamage = 3;
+                const bonusPoisonDamage = 4;
                 state.currentEnemy.health -= bonusPoisonDamage;
                 logMessage(`${state.currentEnemy.name} ist bereits vergiftet – erleidet ${bonusPoisonDamage} zusätzlichen Giftschaden!`, 'poison');
                 enemyContainerElem.classList.add('hit');
@@ -3894,8 +3894,8 @@ function executeCardEffect(card) {
                         logMessage(`🛡️ Drachenschuppen schützt dich vor Vergiftung.`, 'system');
                     } else {
                         if (!state.player.statusEffects) state.player.statusEffects = [];
-                        state.player.statusEffects.push({ type: 'poison', power: 2, duration: 3 });
-                        logMessage(`☠️ Du wurdest vergiftet (2 Schaden für 3 Runden)!`, 'poison');
+                        state.player.statusEffects.push({ type: 'poison', power: 4, duration: 3 });
+                        logMessage(`☠️ Du wurdest vergiftet (4 Schaden für 3 Runden)!`, 'poison');
                     }
             }
 
