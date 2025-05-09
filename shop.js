@@ -335,7 +335,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   if (playerInventory && playerInventory.has('zeitklinge')) {
     const bonus = Math.min(state.player.zeitklingeBonus || 0, 13);
-    const tooltipText = `Zeitklinge-Bonus: ${bonus} / 13 (+${bonus} Schaden)`;
+    const tooltipText = `Zeitklinge: Bekomme +1 alle 5 kills (${bonus} / 13 Schaden)`;
 
     icons.push(`
         <span class="item-icon-wrapper" data-tooltip="${tooltipText}">

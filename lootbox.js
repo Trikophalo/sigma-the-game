@@ -637,9 +637,9 @@ function animateGemDrop(amount = 1) {
   function getRarityName(rarity) {
     switch(rarity) {
       case 'common': return 'Gewöhnlich';
-      case 'uncommon': return 'Ungewöhnlich';
-      case 'rare': return 'Selten';
-      case 'epic': return 'Episch';
+      case 'uncommon': return 'Selten';
+      case 'rare': return 'Episch';
+      case 'epic': return 'Legendary';
       default: return 'Unbekannt';
     }
   }

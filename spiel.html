@@ -4208,11 +4208,6 @@ function executeCardEffect(card) {
 
                 state.usedPowerSurgeThisTurn = false;
                 
-
-
-                // Ziehe immer mindestens 1 Karte, auch wenn Hand voll ist
-                drawCards(1);
-
                 // Danach wie gewohnt auffüllen, falls Platz
                 const handCount = state.player.hand.filter(c => c.name !== 'Donner-Zauber').length;
                 const missingCards = state.player.maxHandSize - handCount;
@@ -4224,69 +4219,69 @@ function executeCardEffect(card) {
 
              // PET-AKTION MIT ANIMATION
              if (state.player.activePet) {
-    const pet = state.player.activePet;
-    let damage = 0;
-    let blockGain = 0;
-    let manaGain = 0;
-    let logText = '';
+                const pet = state.player.activePet;
+                let damage = 0;
+                let blockGain = 0;
+                let manaGain = 0;
+                let logText = '';
 
-    switch (pet.effect) {
-        case 'gawa':
-            damage = 4;
-            logText = `🐾 ${pet.name} greift an – ${damage} Schaden.`;
-            break;
-        case 'lulu':
-            damage = 2;
-            manaGain = 1;
-            logText = `🦊 ${pet.name} wirkt Magie – ${damage} Schaden + ${manaGain} Mana.`;
-            break;
-        case 'cassa':
-            damage = 1;
-            blockGain = 3;
-            logText = `🐍 ${pet.name} verteidigt dich – ${damage} Schaden + ${blockGain} Block.`;
-            break;
-    }
+                switch (pet.effect) {
+                    case 'gawa':
+                        damage = 4;
+                        logText = `🐾 ${pet.name} greift an – ${damage} Schaden.`;
+                        break;
+                    case 'lulu':
+                        damage = 2;
+                        manaGain = 1;
+                        logText = `🦊 ${pet.name} wirkt Magie – ${damage} Schaden + ${manaGain} Mana.`;
+                        break;
+                    case 'cassa':
+                        damage = 1;
+                        blockGain = 3;
+                        logText = `🐍 ${pet.name} verteidigt dich – ${damage} Schaden + ${blockGain} Block.`;
+                        break;
+                }
 
-    const petImage = document.querySelector('#petContainer img:not([src*="hellhound"])');
-    if (petImage) {
-        petImage.classList.add('wobble');
-        setTimeout(() => petImage.classList.remove('wobble'), 300);
-    }
+                const petImage = document.querySelector('#petContainer img:not([src*="hellhound"])');
+                if (petImage) {
+                    petImage.classList.add('wobble');
+                    setTimeout(() => petImage.classList.remove('wobble'), 300);
+                }
 
-    setTimeout(() => {
-        state.currentEnemy.health -= damage;
-        state.player.block += blockGain;
-        state.player.mana = Math.min(state.player.maxMana, state.player.mana + manaGain);
-        logMessage(logText, blockGain ? 'block' : damage ? 'enemy' : 'system');
-        updateEnemyUI();
-        updateUIDisplay();
-        updatePetDisplay();
-        //FALLS KAPUTT
-    if (state.currentEnemy.health <= 0) {
-            checkEnemyDefeat();
-        }
-    }, 600);
-}
+                setTimeout(() => {
+                    state.currentEnemy.health -= damage;
+                    state.player.block += blockGain;
+                    state.player.mana = Math.min(state.player.maxMana, state.player.mana + manaGain);
+                    logMessage(logText, blockGain ? 'block' : damage ? 'enemy' : 'system');
+                    updateEnemyUI();
+                    updateUIDisplay();
+                    updatePetDisplay();
+                    //FALLS KAPUTT
+                if (state.currentEnemy.health <= 0) {
+                        checkEnemyDefeat();
+                    }
+                }, 600);
+            }
 
-// 🔥 HÖLLENHUND → jetzt immer separat prüfen!
-if (state.player.hellhound) {
-    setTimeout(() => {
-        const hellhoundDamage = state.player.hellhound.damage || 2;
-        state.currentEnemy.health -= hellhoundDamage;
-        logMessage(`🔥 Dein Teufelshund greift an und verursacht ${hellhoundDamage} Schaden!`, 'enemy');
+            // 🔥 HÖLLENHUND → jetzt immer separat prüfen!
+            if (state.player.hellhound) {
+                setTimeout(() => {
+                    const hellhoundDamage = state.player.hellhound.damage || 2;
+                    state.currentEnemy.health -= hellhoundDamage;
+                    logMessage(`🔥 Dein Teufelshund greift an und verursacht ${hellhoundDamage} Schaden!`, 'enemy');
 
-        const hellhoundImage = document.querySelector('#petContainer img[src*="hellhound"]');
-        if (hellhoundImage) {
-            hellhoundImage.classList.add('wobble');
-            setTimeout(() => hellhoundImage.classList.remove('wobble'), 300);
-        }
+                    const hellhoundImage = document.querySelector('#petContainer img[src*="hellhound"]');
+                    if (hellhoundImage) {
+                        hellhoundImage.classList.add('wobble');
+                        setTimeout(() => hellhoundImage.classList.remove('wobble'), 300);
+                    }
 
-        updateEnemyUI();
-        if (state.currentEnemy.health <= 0) {
-            checkEnemyDefeat();
-        }
-    }, 300); // etwas nach dem Pet
-}
+                    updateEnemyUI();
+                    if (state.currentEnemy.health <= 0) {
+                        checkEnemyDefeat();
+                    }
+                }, 300); // etwas nach dem Pet
+            }
 
 
             // Zähler zurücksetzen
@@ -4335,11 +4330,13 @@ if (state.player.hellhound) {
         state.defeatedEnemies++;
 
         // 🕰 Zeitklingenpassiv: alle 5 Kills → +1 Damage Bonus
-        state.player.zeitklingeKills += 1;
+        if (playerInventory.has('zeitklinge')) {
+            state.player.zeitklingeKills += 1;
 
-        if (state.player.zeitklingeKills % 5 === 0 && state.player.zeitklingeBonus < 13) {
-            state.player.zeitklingeBonus++;
-            logMessage(`🕰 Zeitklinge-Buff: +1 permanenter Schaden! (gesamt ${state.player.zeitklingeBonus})`, 'buff');
+            if (state.player.zeitklingeKills % 5 === 0 && state.player.zeitklingeBonus < 13) {
+                state.player.zeitklingeBonus++;
+                logMessage(`🕰 Zeitklinge-Buff: +1 permanenter Schaden! (gesamt ${state.player.zeitklingeBonus})`, 'buff');
+            }
         }
 
         // 💎 Gems check direkt hier:
