@@ -1713,6 +1713,18 @@ h2 {
         50%  { transform: scale(1.08); }
         100% { transform: scale(1); }
         }
+        .mana-display {
+            color: #42a5f5; /* normales Blau */
+            transition: color 0.3s ease;
+        }
+
+        .mana-display.penalty {
+            color: #ef5350; /* rot bei Vision-Effekt */
+        }
+        .card.vision-penalty {
+            border: 2px solid #e53935;
+        }
+
 
     </style>
 </head>
@@ -1928,6 +1940,7 @@ h2 {
                 'Eiskönig': IMAGE_FOLDER + 'Eiskönig.png', // Umlaut vermieden
                 'Erzengel': IMAGE_FOLDER + 'Erzengel.png',
                 'Dracula': IMAGE_FOLDER + 'Drakula.png',
+                'Alchemie Kobold': IMAGE_FOLDER + 'alchemie.png',
                 'Drache': IMAGE_FOLDER + 'Drache.png',
                 'Verfluchter Ritter': IMAGE_FOLDER + 'CursedKnight.png',
                 'Gepanzertes Skelett': IMAGE_FOLDER + 'armorskelett.png',
@@ -1955,7 +1968,7 @@ h2 {
         // --- Gegnertypen ---
         const ENEMY_TYPES = [
             // ... (deine Gegnertypen bleiben hier unverändert) ...
-                { name: 'Goblin', health: 20, attack: 5, levelMin: 1, levelMax: 5, xp: 35, gold: 60, pixelImageKey: 'Goblin', gemChance: 1, description: 'Ein kleiner, flinker Goblin.', traits: ['Rachsüchtig'] },
+                { name: 'Goblin', health: 20, attack: 5, levelMin: 1, levelMax: 5, xp: 35, gold: 60, pixelImageKey: 'Goblin', gemChance: 1, description: 'Ein kleiner, flinker Goblin.', traits: ['Keine Fähigkeit'] },
                 { name: 'Gepanzertes Skelett', health: 25, attack: 4, levelMin: 2, levelMax: 6, xp: 55, gold: 75, pixelImageKey: 'Gepanzertes Skelett', gemChance: 2, description: 'Ein ehmaliger stolzer Krieger.', traits: ['Rüstung'] },
                 { name: 'Ork', health: 35, attack: 5, levelMin: 3, levelMax: 7, xp: 60, gold: 65, pixelImageKey: 'Ork', gemChance: 4, description: 'Ein brutaler Ork-Krieger.', traits: ['Stark'] },
                 { name: 'Riesen Spinne', health: 40, attack: 6, levelMin: 4, levelMax: 7, xp: 65, gold: 80, pixelImageKey: 'Riesen Spinne', gemChance: 4, description: 'Spuckt lähmendes Gift.', traits: ['Giftig'] }, // 'Netzwerfer' Effekt muss implementiert werden
@@ -1963,19 +1976,21 @@ h2 {
                 { name: 'Donnerschlange', health: 45, attack: 11, levelMin: 6, levelMax: 10, xp: 120, gold: 105, pixelImageKey: 'Donnerschlange', gemChance: 5, description: 'Eine lähmende Donnerschlange', traits: ['Statisch'] },
                 { name: 'Nekromant', health: 50, attack: 7, levelMin: 8, levelMax: 12, xp: 80, gold: 120, pixelImageKey: 'Nekromant', gemChance: 6, description: 'Schwächt dich oder ruft Diener.', traits: ['Untotenbeschwörer'] }, // Effekte müssen implementiert werden
                 { name: 'Eiskönig', health: 65, attack: 10, levelMin: 9, levelMax: 13, xp: 100, gold: 130, pixelImageKey: 'Eiskönig', gemChance: 6, description: 'Verlangsamt dich mit Kälte.', traits: ['Eis-Elementar', 'Frost-Aura'] }, // Effekte müssen implementiert werden
-                { name: 'Baby Drache', health: 60, attack: 12, levelMin: 10, levelMax: 14, xp: 120, gold: 150, pixelImageKey: 'Baby Drache', gemChance: 7, description: 'Speit Feuerstöße.', traits: ['Verspielt', 'Feueratem'] }, // Effekte müssen implementiert werden
-                { name: 'Charged Golem', health: 75, attack: 11, levelMin: 11, levelMax: 15, xp: 170, gold: 160, pixelImageKey: 'Charged Golem', gemChance: 7, description: 'Mächtiger Elementar Golem.', traits: ['Statisch', 'Regeneration'], regen: 3 }, // Effekte müssen implementiert werden
-                { name: 'Dracula', health: 65, attack: 10, levelMin: 12, levelMax: 16, xp: 190, gold: 180, pixelImageKey: 'Dracula', gemChance: 8, description: 'Dein Blut macht ihn stärker.', traits: ['Vamp', 'Stark'] }, // Effekte müssen implementiert werden
-                { name: 'Dämon', health: 75, attack: 12, levelMin: 13, levelMax: 18, xp: 280, gold: 210, pixelImageKey: 'Dämon', gemChance: 9, description: 'Feuer und Schatten. Resistent.', traits: ['Höllen Krallen'] }, // Effekte müssen implementiert werden
-                { name: 'Verfluchter Ritter', health: 75, attack: 9, levelMin: 14, levelMax: 18, xp: 360, gold: 250, pixelImageKey: 'Verfluchter Ritter', gemChance: 10, description: 'Ein wandelnde Geisterrüstung', traits: ['Rüstung', 'Krieger']}, // Effekte müssen implementiert werden
-                { name: 'Erzengel', health: 90, attack: 12, levelMin: 15, levelMax: 19, xp: 400, gold: 300, pixelImageKey: 'Erzengel', gemChance: 10, description: 'Ein mächtiger gefallener Engel.', traits: ['Segen', 'Fliegend'] }, // Effekte müssen implementiert werden
-                { name: 'Gargoyle', health: 95, attack: 14, levelMin: 16, levelMax: 20, xp: 450, gold: 340, pixelImageKey: 'Gargoyle', gemChance: 11, description: 'Einst da um die Menschen zu beschützen. Jetzt ein unbändiges Monster', traits: ['Gepanzerte Schuppen'] }, 
-                { name: 'Drache', health: 110, attack: 16, levelMin: 17, levelMax: 21, xp: 650, gold: 430, pixelImageKey: 'Drache', gemChance: 12, description: 'Ein mächtiger, alter Drache.', traits: ['Feueratem', 'Fliegend', 'Gepanzerte Schuppen'] }, 
-                { name: 'Teufel', health: 70, attack: 5, levelMin: 18, levelMax: 23, xp: 750, gold: 480, pixelImageKey: 'Teufel', gemChance: 13, description: 'Der Herrscher der Unterwelt.', traits: ['Höllenwache'] },
-                { name: 'Spinnenkönigin', health: 100, attack: 12, levelMin: 19, levelMax: 25, xp: 750, gold: 540, pixelImageKey: 'Spinnenkönigin', gemChance: 14, description: 'Eine Spinne die selbst der Teufel fürchtet.', traits: ['Stark', 'Giftig'] },
-                { name: 'Rainbow', health: 110, attack: 10, levelMin: 20, levelMax: 26, xp: 900, gold: 600, pixelImageKey: 'Rainbow', gemChance: 15, description: 'Meister über alle Elemente', traits: ['Frost-Aura', 'Giftig', 'Feueratem', 'Statisch'] },
-                { name: 'Yokai', health: 100, attack: 15, levelMin: 21, levelMax: 27, xp: 1100, gold: 650, pixelImageKey: 'Yokai', gemChance: 16, description: 'Ein hochrangiger fliegender Yokai-Demon', traits: ['Fliegend', 'Höllenkrallen','Untotenbeschwörer'] },
-                { name: 'Yagdril', health: 130, attack: 27, levelMin: 22, levelMax: 100, xp: 1300, gold: 720, pixelImageKey: 'Yagdril', gemChance: 17, description: 'Ein Wesen dessen Macht unbeschreiblich ist', traits: ['Fliegend', 'Segen'] },
+                { name: 'Alchemie Kobold', health: 60, attack: 13, levelMin: 10, levelMax: 15, xp: 110, gold: 140, pixelImageKey: 'Alchemie Kobold', gemChance: 7, description: 'Der Albtraum jeder Medizin (fast jeder).', traits: ['Antiheal'] }, // Effekte müssen implementiert werden
+                { name: 'Baby Drache', health: 65, attack: 13, levelMin: 11, levelMax: 15, xp: 130, gold: 170, pixelImageKey: 'Baby Drache', gemChance: 7, description: 'Speit Feuerstöße.', traits: ['Verspielt', 'Feueratem'] }, // Effekte müssen implementiert werden
+                { name: 'Charged Golem', health: 75, attack: 12, levelMin: 12, levelMax: 16, xp: 170, gold: 180, pixelImageKey: 'Charged Golem', gemChance: 7, description: 'Mächtiger Elementar Golem.', traits: ['Statisch', 'Regeneration'], regen: 3 }, // Effekte müssen implementiert werden
+                { name: 'Dracula', health: 65, attack: 10, levelMin: 13, levelMax: 17, xp: 190, gold: 190, pixelImageKey: 'Dracula', gemChance: 8, description: 'Dein Blut macht ihn stärker.', traits: ['Vamp', 'Stark'] }, // Effekte müssen implementiert werden
+                { name: 'Dämon', health: 75, attack: 13, levelMin: 14, levelMax: 18, xp: 280, gold: 210, pixelImageKey: 'Dämon', gemChance: 9, description: 'Feuer und Schatten. Resistent.', traits: ['Höllen Krallen'] }, // Effekte müssen implementiert werden
+                { name: 'Verfluchter Ritter', health: 75, attack: 10, levelMin: 15, levelMax: 19, xp: 360, gold: 250, pixelImageKey: 'Verfluchter Ritter', gemChance: 10, description: 'Ein wandelnde Geisterrüstung', traits: ['Rüstung', 'Krieger']}, // Effekte müssen implementiert werden
+                { name: 'Erzengel', health: 90, attack: 13, levelMin: 16, levelMax: 20, xp: 400, gold: 300, pixelImageKey: 'Erzengel', gemChance: 10, description: 'Ein mächtiger gefallener Engel.', traits: ['Segen', 'Fliegend'] }, // Effekte müssen implementiert werden
+                { name: 'Gargoyle', health: 90, attack: 13, levelMin: 17, levelMax: 21, xp: 450, gold: 320, pixelImageKey: 'Gargoyle', gemChance: 11, description: 'Einst da um die Menschen zu beschützen. Jetzt ein unbändiges Monster', traits: ['Gepanzerte Schuppen', 'Vision'] }, 
+                { name: 'Drache', health: 110, attack: 16, levelMin: 18, levelMax: 22, xp: 650, gold: 330, pixelImageKey: 'Drache', gemChance: 12, description: 'Ein mächtiger, alter Drache.', traits: ['Feueratem', 'Fliegend', 'Gepanzerte Schuppen'] }, 
+                { name: 'Teufel', health: 70, attack: 7, levelMin: 19, levelMax: 24, xp: 750, gold: 380, pixelImageKey: 'Teufel', gemChance: 13, description: 'Der Herrscher der Unterwelt.', traits: ['Höllenwache'] },
+                { name: 'Spinnenkönigin', health: 100, attack: 14, levelMin: 20, levelMax: 25, xp: 750, gold: 390, pixelImageKey: 'Spinnenkönigin', gemChance: 14, description: 'Eine Spinne die selbst der Teufel fürchtet.', traits: ['Antiheal', 'Giftig'] },
+                { name: 'Rainbow', health: 110, attack: 13, levelMin: 21, levelMax: 26, xp: 900, gold: 400, pixelImageKey: 'Rainbow', gemChance: 16, description: 'Meister über alle Elemente', traits: ['Frost-Aura', 'Giftig', 'Feueratem', 'Statisch'] },
+                { name: 'Yokai', health: 100, attack: 16, levelMin: 22, levelMax: 28, xp: 1100, gold: 450, pixelImageKey: 'Yokai', gemChance: 16, description: 'Ein hochrangiger fliegender Yokai-Demon', traits: ['Fliegend', 'Höllenkrallen','Untotenbeschwörer'] },
+                { name: 'Yagdril', health: 130, attack: 27, levelMin: 23, levelMax: 100, xp: 1200, gold: 500, pixelImageKey: 'Yagdril', gemChance: 18, description: 'Ein Wesen dessen Macht unbeschreiblich ist', traits: ['Fliegend', 'Segen'] },
+                { name: 'Leviathan', health: 150, attack: 20, levelMin: 24, levelMax: 100, xp: 1300, gold: 520, pixelImageKey: 'Leviathan', gemChance: 23, description: 'Das Symbol des Schreckens', traits: ['Antiheal', 'Vision'] },
         ];
     
         // --- Upgrade-Typen ---
@@ -1989,7 +2004,7 @@ h2 {
                  { type: 'upgradeMana', title: 'Max Mana +1', description: 'Erhöhe dein maximales Mana um 1.', rarity: 'rare' }, // Seltener
                  { type: 'swapCard', title: 'Kartentausch', description: 'Lösche eine Karte aus deinem Deck und wähle eine neue.', rarity: 'rare' }, 
                  { type: 'increaseHandSize', title: 'Handgröße +1', description: 'Du kannst 1 Karte mehr halten.', rarity: 'rare' },
-                 { type: 'addLifestealFlat', title: 'Lebensraub +1', description: 'Du bekommst 15% Lifesteal.', rarity: 'rare' }, // Geändert zu festem Wert pro Schadenspunkt
+                 { type: 'addLifestealFlat', title: 'Lebensraub +1', description: 'Du bekommst 20% Lifesteal.', rarity: 'rare' }, // Geändert zu festem Wert pro Schadenspunkt
                  { type: 'regenManaPassive', title: 'Mana-Regen +1', description: 'Du erhältst pro Runde +1 zusätzliches Mana zurück.', rarity: 'rare' },
                  { type: 'regenManaPassive3', title: 'Mana-Regen +3', description: 'Du erhältst pro Runde +3 zusätzliches Mana zurück.', rarity: 'superrare' },
                  { type: 'newUltraCardSpecific', title: 'Eine Ultra Karte wählen', description: 'Wähle 1 von 3 Ultra Karten.', rarity: 'superrare' }, // Komplexer zu implementieren
@@ -2299,7 +2314,8 @@ function initGame() {
             statusEffects: [],
             swordBonus: 0,
             zeitklingeKills: 0,
-            zeitklingeBonus: 0
+            zeitklingeBonus: 0,
+            tempManaCostPenalty: 0
         },
         currentEnemy: null,
         gameOver: false,
@@ -2405,46 +2421,61 @@ function initGame() {
 
         // Aktualisiert alle allgemeinen UI-Anzeigen (Stats, Runde etc.)
         function updateUIDisplay() {
-            // Spieler Stats
+            // 🩸 Gesundheit
             playerHealthElem.textContent = state.player.health;
             playerMaxHealthElem.textContent = state.player.maxHealth;
-            playerHealthBarElem.style.width = `${Math.max(0, (state.player.health / state.player.maxHealth)) * 100}%`; // Verhindert negative Breite
-    
+            playerHealthBarElem.style.width = `${Math.max(0, (state.player.health / state.player.maxHealth)) * 100}%`;
+
+            // 🔷 Mana
             playerManaElem.textContent = state.player.mana;
             playerMaxManaElem.textContent = state.player.maxMana;
             playerMaxManaDisplayElem.textContent = state.player.maxMana;
-            // Korrektur: .mana-fill Element direkt ansprechen
+
             const manaFill = playerManaBarElem;
-             if (manaFill) { // Sicherstellen, dass das Element gefunden wurde
-                manaFill.style.width = `${state.player.maxMana > 0 ? (state.player.mana / state.player.maxMana) * 100 : 0}%`;
-             } else {
-                 console.error("Mana-Fill Element nicht gefunden in #playerManaBar!");
-             }
-    
-    
+            if (manaFill) {
+                const manaPercent = state.player.maxMana > 0 ? (state.player.mana / state.player.maxMana) * 100 : 0;
+                manaFill.style.width = `${manaPercent}%`;
+
+                // 🌡️ Färbung: rot wenn Karten teurer sind (z. B. Vision)
+                if (state.player.tempManaCostPenalty > 0) {
+                    console.log("ManaPenalty ist", state.player.tempManaCostPenalty);
+                    manaFill.style.backgroundColor = '#e53935'; // rot
+                } else {
+                    manaFill.style.backgroundColor = '#42a5f5'; // normal blau
+                }
+            } else {
+                console.error("❗ Mana-Fill Element (#playerManaBar) nicht gefunden.");
+            }
+
+            // 🛡️ Block, Level, XP
             playerBlockElem.textContent = state.player.block;
             playerLevelElem.textContent = state.player.level;
-            playerXPElem.textContent = state.player.xp;
-            xpToNextLevelElem.textContent = state.player.xpToNextLevel;
+            playerXPElem.textContent = state.player.xp.toLocaleString();
+            xpToNextLevelElem.textContent = state.player.xpToNextLevel.toLocaleString();
+
+            // 🧛 Lebensraub-Anzeige
             playerLifestealDisplayElem.textContent = state.player.lifestealFlat;
-            document.getElementById('playerGoldDisplay').textContent = state.player.gold;
-    
-            // Handgrößenanzeige
+
+            // 💰 Gold
+            document.getElementById('playerGoldDisplay').textContent = state.player.gold.toLocaleString();
+
+            // 🎴 Handgröße
             currentHandSizeElem.textContent = state.player.hand.length;
             maxHandSizeDisplayElem.textContent = state.player.maxHandSize;
             maxHandSizeDisplayElem2.textContent = state.player.maxHandSize;
-    
-            // Allgemeine Spielinfo
+
+            // 📊 Runde, Highscore
             roundElem.textContent = state.round;
             defeatedEnemiesElem.textContent = state.defeatedEnemies;
-            highScoreDisplayElem.textContent = state.highScore;
-    
-            // Kartenverfügbarkeit prüfen (wegen Mana)
+            highScoreDisplayElem.textContent = state.highScore.toLocaleString();
+
+            // 🃏 Kartenverfügbarkeit aktualisieren (abhängig von Mana etc.)
             updateCardAvailability();
 
+            // ☠️ Status-Effekte anzeigen
             updatePlayerStatusDisplay();
-
         }
+
 
         function updatePlayerStatusDisplay() {
                 const container = document.getElementById('playerStatusDisplay');
@@ -2479,6 +2510,12 @@ function initGame() {
                                 icon = '⚡';
                                 span.style.color = '#ffeb3b'; // Gelb
                                 span.textContent = `${icon} (${effect.duration})`;
+                                break;
+
+                            case 'antiheal':
+                                icon = '❌';
+                                span.style.color = '#6a1b9a'; // Dunkellila
+                                span.textContent = `${icon} Anti Heal`;
                                 break;
 
                             default:
@@ -2518,6 +2555,8 @@ function initGame() {
                 switch (type) {
                     case 'poison':
                         return `Vergiftung: Verliert ${power} Leben pro Runde. (${duration} Runden)`;
+                    case 'antiheal':
+                        return `Heilung blockiert!)`;
                     case 'burn':
                         return `Verbrennung: Verliert ${power} Leben pro Runde. (${duration} Runden)`;
                     case 'paralyze':
@@ -2583,7 +2622,9 @@ function initGame() {
                 'Vamp': 'Heilt sich um 50% des verursachten Schadens',
                 'Krieger': 'Ein erfahrener Krieger trifft auch manchmal doppelt',
                 'Statisch': 'Angriffe Paralysieren dich zu 45% (Paraylse = 2 Karte nur Spielbar)',
-                'Höllenwache': 'Beschwört einen sehr starken Höllenhund'
+                'Höllenwache': 'Beschwört einen sehr starken Höllenhund',
+                'Antiheal': 'Vehindert jegliche Heilung (Ausgenommen: Lotus Trank)',
+                'Vision': 'Erhöht deine Manakosten um 1'
             };
 
             monsterTraitsElem.innerHTML = '';
@@ -2708,6 +2749,11 @@ function createCardElement(card) {
     cardDiv.classList.add('card', 'card-animation');
     cardDiv.dataset.uniqueId = card.uniqueId;
 
+    if (getEffectiveManaCost(card) > card.manaCost) {
+    cardDiv.classList.add('vision-penalty');
+}
+
+
     if (card.rarity === 'rare') cardDiv.classList.add('rare');
     if (card.rarity === 'superrare') cardDiv.classList.add('superrare');
 
@@ -2777,7 +2823,7 @@ function createCardElement(card) {
     }
 
     cardDiv.innerHTML = `
-        <div class="card-mana">${card.manaCost === 'X' ? 'X' : card.manaCost}</div>
+            <div class="card-mana">${getEffectiveManaCost(card)}</div>
         <div class="card-name">${card.name}</div>
             <div class="card-icon">
             ${card.icon.endsWith('.png') 
@@ -2801,6 +2847,21 @@ function createCardElement(card) {
 }
 
 
+function getEffectiveManaCost(card, forDisplay = false) {
+    if (card.manaCost === 'X') {
+        // Kraft Sammeln zeigt immer "X" an, zählt aber intern als 1
+        return forDisplay ? 'X' : 1;
+    }
+
+    let cost = typeof card.manaCost === 'number' ? card.manaCost : parseInt(card.manaCost) || 0;
+
+    if (!forDisplay) {
+        cost += state.player.tempManaCostPenalty || 0;
+    }
+
+    return cost;
+}
+
 
     
         // Aktualisiert den 'disabled'-Status der Karten basierend auf Manakosten
@@ -2811,17 +2872,7 @@ function createCardElement(card) {
                 const card = state.player.hand.find(c => c.uniqueId == cardElem.dataset.uniqueId);
                 if (!card) return;
 
-                // "Kraft Sammeln" = Spezialfall mit X -> zählt als 1 Mana
-                let manaCost = 0;
-                if (card.manaCost === 'X') {
-                    manaCost = 1;
-                } else if (typeof card.manaCost === 'number') {
-                    manaCost = card.manaCost;
-                } else if (!isNaN(parseInt(card.manaCost))) {
-                    manaCost = parseInt(card.manaCost);
-                } else {
-                    manaCost = 0; // Fallback falls gar nichts angegeben ist
-                }
+                let manaCost = getEffectiveManaCost(card);
 
                 const hasEnoughMana = state.player.mana >= manaCost;
                 const shouldDisable = (manaCost > 0 && !hasEnoughMana) || state.player.frozen;
@@ -2886,7 +2937,7 @@ function createCardElement(card) {
         function getPetDescription(effect) {
                 switch (effect) {
                     case 'gawa':
-                        return 'Macht 4 extra Schaden.';
+                        return 'Macht 5 extra Schaden.';
                     case 'lulu':
                         return '2 Schaden, +1 Mana Regeneration';
                     case 'cassa':
@@ -2923,13 +2974,25 @@ function createCardElement(card) {
                  minions: [],
                  block: 0 
              };
-             
-    
+
+
+            // Vision-Effekt setzen oder entfernen
+if (enemyTemplate.traits?.includes('Vision')) {
+    state.player.tempManaCostPenalty = 1;
+    logMessage(`👁️ Vision: Deine Handkarten kosten in dieser Runde +1 Mana!`, 'debuff');
+} else if (!state.player.frozen) {
+    state.player.tempManaCostPenalty = 0;
+}
+
+
+        
             console.log("Gegner geladen:", state.currentEnemy.name);
             enemyContainerElem.classList.remove('defeat', 'hit'); // Animation-Klassen zurücksetzen
             enemyContainerElem.style.opacity = 1;
             enemyContainerElem.style.transform = 'none';
             updateEnemyUI(); // Anzeige aktualisieren
+            updateHandUI();
+            updateUIDisplay(); // damit wird die rote Farbe bei Vision sofort angezeigt
         }
 
 
@@ -2970,8 +3033,19 @@ function createCardElement(card) {
 
     
         // --- Platzhalter für weitere Spiellogik (wird später benötigt) ---
-    
-        function playCard(uniqueCardId) {
+function getEffectiveManaCost(card) {
+    // Falls es eine "X"-Kostenkarte ist, nicht beeinflussen
+    if (card.manaCost === 'X') return 'X';
+
+    let cost = card.manaCost;
+    if (state.player.tempManaCostPenalty) {
+        cost += state.player.tempManaCostPenalty;
+    }
+    return cost;
+}
+
+
+ function playCard(uniqueCardId) {
     if (state.gameOver || state.turnInProgress) return;
 
     const paralyzeEffect = state.player.statusEffects?.find(e => e.type === 'paralyze');
@@ -2987,8 +3061,15 @@ function createCardElement(card) {
     }
     const card = state.player.hand[cardIndex];
 
-    const isPowerSurge = card.name === 'Kraft Sammeln';
-    const requiredMana = card.manaCost === 'X' ? 1 : card.manaCost;
+        const isPowerSurge = card.name === 'Kraft Sammeln';
+
+        let requiredMana;
+        if (isPowerSurge) {
+            requiredMana = 1; // Fix für Kraft Sammeln
+        } else {
+            requiredMana = getEffectiveManaCost(card); // Funktion berücksichtigt Vision
+        }
+
 
     if (requiredMana > 0 && state.player.mana < requiredMana) {
         logMessage(`Nicht genug Mana für ${card.name}! (${requiredMana} benötigt)`, 'player');
@@ -3061,6 +3142,43 @@ function createCardElement(card) {
     }, 400);
 }
 
+  //Zentrale lifesteal funktion
+const applyLifesteal = (damageDealt) => {
+    if (!damageDealt || damageDealt <= 0) return;
+
+    if (state.player.hasAntiHeal) {
+        logMessage(`❌ Lebensraub wird durch Anti-Heilung blockiert!`, 'debuff');
+        return;
+    }
+
+    const maxHealable = state.player.maxHealth - state.player.health;
+    if (maxHealable <= 0) return;
+
+    const percent = state.player.lifestealPercent || 0;
+    const flatRatio = state.player.lifestealFlat || 0;
+
+    const healFromPercent = Math.floor(damageDealt * percent);
+    
+    let healFromFlat = Math.floor(damageDealt * flatRatio);
+    if (flatRatio > 0 && damageDealt > 0 && healFromFlat < 1) {
+        healFromFlat = 1; // 🩸 Immer mindestens 1 heilen bei Flat
+    }
+
+    const totalHeal = Math.min(healFromPercent + healFromFlat, maxHealable);
+
+    if (totalHeal > 0) {
+        state.player.health += totalHeal;
+
+        const parts = [];
+        if (healFromPercent > 0) parts.push(`${healFromPercent} (${Math.round(percent * 100)} %)`);
+        if (healFromFlat > 0) parts.push(`${healFromFlat} (Flat)`);
+
+        logMessage(`🩸 Lebensraub heilt dich um ${totalHeal} Leben (${parts.join(' + ')}).`, 'lifesteal');
+    }
+};
+
+
+
 
 // Refactored playSingleEffect for Fusion Effects
 function playSingleEffect(effect, power, card) {
@@ -3081,18 +3199,6 @@ function playSingleEffect(effect, power, card) {
     const hitAnimation = () => {
         enemyContainerElem.classList.add('hit');
         setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
-    };
-
-    const applyLifesteal = (amount) => {
-        const percent = state.player.lifestealPercent || 0;
-        if (percent > 0 && amount > 0) {
-            const heal = Math.floor(amount * percent);
-            const effectiveHeal = Math.min(heal, state.player.maxHealth - state.player.health);
-            if (effectiveHeal > 0) {
-                state.player.health += effectiveHeal;
-                logMessage(`🧛 Du absorbierst ${effectiveHeal} Leben durch ${Math.round(percent * 100)} % Lebensraub.`, 'lifesteal');
-            }
-        }
     };
 
     const applyDragonscale = () => {
@@ -3158,21 +3264,22 @@ function playSingleEffect(effect, power, card) {
             applyStatusEffect(enemy, effect, power);
             break;
 
-        case 'lifesteal': {
-            const block = Math.min(enemy.block || 0, remaining);
-            if (block > 0) {
-                enemy.block -= block;
-                logMessage(`${enemy.name} blockt ${block} Schaden.`, 'block');
+            case 'lifesteal': {
+                const block = Math.min(enemy.block || 0, remaining);
+                if (block > 0) {
+                    enemy.block -= block;
+                    logMessage(`${enemy.name} blockt ${block} Schaden.`, 'block');
+                }
+                const dmg = remaining - block;
+
+                if (dmg > 0) {
+                    enemy.health -= dmg;
+                    // ❌ Anti-Heal wird in applyLifesteal geprüft
+                    applyLifesteal(dmg);
+                }
+                hitAnimation();
+                break;
             }
-            const dmg = remaining - block;
-            if (dmg > 0) {
-                enemy.health -= dmg;
-                state.player.health += Math.min(dmg, state.player.maxHealth - state.player.health);
-                logMessage(`🧛 Du stiehlst ${dmg} Leben.`, 'lifesteal');
-            }
-            hitAnimation();
-            break;
-        }
 
         case 'draw':
             drawCards(remaining);
@@ -3192,11 +3299,16 @@ function playSingleEffect(effect, power, card) {
             break;
 
         case 'heal': {
+            if (state.player.hasAntiHeal) {
+                logMessage(`❌ Deine Heilung wird durch Anti-Heilung blockiert!`, 'debuff');
+                break;
+            }
             const heal = Math.min(remaining, state.player.maxHealth - state.player.health);
             state.player.health += heal;
             logMessage(`❤️ Du heilst ${heal} Leben.`, 'heal');
             break;
         }
+
 
         case 'multi_hit': {
             const hits = card.minHits && card.hits
@@ -3337,20 +3449,9 @@ function executeCardEffect(card) {
                                 if (state.player.hasDragonscale) {
                 const target = state.currentEnemy.minions?.[0] || state.currentEnemy;
                 applyDragonScaleBurn(target);
-            }
-                
-            // Prozentualer Lifesteal (aus Upgrade)
-            const lifestealPercent = state.player.lifestealPercent || 0;
-                let damageDealt = netDamage;
-                if (lifestealPercent > 0 && damageDealt > 0) {
-                    const rawHeal = Math.floor(damageDealt * lifestealPercent);
-                    const effectiveHeal = Math.min(rawHeal, state.player.maxHealth - state.player.health);
+            }            
+               applyLifesteal(netDamage);
 
-                    if (effectiveHeal > 0) {
-                        state.player.health += effectiveHeal;
-                        logMessage(`🧛 Du absorbierst ${effectiveHeal} Leben durch ${Math.round(lifestealPercent * 100)} % Lebensraub.`, 'lifesteal');
-                    }
-                }
             break;
                 }
         case 'damage_selfhit': {
@@ -3383,19 +3484,8 @@ function executeCardEffect(card) {
                 applyDragonScaleBurn(target);
             }
                 
-            // Prozentualer Lifesteal (aus Upgrade)
-            const lifestealPercent = state.player.lifestealPercent || 0;
-            let damageDealt = finalDamage;
+                applyLifesteal(finalDamage);
 
-                if (lifestealPercent > 0 && damageDealt > 0) {
-                    const rawHeal = Math.floor(damageDealt * lifestealPercent);
-                    const effectiveHeal = Math.min(rawHeal, state.player.maxHealth - state.player.health);
-
-                    if (effectiveHeal > 0) {
-                        state.player.health += effectiveHeal;
-                        logMessage(`🧛 Du absorbierst ${effectiveHeal} Leben durch ${Math.round(lifestealPercent * 100)} % Lebensraub.`, 'lifesteal');
-                    }
-                }
                 break;
             }
                 case 'paralyze': {
@@ -3480,18 +3570,7 @@ function executeCardEffect(card) {
                 applyDragonScaleBurn(target);
             }
 
-            // 🧛 Lifesteal
-            const lifestealPercent = state.player.lifestealPercent || 0;
-            if (lifestealPercent > 0 && damageDealt > 0) {
-                const rawHeal = Math.floor(damageDealt * lifestealPercent);
-                const effectiveHeal = Math.min(rawHeal, state.player.maxHealth - state.player.health);
-
-                if (effectiveHeal > 0) {
-                    state.player.health += effectiveHeal;
-                    logMessage(`🧛 Du absorbierst ${effectiveHeal} Leben durch ${Math.round(lifestealPercent * 100)} % Lebensraub.`, 'lifesteal');
-                }
-            }
-
+                applyLifesteal(damageDealt);
             break;
         }
         case 'power_surge': {
@@ -3536,23 +3615,25 @@ function executeCardEffect(card) {
                  damageDealt += critBonus;
                  logMessage(`💥 Kritischer Treffer! Schaden um +${critBonus} erhöht!`, 'player');
                 }            
-            
+           let remainingDamage = 0;
+
             if (state.currentEnemy.minions?.length > 0) {
                 const target = state.currentEnemy.minions[0];
                 target.health -= damageDealt;
+                remainingDamage = damageDealt; // Lifesteal basiert auf tatsächlichem Schaden
                 logMessage(`💀 ${target.name} erleidet ${damageDealt} Schaden.`, 'enemy');
                 if (target.health <= 0) {
                     logMessage(`${target.name} wurde zerstört!`, 'enemy');
                     state.currentEnemy.minions.shift();
                 }
             } else {
-                let blockUsed = Math.min(state.currentEnemy.block || 0, damageDealt);
+                const blockUsed = Math.min(state.currentEnemy.block || 0, damageDealt);
                 if (blockUsed > 0) {
                     state.currentEnemy.block -= blockUsed;
                     logMessage(`${state.currentEnemy.name} blockt ${blockUsed} Schaden.`, 'block');
                 }
 
-                const remainingDamage = damageDealt - blockUsed;
+                remainingDamage = damageDealt - blockUsed;
                 if (remainingDamage > 0) {
                     state.currentEnemy.health -= remainingDamage;
                     logMessage(`${state.currentEnemy.name} erleidet ${remainingDamage} Schaden.`, 'enemy');
@@ -3561,6 +3642,9 @@ function executeCardEffect(card) {
                 }
             }
 
+            applyLifesteal(remainingDamage);  // ✅ funktioniert jetzt korrekt
+
+
 
             // 🔥 Drachenschuppen-Effekt: 100% Chance auf leichte Verbrennung
             if (state.player.hasDragonscale) {
@@ -3568,18 +3652,6 @@ function executeCardEffect(card) {
                 applyDragonScaleBurn(target);
             }
                 
-            // Prozentualer Lifesteal (aus Upgrade)
-            const lifestealPercent = state.player.lifestealPercent || 0;
-
-                if (lifestealPercent > 0 && damageDealt > 0) {
-                    const rawHeal = Math.floor(damageDealt * lifestealPercent);
-                    const effectiveHeal = Math.min(rawHeal, state.player.maxHealth - state.player.health);
-
-                    if (effectiveHeal > 0) {
-                        state.player.health += effectiveHeal;
-                        logMessage(`🧛 Du absorbierst ${effectiveHeal} Leben durch ${Math.round(lifestealPercent * 100)} % Lebensraub.`, 'lifesteal');
-                    }
-                }
 
                 enemyContainerElem.classList.add('hit');
                 setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
@@ -3627,18 +3699,7 @@ function executeCardEffect(card) {
                     applyDragonScaleBurn(target);
                 }
 
-                // 🧛 Lifesteal-Effekt
-                const lifestealPercent = state.player.lifestealPercent || 0;
-                if (lifestealPercent > 0 && damageDealt > 0) {
-                    const rawHeal = Math.floor(damageDealt * lifestealPercent);
-                    const effectiveHeal = Math.min(rawHeal, state.player.maxHealth - state.player.health);
-
-                    if (effectiveHeal > 0) {
-                        state.player.health += effectiveHeal;
-                        logMessage(`🧛 Du absorbierst ${effectiveHeal} Leben durch ${Math.round(lifestealPercent * 100)} % Lebensraub.`, 'lifesteal');
-                    }
-                }
-
+                applyLifesteal(damageDealt);
                 break;
             }
         
@@ -3647,15 +3708,20 @@ function executeCardEffect(card) {
             logMessage(`Spieler erhält ${card.power} Block.`, 'block');
             break;
 
-        case 'heal':
-            const healFromCard = Math.min(card.power, state.player.maxHealth - state.player.health);
-            if (healFromCard > 0) {
-                state.player.health += healFromCard;
-                logMessage(`Spieler heilt ${healFromCard} Leben.`, 'heal');
-            } else {
-                logMessage(`Spieler ist bereits bei vollem Leben.`, 'heal');
-            }
-            break;
+            case 'heal':
+                if (state.player.hasAntiHeal) {
+                    logMessage(`❌ Deine Heilung wird durch Anti-Heilung blockiert!`, 'debuff');
+                    break;
+                }
+
+                const healFromCard = Math.min(card.power, state.player.maxHealth - state.player.health);
+                if (healFromCard > 0) {
+                    state.player.health += healFromCard;
+                    logMessage(`Spieler heilt ${healFromCard} Leben.`, 'heal');
+                } else {
+                    logMessage(`Spieler ist bereits bei vollem Leben.`, 'heal');
+                }
+                break;
         case 'full_heal': {
             const amount = state.player.maxHealth - state.player.health;
             if (amount > 0) {
@@ -3709,38 +3775,43 @@ function executeCardEffect(card) {
                 }
             }
 
-            case 'lifesteal':
-                let rawLifestealDamage = card.power;
+                case 'lifesteal': {
+                    let rawLifestealDamage = card.power;
 
-                // Anwenden aller temporären Schadenboni (Kraft sammeln, Märtyrer, etc.)
-                let lsDamage = applyDamageBonuses(rawLifestealDamage);
+                    // Anwenden aller temporären Schadenboni (Kraft sammeln, Märtyrer, etc.)
+                    let lsDamage = applyDamageBonuses(rawLifestealDamage);
 
-                logMessage(`${state.currentEnemy.name} erleidet ${lsDamage} Schaden.`, 'enemy');
+                    logMessage(`${state.currentEnemy.name} erleidet ${lsDamage} Schaden.`, 'enemy');
 
-                let enemyBlockUsed = Math.min(state.currentEnemy.block || 0, lsDamage);
-                if (enemyBlockUsed > 0) {
-                    state.currentEnemy.block -= enemyBlockUsed;
-                    logMessage(`${state.currentEnemy.name} blockt ${enemyBlockUsed} Schaden.`, 'block');
+                    let enemyBlockUsed = Math.min(state.currentEnemy.block || 0, lsDamage);
+                    if (enemyBlockUsed > 0) {
+                        state.currentEnemy.block -= enemyBlockUsed;
+                        logMessage(`${state.currentEnemy.name} blockt ${enemyBlockUsed} Schaden.`, 'block');
+                    }
+
+                    const remainingDamage = lsDamage - enemyBlockUsed;
+                    if (remainingDamage > 0) {
+                        state.currentEnemy.health -= remainingDamage;
+                    }
+
+                    // Lifesteal der Karte (unabhängig von Upgrade)
+                    if (!state.player.hasAntiHeal) {
+                        const heal = Math.min(card.healAmount || 0, state.player.maxHealth - state.player.health);
+                        if (heal > 0) {
+                            state.player.health += heal;
+                            logMessage(`🧛 Du heilst ${heal} Leben durch Vampirbiss.`, 'lifesteal');
+                        }
+                    } else {
+                        logMessage(`❌ Vampirbiss wird durch Anti-Heilung blockiert.`, 'debuff');
+                    }
+
+
+                    enemyContainerElem.classList.add('hit');
+                    setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
+                    break;
                 }
 
-                const remainingDamage = lsDamage - enemyBlockUsed;
-                if (remainingDamage > 0) {
-                    state.currentEnemy.health -= remainingDamage;
-                }
-
-                // Lifesteal der Karte (direkt, unabhängig von Upgrade)
-                const healFromCardLifesteal = Math.min(card.healAmount || 0, state.player.maxHealth - state.player.health);
-                if (healFromCardLifesteal > 0) {
-                    state.player.health += healFromCardLifesteal;
-                    logMessage(`🧛 Vampirbiss heilt ${healFromCardLifesteal} Leben.`, 'lifesteal');
-                }
-
-                enemyContainerElem.classList.add('hit');
-                setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
-                break;
-
-
-            case 'firearrow':
+                case 'firearrow': {
                     let baseFireDamage = card.power;
 
                     // Doppelter Schaden bei Eis-Gegner
@@ -3765,6 +3836,9 @@ function executeCardEffect(card) {
                     state.currentEnemy.health -= damageAfterBlock;
                     logMessage(`${state.currentEnemy.name} erleidet ${damageAfterBlock} Schaden durch Feuerpfeil.`, 'enemy');
 
+                    // 🧛 Lifesteal (aus Upgrades)
+                    applyLifesteal(damageAfterBlock);
+
                     enemyContainerElem.classList.add('hit');
                     setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
 
@@ -3783,7 +3857,10 @@ function executeCardEffect(card) {
                         }
                         updateEnemyUI();
                     }
+
                     break;
+                }
+
 
 
          case 'gamble':
@@ -3828,6 +3905,13 @@ function executeCardEffect(card) {
             logMessage(`Unbekannter Effekt: ${card.effect}`, 'system');
         }
     }
+
+
+
+
+
+
+
 
 
         function dealDamage(target, amount) {
@@ -4038,6 +4122,16 @@ function executeCardEffect(card) {
                 }
             }
 
+            // ❌ ANTIHEAL – Spieler kann sich 2 Runden nicht heilen
+                if (enemy.traits?.includes('Antiheal')) {
+                    if (state.player.hasAntiHeal) {
+                        state.player.antiHealTurns = 2; // überschreibt oder setzt erneut auf 2
+                    } else {
+                        state.player.hasAntiHeal = true;
+                        state.player.antiHealTurns = 2;
+                        logMessage(`❌ ${enemy.name} belegt dich mit Anti-Heilung! Du kannst dich 2 Runden lang nicht heilen.`, 'debuff');
+                    }
+                }
 
                 // FEUERATEM
                 if (enemy.traits?.includes('Feueratem') && Math.random() < 0.3) {
@@ -4319,6 +4413,7 @@ function executeCardEffect(card) {
             if (state.gameOver) return; // Kein neuer Zug, wenn Spiel vorbei ist
             state.turnInProgress = false;
 
+            
             //Block erst jetzt zurücksetzen
             if (state.player.block > 0) {
                     logMessage(`Block (${state.player.block}) verschwindet.`, 'block');
@@ -4329,7 +4424,12 @@ function executeCardEffect(card) {
                 state.player.block += 5;
                 logMessage('🛡️ Schildmeister: Du erhältst 5 Block.', 'block');
                 }
-
+                
+            if (state.currentEnemy?.traits?.includes('Vision')) {
+                state.player.tempManaCostPenalty = 1;
+            } else {
+                state.player.tempManaCostPenalty = 0;
+            }
             state.currentEnemy.block = 0;
 
                  // RÜSTUNG: 5 Block pro Runde
@@ -4338,15 +4438,30 @@ function executeCardEffect(card) {
                 logMessage(`${state.currentEnemy.name} erhält 5 Block durch Rüstung.`, 'block');
              }
 
-             // ✅ Blutrüstung heilt 2 Leben
-             if (state.player.hasBloodArmor && state.player.health < state.player.maxHealth) {
-                const heal = Math.min(3, state.player.maxHealth - state.player.health);
-                if (heal > 0) {
-                    state.player.health += heal;
-                    logMessage(`🩸 Blutrüstung heilt ${heal} Leben.`, 'heal');
+            // ✅ Blutrüstung heilt 2 Leben
+            if (state.player.hasBloodArmor && state.player.health < state.player.maxHealth) {
+                
+                // ❌ Antiheal blockiert Heilung
+                if (state.player.hasAntiHeal) {
+                    logMessage(`❌ Blutrüstung wird durch Anti-Heilung blockiert!`, 'debuff');
+                } else {
+                    const heal = Math.min(3, state.player.maxHealth - state.player.health);
+                    if (heal > 0) {
+                        state.player.health += heal;
+                        logMessage(`🩸 Blutrüstung heilt ${heal} Leben.`, 'heal');
+                    }
                 }
             }
-    
+
+            //Antiheal
+            if (state.player.hasAntiHeal) {
+                state.player.antiHealTurns--;
+                if (state.player.antiHealTurns <= 0) {
+                    state.player.hasAntiHeal = false;
+                    logMessage(`🩹 Die Anti-Heilung ist verschwunden.`, 'buff');
+                }
+            }
+
              // 1. Mana auffüllen
              const baseRegen = 1;
                 const bonusRegen = state.player.passiveManaRegen || 0;
@@ -4376,7 +4491,7 @@ function executeCardEffect(card) {
 
                 switch (pet.effect) {
                     case 'gawa':
-                        damage = 4;
+                        damage = 5;
                         logText = `🐾 ${pet.name} greift an – ${damage} Schaden.`;
                         break;
                     case 'lulu':
@@ -4452,6 +4567,24 @@ function executeCardEffect(card) {
                 // Entferne abgelaufene Effekte
                 state.player.statusEffects = state.player.statusEffects.filter(e => e.duration > 0);
             }
+            
+
+            // Füge Anti-Heilung als echten Status-Effekt hinzu (bleibt sichtbar, solange aktiv)
+            const antihealEffect = state.player.statusEffects.find(e => e.type === 'antiheal');
+            if (state.player.hasAntiHeal) {
+                if (!antihealEffect) {
+                    state.player.statusEffects.push({
+                        type: 'antiheal',
+                        duration: state.player.antiHealTurns
+                    });
+                } else {
+                    antihealEffect.duration = state.player.antiHealTurns; // aktualisieren
+                }
+            } else {
+                // Anti-Heilung ist nicht mehr aktiv – aus Status-Effekten entfernen
+                state.player.statusEffects = state.player.statusEffects.filter(e => e.type !== 'antiheal');
+            }
+
             updatePlayerStatusDisplay();
     
               // TODO: Spieler-Statuseffekte anwenden (z.B. Gift erleidet Schaden)
@@ -4904,13 +5037,18 @@ function executeCardEffect(card) {
                       state.player.maxHandSize += 1;
                       logMessage(`Maximale Handgröße auf ${state.player.maxHandSize} erhöht.`, 'system');
                       break;
-                case 'addLifestealFlat':
-                        if (!state.player.lifestealPercent) {
-                            state.player.lifestealPercent = 0;
+                  case 'addLifestealFlat': {
+                        if (typeof state.player.lifestealFlat !== 'number') {
+                            state.player.lifestealFlat = 0;
                         }
-                        state.player.lifestealPercent += 0.15;
-                        logMessage(`Lebensraub um 15 % erhöht. Aktuell: ${(state.player.lifestealPercent * 100).toFixed(0)} %`, 'lifesteal');
+
+                        const lifestealIncrease = 0.20;
+                        state.player.lifestealFlat += lifestealIncrease;
+
+                        const display = Math.round(state.player.lifestealFlat * 100);
+                        logMessage(`🧛 Bonus-Lebensraub (Flat) erhöht: +15 %. Aktuell: ${display} %`, 'lifesteal');
                         break;
+                    }
                   case 'gainGoldFixed':
                     state.player.gold += 350;
                     logMessage(`Du erhältst 350 Gold. Aktuell: ${state.player.gold} Gold.`, 'system');

@@ -46,7 +46,7 @@ const SHOP_ITEMS = [
       name: 'Titan Hose',
       cost: 2500,
       description: 'Du erleidest 20 % weniger Schaden.',
-      icon: 'images/titanhose.png',
+      icon: 'images/titan.png',
       effect: 'reduce_damage'
     },
     {
@@ -69,7 +69,7 @@ const SHOP_ITEMS = [
       id: 'pet_gawa',
       name: 'Pet: Gawa',
       cost: 3000,
-      description: '🐾 Gawa greift jeden Zug an und macht 4 Schaden. Kaufst du ein neues wird dein altes Pet ersetzt!',
+      description: '🐾 Gawa greift jeden Zug an und macht 5 Schaden. Kaufst du ein neues wird dein altes Pet ersetzt!',
       icon: 'images/gawa.png',
       effect: 'pet_gawa'
     },
@@ -409,7 +409,7 @@ window.addEventListener('DOMContentLoaded', () => {
   if (state.player.damageReduction) {
   icons.push(`
       <span class="item-icon-wrapper" data-tooltip="Titan Hose: Du erleidest 20 % weniger Schaden.">
-          <img src="images/titanhose.png" alt="Titan Hose" class="item-icon" />
+          <img src="images/titan.png" alt="Titan Hose" class="item-icon" />
       </span>
   `);
 }
