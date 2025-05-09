@@ -41,7 +41,7 @@ const EFFECT_ICONS = {
       name: `${cardA.name}-${cardB.name}`,
       icon: `${cardA.icon}${cardB.icon}`,
       effect: `${cardA.effect}_${cardB.effect}`,
-      manaCost: Math.max(cardA.manaCost || 0, cardB.manaCost || 0) + 2,
+      manaCost: Math.max(cardA.manaCost || 0, cardB.manaCost || 0) + 1,
       power,
       effectDurations: durations,
       rarity: 'fusion',
