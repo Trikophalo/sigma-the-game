@@ -1888,7 +1888,7 @@ h2 {
                  { id: 1, name: 'Schwert', icon: '⚔️', description: 'Ein einfaches Schwert.', power: 5, effect: 'damage', manaCost: 2, weight: 11, tags: ['damage'] },
                  { id: 2, name: 'Schild', icon: '🛡️', description: 'Erhalte 5 Block', power: 5, effect: 'block', manaCost: 2, weight: 1 },
                  { id: 3, name: 'Heilung', icon: '❤️', description: 'Heilt 8 Leben', power: 8, effect: 'heal', manaCost: 3, weight: 1 },
-                 { id: 4, name: 'Gift', icon: '☠️', description: 'Vergiftet (2 Schaden, 3 Rd.) Falls bereit Vergiftet mache 3 Schaden', power: 2, duration: 3, effect: 'poison', manaCost: 1, weight: 1 },
+                 { id: 4, name: 'Gift', icon: '☠️', description: 'Vergiftung (3 Schaden, 3 Rd.)', power: 3, duration: 3, effect: 'poison', manaCost: 1, weight: 1 },
                  { id: 5, name: 'Blitz', icon: '⚡', description: '12 Schaden, Paralysiert Gegner zu 45% (Halbiert den Angriff 2 Runden)', power: 12, effect: 'damage_paralyze', manaCost: 4, weight: 2 },
                  { id: 6, name: 'Großer Schlag', icon: '💥', description: 'Fügt 15 Schaden zu', power: 15, effect: 'damage', manaCost: 4, weight: 2 },
                  { id: 7, name: 'Meditieren', icon: '🧘', description: 'Ziehe 1 Karte', power: 1, effect: 'draw', manaCost: 0, weight: 1 },
@@ -3167,41 +3167,60 @@ function playSingleEffect(effect, power, card) {
             break;
         }
 
-        case 'poison': {
-            const existing = enemy.statusEffects?.find(e => e.type === 'poison');
-            if (existing) {
-                enemy.health -= 4;
-                logMessage(`☠️ Vergiftet – ${enemy.name} nimmt 4 extra Schaden.`, 'enemy');
-            } else {
-                addStatusEffect(enemy, { type: 'poison', damagePerTurn: 4, duration: 3 });
-                logMessage(`☠️ ${enemy.name} ist nun vergiftet (${remaining} für 3 Runden).`, 'effect');
+            case 'poison': {
+                if (
+                    enemy.traits?.includes('Gepanzerte Schuppen') ||
+                    enemy.traits?.includes('Massiv')
+                ) {
+                    logMessage(`${enemy.name} ist immun gegen Vergiftung!`, 'enemy');
+                    break;
+                }
+
+                const existing = enemy.statusEffects?.find(e => e.type === 'poison');
+
+                if (existing) {
+                    existing.power = Math.max(existing.power, power); // Schaden aktualisieren, falls stärker
+                    existing.duration = Math.max(existing.duration, 3); // Dauer resetten
+                    logMessage(`☠️ ${enemy.name} ist bereits vergiftet – Effekt verstärkt/verlängert.`, 'poison');
+                } else {
+                    if (!enemy.statusEffects) enemy.statusEffects = [];
+                    enemy.statusEffects.push({ type: 'poison', power, duration: 3 });
+                    logMessage(`☠️ ${enemy.name} wird vergiftet (${power} Schaden für 3 Runden).`, 'poison');
+                }
+                updateEnemyUI();
+                break;
             }
-            break;
-        }
+            case 'damage_paralyze': {
+                enemy.health -= remaining;
+                logMessage(`⚡ ${enemy.name} erleidet ${remaining} Schaden.`, 'enemy');
 
-        case 'damage_paralyze': {
-            enemy.health -= remaining;
-            logMessage(`⚡ ${enemy.name} erleidet ${remaining} Schaden.`, 'enemy');
+                // Paralyse nur, wenn nicht immun
+                const isImmune = enemy.traits?.includes('Gepanzerte Schuppen');
+                if (!isImmune && Math.random() < 0.45) {
+                    addStatusEffect(enemy, { type: 'paralyze', duration: 2 });
+                    logMessage(`⚡ ${enemy.name} ist paralysiert (Angriff halbiert).`, 'effect');
+                } else if (isImmune) {
+                    logMessage(`⚡ ${enemy.name} ist immun gegen Paralyse!`, 'effect');
+                }
 
-            if (Math.random() < 0.45) {
-                addStatusEffect(enemy, { type: 'paralyze', duration: 2 });
-                logMessage(`⚡ ${enemy.name} ist paralysiert (Angriff halbiert).`, 'effect');
+                hitAnimation();
+                break;
             }
-            hitAnimation();
-            break;
-        }
+            case 'firearrow': {
+                enemy.health -= remaining;
+                logMessage(`🔥 ${enemy.name} erleidet ${remaining} Schaden durch Feuerpfeil.`, 'enemy');
 
-        case 'firearrow': {
-            enemy.health -= remaining;
-            logMessage(`🔥 ${enemy.name} erleidet ${remaining} Schaden durch Feuerpfeil.`, 'enemy');
+                const isImmune = enemy.traits?.includes('Gepanzerte Schuppen');
+                if (!isImmune && Math.random() < 0.5) {
+                    addStatusEffect(enemy, { type: 'burn', power: 5, duration: 2 });
+                    logMessage(`🔥 ${enemy.name} brennt! (5 Schaden für 2 Runden)`, 'effect');
+                } else if (isImmune) {
+                    logMessage(`🔥 ${enemy.name} ist immun gegen Verbrennung!`, 'effect');
+                }
 
-            if (Math.random() < 0.5) {
-                addStatusEffect(enemy, { type: 'burn', damagePerTurn: 5, duration: 2 });
-                logMessage(`🔥 ${enemy.name} brennt! (5 Schaden für 2 Runden)`, 'effect');
+                hitAnimation();
+                break;
             }
-            hitAnimation();
-            break;
-        }
         case 'multi_hit': {
             const hits = card.minHits && card.hits
                 ? getRandomInt(card.minHits, card.hits)
@@ -3336,9 +3355,52 @@ function executeCardEffect(card) {
                 setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
                 break;
             }
-        case 'paralyze':
-                tryApplyParalyze(state.currentEnemy); // 100 % Chance
-                break;
+                case 'paralyze': {
+                    const enemy = state.currentEnemy;
+                    const alreadyParalyzed = enemy.statusEffects?.some(e => e.type === 'paralyze');
+
+                    if (!alreadyParalyzed) {
+                        if (!enemy.statusEffects) enemy.statusEffects = [];
+                        enemy.statusEffects.push({ type: 'paralyze', duration: 2 });
+                        logMessage(`⚡ ${enemy.name} wird paralysiert! (Angriff halbiert)`, 'effect');
+
+                        // ➕ Heilung direkt beim Anwenden
+                        if (state.player.hasElementalLifesteal && enemy.attack > 0) {
+                            const heal = Math.floor(enemy.attack / 2);
+                            state.player.health = Math.min(state.player.maxHealth, state.player.health + heal);
+                            logMessage(`✨ Elementar-Amulett heilt dich um ${heal} Leben durch Paralyse.`, 'heal');
+                        }
+
+                        updateEnemyUI();
+                    } else {
+                        logMessage(`⚡ ${enemy.name} ist bereits paralysiert.`, 'effect');
+                    }
+
+                    break;
+                }
+        case 'poison': {
+                    const enemy = state.currentEnemy;
+
+                    if (enemy.traits?.includes('Gepanzerte Schuppen') || enemy.traits?.includes('Massiv')) {
+                        logMessage(`${enemy.name} ist immun gegen Vergiftung!`, 'enemy');
+                        break;
+                    }
+
+                    const existing = enemy.statusEffects?.find(e => e.type === 'poison');
+
+                    if (existing) {
+                        existing.power = Math.max(existing.power, card.power || 4);
+                        existing.duration = Math.max(existing.duration, 3);
+                        logMessage(`☠️ ${enemy.name} ist bereits vergiftet – Effekt verstärkt/verlängert.`, 'poison');
+                    } else {
+                        if (!enemy.statusEffects) enemy.statusEffects = [];
+                        enemy.statusEffects.push({ type: 'poison', power: card.power || 4, duration: 3 });
+                        logMessage(`☠️ ${enemy.name} wird vergiftet (${card.power || 4} Schaden für 3 Runden).`, 'poison');
+                    }
+
+                    updateEnemyUI();
+                    break;
+                }
         case 'damage_paralyze':
                 dealDamage(state.currentEnemy, card.power);
                 tryApplyParalyze(state.currentEnemy, 0.45); // 45 % Chance
@@ -3533,53 +3595,44 @@ function executeCardEffect(card) {
             state.currentEnemy.statusEffects = [];
                     }
 
-            switch (effectType) {
-                case 'poison':
-                    if (
-                        state.currentEnemy.traits?.includes('Gepanzerte Schuppen') ||
-                        state.currentEnemy.traits?.includes('Massiv')
-                    ) {
-                        logMessage(`${state.currentEnemy.name} ist immun gegen Vergiftung!`, 'enemy');
-                        return; // bricht die ganze Funktion ab
-                    }
-                    applyEnemyStatusEffect('poison');
-                    break;
+switch (effectType) {
+    case 'poison':
+    case 'burn':
+    case 'paralyze': {
+        const immunityTraits = {
+            poison: ['Gepanzerte Schuppen', 'Massiv'],
+            burn: ['Gepanzerte Schuppen'],
+            paralyze: ['Gepanzerte Schuppen']
+        };
 
-                case 'paralyze':
-                    if (state.currentEnemy.traits?.includes('Gepanzerte Schuppen')) {
-                        logMessage(`${state.currentEnemy.name} ist immun gegen Paralyse!`, 'enemy');
-                        return;
-                    }
-                    applyEnemyStatusEffect('paralyze');
-                    break;
+        const immune = immunityTraits[effectType]?.some(trait =>
+            state.currentEnemy.traits?.includes(trait)
+        );
 
-                case 'burn':
-                    if (state.currentEnemy.traits?.includes('Gepanzerte Schuppen')) {
-                        logMessage(`${state.currentEnemy.name} ist immun gegen Verbrennung!`, 'enemy');
-                        return;
-                    }
-                    applyEnemyStatusEffect('burn');
-                    break;
-            }
+        if (immune) {
+            logMessage(`${state.currentEnemy.name} ist immun gegen ${effectType}.`, 'enemy');
+            return;
+        }
 
+        const power = card.power || 4;
+        const duration = card.duration || 3;
 
-            const existingPoison = state.currentEnemy.statusEffects.find(e => e.type === 'poison');
-            if (existingPoison) {
-                const bonusPoisonDamage = 4;
-                state.currentEnemy.health -= bonusPoisonDamage;
-                logMessage(`${state.currentEnemy.name} ist bereits vergiftet – erleidet ${bonusPoisonDamage} zusätzlichen Giftschaden!`, 'poison');
-                enemyContainerElem.classList.add('hit');
-                setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
-            } else {
-                state.currentEnemy.statusEffects.push({
-                    type: 'poison',
-                    power: card.power,
-                    duration: card.duration
-                });
-                logMessage(`${state.currentEnemy.name} wird vergiftet (${card.power} Schaden für ${card.duration} Runden).`, 'poison');
-                updateEnemyUI();
-            }
-            break;
+        const existing = state.currentEnemy.statusEffects?.find(e => e.type === effectType);
+        if (existing) {
+            existing.power = Math.max(existing.power, power);
+            existing.duration = Math.max(existing.duration, duration);
+            logMessage(`🌀 ${state.currentEnemy.name} ist bereits betroffen – ${effectType} verstärkt/verlängert.`, 'effect');
+        } else {
+            if (!state.currentEnemy.statusEffects) state.currentEnemy.statusEffects = [];
+            state.currentEnemy.statusEffects.push({ type: effectType, power, duration });
+            logMessage(`🌀 ${state.currentEnemy.name} ist nun betroffen: ${effectType} (${power}, ${duration} Runden).`, 'effect');
+        }
+
+        updateEnemyUI();
+        break;
+    }
+}
+
 
             case 'lifesteal':
                 let rawLifestealDamage = card.power;
@@ -4124,26 +4177,26 @@ function executeCardEffect(card) {
                 let totalBurnDamage = 0;
 
                 for (let effect of state.currentEnemy.statusEffects) {
-                    switch (effect.type) {
-                        case 'poison':
-                            logMessage(`${state.currentEnemy.name} erleidet ${effect.power} Giftschaden.`, 'poison');
-                            totalPoisonDamage += effect.power;
-                            effect.duration -= 1;
-                            break;
+                    const { type, power, duration } = effect;
 
-                        case 'burn':
-                            logMessage(`${state.currentEnemy.name} erleidet ${effect.power} Feuerschaden.`, 'burn');
-                            totalBurnDamage += effect.power;
-                            effect.duration -= 1;
-                            break;
+                switch (type) {
+                    case 'poison':
+                    case 'burn': {
+                        const isPoison = type === 'poison';
+                        const damageTypeName = isPoison ? 'Giftschaden' : 'Feuerschaden';
 
-                        case 'paralyze':
-                            logMessage(`${state.currentEnemy.name} ist gelähmt – Angriff halbiert. (${effect.duration} Runden übrig)`, 'paralyze');
-                            effect.duration -= 1;
-                            break;
+                        logMessage(`${state.currentEnemy.name} erleidet ${power} ${damageTypeName}.`, type);
+
+                        if (isPoison) totalPoisonDamage += power;
+                        else totalBurnDamage += power;
+
+                        effect.duration -= 1;
+                        break;
                     }
+                    default:
+                        console.warn(`Unbekannter Statuseffekt-Typ: ${type}`);
+                        break;
                 }
-
 
                 // Gesamtschaden anwenden
                 if (totalPoisonDamage > 0) {
@@ -4152,6 +4205,19 @@ function executeCardEffect(card) {
                 if (totalBurnDamage > 0) {
                     state.currentEnemy.health -= totalBurnDamage;
                 }
+
+                // Elementar-Amulett: Heilung durch gesamtes Elementarschaden (nach Schaden)
+                if (state.player.hasElementalLifesteal) {
+                    const totalElementalDamage = totalPoisonDamage + totalBurnDamage;
+                    if (totalElementalDamage > 0) {
+                        const heal = Math.floor(totalElementalDamage);
+                        setTimeout(() => {
+                            state.player.health = Math.min(state.player.maxHealth, state.player.health + heal);
+                            logMessage(`✨ Elementar-Amulett heilt dich um ${heal} Leben durch elementaren Schaden.`, 'heal');
+                            updateUIDisplay(); // Anzeigen aktualisieren
+                        }, 350); // kurze Verzögerung für sichtbare Reihenfolge
+                    }
+                }}
 
                 // Abgelaufene Effekte entfernen
                 state.currentEnemy.statusEffects = state.currentEnemy.statusEffects.filter(e => e.duration > 0);

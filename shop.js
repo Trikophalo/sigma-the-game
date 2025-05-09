@@ -50,6 +50,14 @@ const SHOP_ITEMS = [
       effect: 'reduce_damage'
     },
     {
+      id: 'elementaramulett',
+      name: 'Elementar-Amulett',
+      cost: 1750,
+      description: 'Heilt dich um 100 % deiner Statuseffekte. (Gift/Feuer Schaden & so viel Angriff wie Paralyse wegnimmt)',
+      icon: 'images/elementar-amulett.png',
+      effect: 'elemental_lifesteal'
+    },
+    {
       id: 'lotus',
       name: 'Lotus Trank',
       cost: 350,
@@ -245,6 +253,9 @@ window.addEventListener('DOMContentLoaded', () => {
       case 'reduce_damage':
           state.player.damageReduction = 0.20; // 20 % weniger Schaden
           break;
+      case 'elemental_lifesteal':
+        state.player.hasElementalLifesteal = true;
+        break;
       case 'regen':
         state.player.hasBloodArmor = true;
         break;
@@ -402,6 +413,15 @@ window.addEventListener('DOMContentLoaded', () => {
       </span>
   `);
 }
+
+    if (playerInventory.has('elementaramulett')) {
+      icons.push(`
+        <span class="item-icon-wrapper" data-tooltip="Heilt dich um 100 % von Gift/Feuer Schaden & so viel Angriff wie Paralyse wegnimmt">
+          <img src="images/elementar-amulett.png" alt="Elementar-Amulett" class="item-icon" />
+        </span>
+      `);
+    }
+
 
     container.innerHTML = icons.join('');
 }
