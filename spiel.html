@@ -2933,40 +2933,39 @@ function createCardElement(card) {
 
 
         function drawCards(numCards) {
-    let drawnCount = 0;
+            let drawnCount = 0;
 
-    while (drawnCount < numCards) {
-        const handCount = state.player.hand.filter(c => c.name !== 'Donner-Zauber' && c.name !== 'Lotus Trank').length;
-        if (handCount >= state.player.maxHandSize) {
-            logMessage(`Hand ist voll. Ziehen gestoppt.`, 'discard');
-            break;
-        }
+            while (drawnCount < numCards) {
+                const handCount = state.player.hand.filter(c => c.name !== 'Donner-Zauber' && c.name !== 'Lotus Trank').length;
+                if (handCount >= state.player.maxHandSize) {
+                    logMessage(`Hand ist voll. Ziehen gestoppt.`, 'discard');
+                    break;
+                }
 
-        // Deck leer → Mische Ablagestapel
-        if (state.player.deck.length === 0) {
-            if (state.player.discardPile.length === 0) {
-                logMessage("Deck und Ablagestapel sind leer. Keine Karte gezogen.", 'system');
-                break;
+                // Deck leer → Mische Ablagestapel
+                if (state.player.deck.length === 0) {
+                    if (state.player.discardPile.length === 0) {
+                        logMessage("Deck und Ablagestapel sind leer. Keine Karte gezogen.", 'system');
+                        break;
+                    }
+                    logMessage("Deck leer. Mische Ablagestapel...", 'system');
+                    state.player.deck = [...state.player.discardPile];
+                    state.player.discardPile = [];
+                    shuffleArray(state.player.deck);
+                }
+
+                const card = state.player.deck.pop();
+                state.player.hand.push(card);
+                drawnCount++;
             }
-            logMessage("Deck leer. Mische Ablagestapel...", 'system');
-            state.player.deck = [...state.player.discardPile];
-            state.player.discardPile = [];
-            shuffleArray(state.player.deck);
+
+            if (drawnCount > 0) {
+                updateHandUI();
+                updateUIDisplay();
+            }
+
+            return drawnCount;
         }
-
-        const card = state.player.deck.pop();
-        state.player.hand.push(card);
-        drawnCount++;
-    }
-
-    if (drawnCount > 0) {
-        updateHandUI();
-        updateUIDisplay();
-    }
-
-    return drawnCount;
-}
-
 
     
         // --- Platzhalter für weitere Spiellogik (wird später benötigt) ---
@@ -3973,7 +3972,12 @@ function executeCardEffect(card) {
                     state.currentEnemy.minions.forEach(minion => {
                         let damage = minion.attack || 0;
                         const blockUsed = Math.min(state.player.block, damage);
-                        const damageTaken = Math.max(0, damage - blockUsed);
+                        let damageTaken = Math.max(0, damage - blockUsed);
+                        if (state.player.damageReduction) {
+                            const reduced = Math.floor(damageTaken * state.player.damageReduction);
+                            damageTaken -= reduced;
+                            logMessage(`🛡 Titan Hose schützt dich: ${reduced} Schaden reduziert.`, 'block');
+                        }
 
                         if (blockUsed > 0) {
                             state.player.block -= blockUsed;
@@ -4012,7 +4016,12 @@ function executeCardEffect(card) {
                 }
 
                 const blockUsed = Math.min(state.player.block, damage);
-                const damageTaken = Math.max(0, damage - state.player.block);
+                let damageTaken = Math.max(0, damage - state.player.block);
+                if (state.player.damageReduction) {
+                    const reduced = Math.floor(damageTaken * state.player.damageReduction);
+                    damageTaken -= reduced;
+                    logMessage(`🛡 Titan Hose schützt dich: ${reduced} Schaden reduziert.`, 'block');
+                }
 
                 if (blockUsed > 0) {
                     state.player.block -= blockUsed;

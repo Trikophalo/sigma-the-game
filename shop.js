@@ -42,6 +42,14 @@ const SHOP_ITEMS = [
       effect: 'zeitklinge'
     },    
     {
+      id: 'Titanhose',
+      name: 'Titan Hose',
+      cost: 2500,
+      description: 'Du erleidest 20 % weniger Schaden.',
+      icon: 'images/titanhose.png',
+      effect: 'reduce_damage'
+    },
+    {
       id: 'lotus',
       name: 'Lotus Trank',
       cost: 350,
@@ -234,6 +242,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
   function applyShopItemEffect(item) {
     switch (item.effect) {
+      case 'reduce_damage':
+          state.player.damageReduction = 0.20; // 20 % weniger Schaden
+          break;
       case 'regen':
         state.player.hasBloodArmor = true;
         break;
@@ -383,6 +394,14 @@ window.addEventListener('DOMContentLoaded', () => {
           </span>
       `);
   }  
+
+  if (state.player.damageReduction) {
+  icons.push(`
+      <span class="item-icon-wrapper" data-tooltip="Titan Hose: Du erleidest 20 % weniger Schaden.">
+          <img src="images/titanhose.png" alt="Titan Hose" class="item-icon" />
+      </span>
+  `);
+}
 
     container.innerHTML = icons.join('');
 }
