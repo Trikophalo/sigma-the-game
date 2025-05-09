@@ -3497,11 +3497,11 @@ function executeCardEffect(card) {
                 }
 
 
-            // 🔥 Drachenschuppen-Effekt: 20% Chance auf Verbrennung
+            // 🔥 Drachenschuppen-Effekt: 100% Chance auf leichte Verbrennung
                 if (state.player.hasDragonscale) {
                     const burnChance = Math.random();
-                    if (burnChance <= 0.20) {
-                        const burnPower = 5;
+                    if (burnChance <= 1) {
+                        const burnPower = 2;
                         const burnDuration = 2;
 
                         const target = state.currentEnemy.minions?.[0] || state.currentEnemy;
