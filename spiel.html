@@ -1934,7 +1934,7 @@ h2 {
         // --- Spielkonstanten ---
         const CARD_TYPES = [
             // ... (deine Kartendefinitionen bleiben hier unverändert) ...
-                 { id: 1, name: 'Schwert', icon: '⚔️', description: 'Ein einfaches Schwert.', power: 5, effect: 'damage', manaCost: 2, weight: 11, tags: ['damage'] },
+                 { id: 1, name: 'Schwert', icon: '⚔️', description: 'Ein einfaches Schwert.', power: 5, effect: 'paralyze', manaCost: 2, weight: 11, tags: ['damage'] },
                  { id: 2, name: 'Schild', icon: '🛡️', description: 'Erhalte 5 Block', power: 5, effect: 'block', manaCost: 2, weight: 1 },
                  { id: 3, name: 'Heilung', icon: '❤️', description: 'Heilt 8 Leben', power: 8, effect: 'heal', manaCost: 3, weight: 1 },
                  { id: 4, name: 'Gift', icon: '☠️', description: 'Vergiftung (3 Schaden, 3 Rd.)', power: 3, duration: 3, effect: 'poison', manaCost: 2, weight: 1 },
@@ -3633,29 +3633,30 @@ function executeCardEffect(card) {
 
                 break;
             }
-                case 'paralyze': {
-                    const enemy = state.currentEnemy;
-                    const alreadyParalyzed = enemy.statusEffects?.some(e => e.type === 'paralyze');
+                    case 'paralyze': {
+                        const enemy = state.currentEnemy;
+                        const alreadyParalyzed = enemy.statusEffects?.some(e => e.type === 'paralyze');
 
-                    if (!alreadyParalyzed) {
+                        if (alreadyParalyzed) {
+                            logMessage(`⚡ ${enemy.name} ist bereits paralysiert.`, 'effect');
+                            break;
+                        }
+
                         if (!enemy.statusEffects) enemy.statusEffects = [];
                         enemy.statusEffects.push({ type: 'paralyze', duration: 2 });
                         logMessage(`⚡ ${enemy.name} wird paralysiert! (Angriff halbiert)`, 'effect');
 
-                        // ➕ Heilung direkt beim Anwenden
+                        // ➕ Heilung bei Paralyse, falls Elementar-Amulett aktiv ist
                         if (state.player.hasElementalLifesteal && enemy.attack > 0) {
                             const heal = Math.floor(enemy.attack / 2);
-                            state.player.health = Math.min(state.player.maxHealth, state.player.health + heal);
-                            logMessage(`✨ Elementar-Amulett heilt dich um ${heal} Leben durch Paralyse.`, 'heal');
+                            const actualHeal = Math.min(heal, state.player.maxHealth - state.player.health);
+                            state.player.health += actualHeal;
+                            logMessage(`✨ Elementar-Amulett heilt dich um ${actualHeal} Leben durch Paralyse.`, 'heal');
                         }
 
                         updateEnemyUI();
-                    } else {
-                        logMessage(`⚡ ${enemy.name} ist bereits paralysiert.`, 'effect');
+                        break;
                     }
-
-                    break;
-                }
         case 'poison': {
                     const enemy = state.currentEnemy;
 
@@ -4567,74 +4568,75 @@ function executeCardEffect(card) {
 
 
             // --- Status-Effekte beim Gegner auswerten ---
-            function applyEnemyStatusEffectsAfterTurn() {
-                if (!state.currentEnemy || !state.currentEnemy.statusEffects) return;
+function applyEnemyStatusEffectsAfterTurn() {
+    if (!state.currentEnemy || !state.currentEnemy.statusEffects) return;
 
-                let totalPoisonDamage = 0;
-                let totalBurnDamage = 0;
+    let totalPoisonDamage = 0;
+    let totalBurnDamage = 0;
 
-                for (let effect of state.currentEnemy.statusEffects) {
-                    const { type, power, duration } = effect;
+    for (let effect of state.currentEnemy.statusEffects) {
+        const { type, power, duration } = effect;
 
-                switch (type) {
-                    case 'poison':
-                    case 'burn': {
-                        const isPoison = type === 'poison';
-                        const damageTypeName = isPoison ? 'Giftschaden' : 'Feuerschaden';
+        switch (type) {
+            case 'poison':
+            case 'burn': {
+                const isPoison = type === 'poison';
+                const damageLabel = isPoison ? 'Giftschaden' : 'Feuerschaden';
 
-                        logMessage(`${state.currentEnemy.name} erleidet ${power} ${damageTypeName}.`, type);
-
-                        if (isPoison) totalPoisonDamage += power;
-                        else totalBurnDamage += power;
-
-                        effect.duration -= 1;
-                        break;
-                    }
-                    default:
-                        console.warn(`Unbekannter Statuseffekt-Typ: ${type}`);
-                        break;
-                }
-
-                // Gesamtschaden anwenden
-                if (totalPoisonDamage > 0) {
-                    state.currentEnemy.health -= totalPoisonDamage;
-                }
-                if (totalBurnDamage > 0) {
-                    state.currentEnemy.health -= totalBurnDamage;
-                }
-
-                // Elementar-Amulett: Heilung durch gesamtes Elementarschaden (nach Schaden)
-                if (state.player.hasElementalLifesteal) {
-                    const totalElementalDamage = totalPoisonDamage + totalBurnDamage;
-                    if (totalElementalDamage > 0) {
-                        const heal = Math.floor(totalElementalDamage);
-                        setTimeout(() => {
-                            state.player.health = Math.min(state.player.maxHealth, state.player.health + heal);
-                            logMessage(`✨ Elementar-Amulett heilt dich um ${heal} Leben durch elementaren Schaden.`, 'heal');
-                            updateUIDisplay(); // Anzeigen aktualisieren
-                        }, 350); // kurze Verzögerung für sichtbare Reihenfolge
-                    }
-                }}
-
-                // Abgelaufene Effekte entfernen
-                state.currentEnemy.statusEffects = state.currentEnemy.statusEffects.filter(e => e.duration > 0);
-
-                // Regeneration
-                if (state.currentEnemy.regen && state.currentEnemy.health < state.currentEnemy.maxHealth) {
-                    const heal = Math.min(state.currentEnemy.regen, state.currentEnemy.maxHealth - state.currentEnemy.health);
-                    if (heal > 0) {
-                        state.currentEnemy.health += heal;
-                        logMessage(`${state.currentEnemy.name} regeneriert ${heal} Leben.`, 'heal');
-                    }
-                }
-
-                updateEnemyUI();
-
-                if (state.currentEnemy.health <= 0) {
-                    logMessage(`${state.currentEnemy.name} stirbt an Statuseffekten!`, 'system');
-                    checkEnemyDefeat();
-                }
+                logMessage(`${state.currentEnemy.name} erleidet ${power} ${damageLabel}.`, type);
+                if (isPoison) totalPoisonDamage += power;
+                else totalBurnDamage += power;
+                break;
             }
+
+            case 'paralyze':
+                logMessage(`${state.currentEnemy.name} ist gelähmt und greift geschwächt an. (${duration} Runden übrig)`, 'effect');
+                break;
+
+            default:
+                console.warn(`⚠️ Unbekannter Statuseffekt-Typ: ${type}`);
+                break;
+        }
+
+        effect.duration -= 1;
+    }
+
+    // Gesamtschaden anwenden
+    if (totalPoisonDamage > 0) state.currentEnemy.health -= totalPoisonDamage;
+    if (totalBurnDamage > 0) state.currentEnemy.health -= totalBurnDamage;
+
+    // Lifesteal durch Elementarschaden
+    if (state.player.hasElementalLifesteal) {
+        const totalElementalDamage = totalPoisonDamage + totalBurnDamage;
+        if (totalElementalDamage > 0) {
+            const heal = Math.floor(totalElementalDamage);
+            setTimeout(() => {
+                state.player.health = Math.min(state.player.maxHealth, state.player.health + heal);
+                logMessage(`✨ Elementar-Amulett heilt dich um ${heal} Leben durch elementaren Schaden.`, 'heal');
+                updateUIDisplay();
+            }, 350);
+        }
+    }
+
+    // Abgelaufene Effekte entfernen
+    state.currentEnemy.statusEffects = state.currentEnemy.statusEffects.filter(e => e.duration > 0);
+
+    // Regeneration
+    if (state.currentEnemy.regen && state.currentEnemy.health < state.currentEnemy.maxHealth) {
+        const heal = Math.min(state.currentEnemy.regen, state.currentEnemy.maxHealth - state.currentEnemy.health);
+        if (heal > 0) {
+            state.currentEnemy.health += heal;
+            logMessage(`${state.currentEnemy.name} regeneriert ${heal} Leben.`, 'heal');
+        }
+    }
+
+    updateEnemyUI();
+
+    if (state.currentEnemy.health <= 0) {
+        logMessage(`${state.currentEnemy.name} stirbt an Statuseffekten!`, 'system');
+        checkEnemyDefeat();
+    }
+}
 
     
         // Beginnt eine neue Runde für den Spieler
