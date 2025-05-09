@@ -543,6 +543,7 @@
           z-index: 1000;
         ">
           <!-- Menü-Dropdown -->
+           <button onclick="openAchievementsModal()">🏆 Erfolge</button>
         <button id="monsterWikiButton" onclick="document.getElementById('monsterWikiModal').style.display='block'">
           Monster Wiki
         </button>
@@ -613,7 +614,29 @@
       <button onclick="closeCardWiki()" style="margin-top: 20px;">Schließen</button>
     </div>
   </div>
-  
+
+<div id="achievementsModal" style="
+  display: none;
+  position: fixed;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 800px;
+  max-height: 80vh;
+  overflow-y: auto;
+  background: #1a1a24;
+  border: 3px solid gold;
+  border-radius: 12px;
+  padding: 20px;
+  z-index: 9999;
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
+  color: white;
+">
+  <div id="achievementList"></div>
+</div>
+
+
   
 
   <script>
@@ -1276,6 +1299,7 @@ localStorage.setItem('allCards', JSON.stringify(cards));
 <script src="card.data.js"></script>
 <script src="lootbox.js"></script>
 <script src="indexshop.js"></script> 
+<script src="achievements.js"></script>
 <script>
   function toggleMenu() {
     const menu = document.getElementById('menuDropdown');

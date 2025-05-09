@@ -1934,7 +1934,7 @@ h2 {
         // --- Spielkonstanten ---
         const CARD_TYPES = [
             // ... (deine Kartendefinitionen bleiben hier unverändert) ...
-                 { id: 1, name: 'Schwert', icon: '⚔️', description: 'Ein einfaches Schwert.', power: 5, effect: 'paralyze', manaCost: 2, weight: 11, tags: ['damage'] },
+                 { id: 1, name: 'Schwert', icon: '⚔️', description: 'Ein einfaches Schwert.', power: 5, effect: 'damage', manaCost: 2, weight: 11, tags: ['damage'] },
                  { id: 2, name: 'Schild', icon: '🛡️', description: 'Erhalte 5 Block', power: 5, effect: 'block', manaCost: 2, weight: 1 },
                  { id: 3, name: 'Heilung', icon: '❤️', description: 'Heilt 8 Leben', power: 8, effect: 'heal', manaCost: 3, weight: 1 },
                  { id: 4, name: 'Gift', icon: '☠️', description: 'Vergiftung (3 Schaden, 3 Rd.)', power: 3, duration: 3, effect: 'poison', manaCost: 2, weight: 1 },
@@ -2018,7 +2018,7 @@ h2 {
                 { name: 'Goblin', health: 20, attack: 5, levelMin: 1, levelMax: 4, xp: 35, gold: 60, pixelImageKey: 'Goblin', gemChance: 1, description: 'Ein kleiner, flinker Goblin.', traits: ['Keine Fähigkeit'] },
                 { name: 'Schleim', health: 20, attack: 6, levelMin: 1, levelMax: 4, xp: 65, gold: 85, pixelImageKey: 'Schleim', gemChance: 1, description: 'Ein fieser Schleim.', traits: ['Teilung'] },
                 { name: 'Gepanzertes Skelett', health: 25, attack: 4, levelMin: 2, levelMax: 6, xp: 55, gold: 75, pixelImageKey: 'Gepanzertes Skelett', gemChance: 2, description: 'Ein ehmaliger stolzer Soldat.', traits: ['Rüstung'] },
-                { name: 'Leecher', health: 25, attack: 6, levelMin: 2, levelMax: 6, xp: 55, gold: 75, pixelImageKey: 'Leecher', gemChance: 2, description: 'Blutsüchtiger Mini Dämonen.', traits: ['Vamp'] },
+                { name: 'Leecher', health: 30, attack: 6, levelMin: 2, levelMax: 6, xp: 55, gold: 75, pixelImageKey: 'Leecher', gemChance: 2, description: 'Blutsüchtiger Mini Dämonen.', traits: ['Vamp'] },
                 { name: 'Wutferkel', health: 35, attack: 8, levelMin: 3, levelMax: 6, xp: 65, gold: 80, pixelImageKey: 'Wutferkel', gemChance: 2, description: 'Ein Wildes wütendes Schwein', traits: ['Rücksichtslos'] },
                 { name: 'Ork', health: 35, attack: 5, levelMin: 3, levelMax: 7, xp: 60, gold: 65, pixelImageKey: 'Ork', gemChance: 4, description: 'Ein brutaler Ork-Krieger.', traits: ['Stark'] },
                 { name: 'Riesen Spinne', health: 40, attack: 6, levelMin: 4, levelMax: 9, xp: 65, gold: 80, pixelImageKey: 'Riesen Spinne', gemChance: 4, description: 'Spuckt lähmendes Gift.', traits: ['Giftig'] }, 
@@ -2147,6 +2147,7 @@ h2 {
                 [array[i], array[j]] = [array[j], array[i]]; // Tausche Elemente
             }
         }
+
 
         //Gem chance
         function handleGemDrop(enemy) {
@@ -3259,7 +3260,7 @@ function getEffectiveManaCost(card) {
 }
 
   //Zentrale lifesteal funktion
-const applyLifesteal = (damageDealt) => {
+function applyLifesteal(damageDealt) {
     if (!damageDealt || damageDealt <= 0) return;
 
     if (state.player.hasAntiHeal) {
@@ -3291,7 +3292,8 @@ const applyLifesteal = (damageDealt) => {
 
         logMessage(`🩸 Lebensraub heilt dich um ${totalHeal} Leben (${parts.join(' + ')}).`, 'lifesteal');
     }
-};
+}
+
 
 
 function applyTankTraitReduction(target, incomingDamage) {
@@ -4933,6 +4935,32 @@ function applyEnemyStatusEffectsAfterTurn() {
             unlockSkin('skin_lichking');
             logMessage('🧊 Du hast den Lichkönig besiegt! Skin freigeschaltet.', 'system');
         }
+  
+            
+            // 🏆 ACHIEVEMENT CHECK
+            if (defeatedName) {
+            console.log("🧟 Besiegt:", defeatedName);
+
+            switch (defeatedName) {
+                case 'Drache':
+                unlockAchievement('dragonSlayer');
+                const dragonKills = parseInt(localStorage.getItem('dragonKills') || '0') + 1;
+                localStorage.setItem('dragonKills', dragonKills);
+                if (dragonKills >= 10) unlockAchievement('dragonHunter');
+                break;
+
+                case 'Schleim':
+                const slimeKills = parseInt(localStorage.getItem('slimeKills') || '0') + 1;
+                localStorage.setItem('slimeKills', slimeKills);
+                console.log("💧 Schleime gesamt:", slimeKills);
+                if (slimeKills >= 100) unlockAchievement('slime100');
+                break;
+
+                case 'Bagdo':
+                unlockAchievement('bagdoDown');
+                break;
+            }
+            }
 
 
         const xpGained = state.currentEnemy.xp || 50;
@@ -4977,6 +5005,8 @@ function applyEnemyStatusEffectsAfterTurn() {
         return false;
     }
  }
+
+
 
     function unlockSkin(skinId) {
                 const skins = new Set(JSON.parse(localStorage.getItem("unlockedSkins") || "[]"));
@@ -5347,7 +5377,7 @@ function applyEnemyStatusEffectsAfterTurn() {
                         state.player.lifestealFlat += lifestealIncrease;
 
                         const display = Math.round(state.player.lifestealFlat * 100);
-                        logMessage(`🧛 Bonus-Lebensraub (Flat) erhöht: +15 %. Aktuell: ${display} %`, 'lifesteal');
+                        logMessage(`🧛 Bonus-Lebensraub (Flat) erhöht: +20 %. Aktuell: ${display} %`, 'lifesteal');
                         break;
                     }
                   case 'gainGoldFixed':
