@@ -293,7 +293,7 @@ const EFFECT_ICONS = {
 
     container.style.position = 'relative';
 
-    const excludedIds = [15, 17, 18, 19, 22, 23];
+    const excludedIds = [15, 17, 18, 19, 22, 23, 21];
     const baseCards = CARD_TYPES.filter(c =>
         state.unlockedCardIds.has(c.id) &&
         !String(c.id).startsWith('fusion-') &&
