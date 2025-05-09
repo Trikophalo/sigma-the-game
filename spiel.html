@@ -3062,8 +3062,10 @@ function createCardElement(card) {
 }
 
 
+// Refactored playSingleEffect for Fusion Effects
 function playSingleEffect(effect, power, card) {
     const enemy = state.currentEnemy;
+    if (!enemy) return;
 
     // Kombinierte Effekte aufteilen und rekursiv verarbeiten
     if (effect.includes('_') && typeof power === 'object') {
@@ -3081,199 +3083,194 @@ function playSingleEffect(effect, power, card) {
         setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
     };
 
+    const applyLifesteal = (amount) => {
+        const percent = state.player.lifestealPercent || 0;
+        if (percent > 0 && amount > 0) {
+            const heal = Math.floor(amount * percent);
+            const effectiveHeal = Math.min(heal, state.player.maxHealth - state.player.health);
+            if (effectiveHeal > 0) {
+                state.player.health += effectiveHeal;
+                logMessage(`🧛 Du absorbierst ${effectiveHeal} Leben durch ${Math.round(percent * 100)} % Lebensraub.`, 'lifesteal');
+            }
+        }
+    };
+
+    const applyDragonscale = () => {
+        if (state.player.hasDragonscale) {
+            const target = enemy.minions?.[0] || enemy;
+            applyDragonScaleBurn(target);
+        }
+    };
+
+    const applyStatusEffect = (target, type, power = 4, duration = 3) => {
+        const immunities = {
+            poison: ['Gepanzerte Schuppen', 'Massiv'],
+            burn: ['Gepanzerte Schuppen'],
+            paralyze: ['Gepanzerte Schuppen']
+        };
+        const immune = immunities[type]?.some(trait => target.traits?.includes(trait));
+        if (immune) {
+            logMessage(`${target.name} ist immun gegen ${type}.`, 'enemy');
+            return;
+        }
+        if (!target.statusEffects) target.statusEffects = [];
+        const existing = target.statusEffects.find(e => e.type === type);
+        if (existing) {
+            existing.power = Math.max(existing.power, power);
+            existing.duration = Math.max(existing.duration, duration);
+            logMessage(`🌀 ${target.name} ist bereits betroffen – ${type} verstärkt/verlängert.`, 'effect');
+        } else {
+            target.statusEffects.push({ type, power, duration });
+            logMessage(`🌀 ${target.name} ist nun betroffen: ${type} (${power}, ${duration} Runden).`, 'effect');
+        }
+        updateEnemyUI();
+    };
+
     switch (effect) {
-        case 'damage_selfhit': {
-                const blockUsed = Math.min(enemy.block || 0, remaining);
-                if (blockUsed > 0) {
-                    enemy.block -= blockUsed;
-                    logMessage(`${enemy.name} blockt ${blockUsed} Schaden.`, 'block');
-                }
-
-                const finalDamage = remaining - blockUsed;
-                if (finalDamage > 0) {
-                    enemy.health -= finalDamage;
-                    logMessage(`${enemy.name} erleidet ${finalDamage} Schaden durch Ansturm.`, 'enemy');
-                }
-
-                const selfDamage = card.selfDamage || 0;
-                if (selfDamage > 0) {
-                    state.player.health -= selfDamage;
-                    logMessage(`💢 Du nimmst ${selfDamage} Rückstoß-Schaden.`, 'player');
-                }
-
-                hitAnimation();
-                break;
+        case 'damage': {
+            let base = applyDamageBonuses(remaining);
+            if (card.name === 'Schwert' && state.player.swordBonus) base += state.player.swordBonus;
+            if (card.name === 'Schwert' && state.player.isShieldmaster) {
+                base -= 1;
+                logMessage('⚠️ Schildmeister: Schwert macht 1 weniger Schaden.', 'system');
             }
-        case 'gain_mana': {
-            const gain = power || 0;
-            const manaGained = Math.min(gain, state.player.maxMana - state.player.mana);
-            if (manaGained > 0) {
-                state.player.mana += manaGained;
-                logMessage(`🔷 Du erhältst ${manaGained} Mana.`, 'mana');
+            const block = Math.min(enemy.block || 0, base);
+            if (block > 0) {
+                enemy.block -= block;
+                logMessage(`${enemy.name} blockt ${block} Schaden.`, 'block');
+            }
+            const dmg = base - block;
+            if (dmg > 0) {
+                enemy.health -= dmg;
+                logMessage(`${enemy.name} erleidet ${dmg} Schaden.`, 'enemy');
+                applyLifesteal(dmg);
             } else {
-                logMessage(`🔷 Mana ist bereits voll.`, 'mana');
+                logMessage(`${enemy.name} blockt den gesamten Schaden!`, 'block');
             }
+            applyDragonscale();
+            hitAnimation();
             break;
+        }
+
+        case 'poison':
+        case 'burn':
+        case 'paralyze':
+            applyStatusEffect(enemy, effect, power);
+            break;
+
+        case 'lifesteal': {
+            const block = Math.min(enemy.block || 0, remaining);
+            if (block > 0) {
+                enemy.block -= block;
+                logMessage(`${enemy.name} blockt ${block} Schaden.`, 'block');
             }
+            const dmg = remaining - block;
+            if (dmg > 0) {
+                enemy.health -= dmg;
+                state.player.health += Math.min(dmg, state.player.maxHealth - state.player.health);
+                logMessage(`🧛 Du stiehlst ${dmg} Leben.`, 'lifesteal');
+            }
+            hitAnimation();
+            break;
+        }
+
         case 'draw':
             drawCards(remaining);
             logMessage(`📜 Du ziehst ${remaining} Karte(n).`, 'system');
             break;
 
-        case 'damage': {
-            const blockUsed = Math.min(enemy.block || 0, remaining);
-            if (blockUsed > 0) {
-                enemy.block -= blockUsed;
-                logMessage(`${enemy.name} blockt ${blockUsed} Schaden.`, 'block');
-            }
-
-            const finalDamage = remaining - blockUsed;
-            if (finalDamage > 0) {
-                enemy.health -= finalDamage;
-                logMessage(`${enemy.name} erleidet ${finalDamage} Schaden.`, 'enemy');
-            }
-            hitAnimation();
+        case 'gain_mana': {
+            const gained = Math.min(remaining, state.player.maxMana - state.player.mana);
+            state.player.mana += gained;
+            logMessage(`🔷 Du erhältst ${gained} Mana.`, 'mana');
             break;
         }
 
         case 'block':
-            state.player.block = (state.player.block || 0) + remaining;
+            state.player.block += remaining;
             logMessage(`🛡️ Du erhältst ${remaining} Block.`, 'block');
             break;
 
         case 'heal': {
-            const healAmount = Math.min(remaining, state.player.maxHealth - state.player.health);
-            if (healAmount > 0) {
-                state.player.health += healAmount;
-                logMessage(`❤️ Du heilst ${healAmount} Leben.`, 'heal');
+            const heal = Math.min(remaining, state.player.maxHealth - state.player.health);
+            state.player.health += heal;
+            logMessage(`❤️ Du heilst ${heal} Leben.`, 'heal');
+            break;
+        }
+
+        case 'multi_hit': {
+            const hits = card.minHits && card.hits
+                ? getRandomInt(card.minHits, card.hits)
+                : 2 + Math.floor(Math.random() * 2);
+            for (let i = 0; i < hits; i++) {
+                const block = card.ignoreBlock ? 0 : Math.min(enemy.block || 0, remaining);
+                if (!card.ignoreBlock && block > 0) {
+                    enemy.block -= block;
+                    logMessage(`${enemy.name} blockt ${block} Schaden.`, 'block');
+                }
+                const dmg = remaining - block;
+                if (dmg > 0) {
+                    enemy.health -= dmg;
+                    logMessage(`🌪️ Treffer ${i + 1}: ${enemy.name} nimmt ${dmg} Schaden.`, 'enemy');
+                    applyLifesteal(dmg);
+                }
+                hitAnimation();
+            }
+            applyDragonscale();
+            break;
+        }
+
+        case 'gamble': {
+            if (Math.random() < 0.5) {
+                enemy.health -= remaining;
+                state.player.gold += 100;
+                logMessage(`🍀 Glück! ${enemy.name} verliert ${remaining} Leben. +100 Gold!`, 'gold');
+            } else {
+                state.player.health -= remaining;
+                logMessage(`💥 Pech! Du verlierst ${remaining} Leben.`, 'player');
             }
             break;
         }
 
-        case 'lifesteal': {
-            const blockUsed = Math.min(enemy.block || 0, remaining);
-            if (blockUsed > 0) {
-                enemy.block -= blockUsed;
-                logMessage(`${enemy.name} blockt ${blockUsed} Schaden.`, 'block');
+        case 'damage_selfhit': {
+            const block = Math.min(enemy.block || 0, remaining);
+            if (block > 0) {
+                enemy.block -= block;
+                logMessage(`${enemy.name} blockt ${block} Schaden.`, 'block');
             }
-
-            const finalDamage = remaining - blockUsed;
-            if (finalDamage > 0) {
-                enemy.health -= finalDamage;
-                const heal = Math.min(finalDamage, state.player.maxHealth - state.player.health);
-                state.player.health += heal;
-                logMessage(`🧛 Du stiehlst ${heal} Leben.`, 'lifesteal');
+            const dmg = remaining - block;
+            if (dmg > 0) {
+                enemy.health -= dmg;
+                logMessage(`${enemy.name} erleidet ${dmg} Schaden durch Ansturm.`, 'enemy');
+                applyLifesteal(dmg);
             }
+            if (card.selfDamage) {
+                state.player.health -= card.selfDamage;
+                logMessage(`💢 Du erleidest ${card.selfDamage} Rückstoß-Schaden.`, 'player');
+            }
+            applyDragonscale();
             hitAnimation();
             break;
         }
 
-            case 'poison': {
-                if (
-                    enemy.traits?.includes('Gepanzerte Schuppen') ||
-                    enemy.traits?.includes('Massiv')
-                ) {
-                    logMessage(`${enemy.name} ist immun gegen Vergiftung!`, 'enemy');
-                    break;
-                }
-
-                const existing = enemy.statusEffects?.find(e => e.type === 'poison');
-
-                if (existing) {
-                    existing.power = Math.max(existing.power, power); // Schaden aktualisieren, falls stärker
-                    existing.duration = Math.max(existing.duration, 3); // Dauer resetten
-                    logMessage(`☠️ ${enemy.name} ist bereits vergiftet – Effekt verstärkt/verlängert.`, 'poison');
-                } else {
-                    if (!enemy.statusEffects) enemy.statusEffects = [];
-                    enemy.statusEffects.push({ type: 'poison', power, duration: 3 });
-                    logMessage(`☠️ ${enemy.name} wird vergiftet (${power} Schaden für 3 Runden).`, 'poison');
-                }
-                updateEnemyUI();
-                break;
-            }
-            case 'damage_paralyze': {
-                enemy.health -= remaining;
-                logMessage(`⚡ ${enemy.name} erleidet ${remaining} Schaden.`, 'enemy');
-
-                // Paralyse nur, wenn nicht immun
-                const isImmune = enemy.traits?.includes('Gepanzerte Schuppen');
-                if (!isImmune && Math.random() < 0.45) {
-                    addStatusEffect(enemy, { type: 'paralyze', duration: 2 });
-                    logMessage(`⚡ ${enemy.name} ist paralysiert (Angriff halbiert).`, 'effect');
-                } else if (isImmune) {
-                    logMessage(`⚡ ${enemy.name} ist immun gegen Paralyse!`, 'effect');
-                }
-
-                hitAnimation();
-                break;
-            }
-            case 'firearrow': {
-                enemy.health -= remaining;
-                logMessage(`🔥 ${enemy.name} erleidet ${remaining} Schaden durch Feuerpfeil.`, 'enemy');
-
-                const isImmune = enemy.traits?.includes('Gepanzerte Schuppen');
-                if (!isImmune && Math.random() < 0.5) {
-                    addStatusEffect(enemy, { type: 'burn', power: 5, duration: 2 });
-                    logMessage(`🔥 ${enemy.name} brennt! (5 Schaden für 2 Runden)`, 'effect');
-                } else if (isImmune) {
-                    logMessage(`🔥 ${enemy.name} ist immun gegen Verbrennung!`, 'effect');
-                }
-
-                hitAnimation();
-                break;
-            }
-        case 'multi_hit': {
-            const hits = card.minHits && card.hits
-                ? getRandomInt(card.minHits, card.hits)
-                : 2 + Math.floor(Math.random() * 2); // fallback 2–3
-
-            for (let i = 0; i < hits; i++) {
-                const ignoreBlock = card.ignoreBlock;
-                const blockUsed = ignoreBlock ? 0 : Math.min(enemy.block || 0, remaining);
-                if (!ignoreBlock && blockUsed > 0) {
-                    enemy.block -= blockUsed;
-                    logMessage(`${enemy.name} blockt ${blockUsed} Schaden.`, 'block');
-                }
-
-                const finalDamage = remaining - blockUsed;
-                if (finalDamage > 0) {
-                    enemy.health -= finalDamage;
-                    logMessage(`🌪️ ${enemy.name} wird vom Tornado getroffen und erleidet ${finalDamage} Schaden.`, 'enemy');
-                }
-
-                hitAnimation();
-            }
-            break;
-        }
-        case 'gamble': {
-            const roll = Math.random();
-            if (roll < 0.5) {
-                enemy.health -= remaining;
-                state.player.gold += 100;
-                logMessage(`🎲 Glück gehabt! ${enemy.name} verliert ${remaining} Leben. Du erhältst 100 Gold.`, 'gold');
-            } else {
-                state.player.health -= remaining;
-                logMessage(`🎲 Verloren! Du verlierst ${remaining} Leben.`, 'enemy');
-            }
-            break;
-        }
-
         case 'whirlwind': {
-                const enemies = [state.currentEnemy, ...(state.currentEnemy.minions || [])];
-                enemies.forEach(target => {
-                    target.health -= remaining;
-                    logMessage(`🌀 ${target.name} wird von Klingenwirbel getroffen und erleidet ${remaining} Schaden (ignoriert Block).`, 'enemy');
-                    state.currentEnemy.minions = state.currentEnemy.minions.filter(m => m.health > 0);
-                });
+            const targets = [enemy, ...(enemy.minions || [])];
+            targets.forEach(target => {
+                target.health -= remaining;
+                logMessage(`🌀 ${target.name} erleidet ${remaining} Schaden durch Klingenwirbel.`, 'enemy');
+            });
+            enemy.minions = enemy.minions?.filter(m => m.health > 0) || [];
+            applyLifesteal(remaining * targets.length);
+            applyDragonscale();
+            hitAnimation();
+            break;
+        }
 
-                hitAnimation();
-                break;
-            }
         default:
-            console.warn("Unbekannter Effekt:", effect);
-            logMessage(`⚠️ Effekt ${effect} konnte nicht ausgeführt werden.`, 'system');
+            logMessage(`⚠️ Effekt ${effect} ist nicht bekannt.`, 'system');
     }
 }
+
 
 
 function applyDragonScaleBurn(target) {
@@ -3281,7 +3278,7 @@ function applyDragonScaleBurn(target) {
 
     const alreadyBurning = target.statusEffects.some(e => e.type === 'burn');
     if (!alreadyBurning) {
-        target.statusEffects.push({ type: 'burn', power: 2, duration: 2 });
+        target.statusEffects.push({ type: 'burn', power: 3, duration: 2 });
         logMessage(`🔥 Drachenschuppen: ${target.name} wurde verbrannt!`, 'burn');
     }
 }
@@ -3806,7 +3803,6 @@ function executeCardEffect(card) {
                     setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
                 }
                 break;
-
 
         case 'draw':
             const drawn = drawCards(card.power);
