@@ -1999,6 +1999,7 @@ h2 {
                 'Bagdos Riese': IMAGE_FOLDER + 'riese.png',  
                 'Bagdos Leibgarde': IMAGE_FOLDER + 'leibgarde.png',  
                 'Bagdo': IMAGE_FOLDER + 'bagdoboss.png',  
+                'Leviathan': IMAGE_FOLDER + 'Leviathan.png',  
         };
 
         console.log("selectedSkinRaw:", localStorage.getItem('selectedSkinPath'));
@@ -2022,29 +2023,29 @@ h2 {
                 { name: 'Ork', health: 35, attack: 5, levelMin: 3, levelMax: 7, xp: 60, gold: 65, pixelImageKey: 'Ork', gemChance: 4, description: 'Ein brutaler Ork-Krieger.', traits: ['Stark'] },
                 { name: 'Riesen Spinne', health: 40, attack: 6, levelMin: 4, levelMax: 9, xp: 65, gold: 80, pixelImageKey: 'Riesen Spinne', gemChance: 4, description: 'Spuckt lähmendes Gift.', traits: ['Giftig'] }, 
                 { name: 'Bagdos Krieger', health: 45, attack: 7, levelMin: 5, levelMax: 9, xp: 68, gold: 85, pixelImageKey: 'Bagdos Krieger', gemChance: 5, description: 'Ein Lakeie Bagods.', traits: ['Krieger'] }, 
-                { name: 'Troll', health: 50, attack: 8, levelMin: 5, levelMax: 9, xp: 70, gold: 100, pixelImageKey: 'Troll', gemChance: 5, description: 'Regeneriert 3 Leben pro Runde.', traits: ['Regeneration', 'Massiv'], regen: 3 }, 
+                { name: 'Troll', health: 47, attack: 8, levelMin: 5, levelMax: 9, xp: 70, gold: 100, pixelImageKey: 'Troll', gemChance: 5, description: 'Regeneriert 3 Leben pro Runde.', traits: ['Regeneration', 'Massiv'], regen: 3 }, 
                 { name: 'Donnerschlange', health: 45, attack: 9, levelMin: 6, levelMax: 10, xp: 120, gold: 105, pixelImageKey: 'Donnerschlange', gemChance: 5, description: 'Eine lähmende Donnerschlange', traits: ['Statisch'] },
-                { name: 'Bagdos Magier', health: 45, attack: 10, levelMin: 6, levelMax: 11, xp: 120, gold: 105, pixelImageKey: 'Bagdos Magier', gemChance: 5, description: 'Bagdos treuster Magier', traits: ['Feueratem', 'Vision'] },
+                { name: 'Bagdos Magier', health: 45, attack: 9, levelMin: 6, levelMax: 11, xp: 120, gold: 105, pixelImageKey: 'Bagdos Magier', gemChance: 5, description: 'Bagdos treuster Magier', traits: ['Feueratem', 'Vision'] },
                 { name: 'Nekromant', health: 50, attack: 7, levelMin: 8, levelMax: 12, xp: 80, gold: 120, pixelImageKey: 'Nekromant', gemChance: 6, description: 'Schwächt dich oder ruft Diener.', traits: ['Untotenbeschwörer'] }, // Effekte müssen implementiert werden
                 { name: 'Eiskönig', health: 65, attack: 10, levelMin: 9, levelMax: 13, xp: 100, gold: 130, pixelImageKey: 'Eiskönig', gemChance: 6, description: 'Verlangsamt dich mit Kälte.', traits: ['Eis-Elementar', 'Frost-Aura'] }, // Effekte müssen implementiert werden
                 { name: 'Alchemie Kobold', health: 60, attack: 10, levelMin: 10, levelMax: 15, xp: 110, gold: 140, pixelImageKey: 'Alchemie Kobold', gemChance: 7, description: 'Der Albtraum jeder Medizin (fast jeder).', traits: ['Giftig', 'Antiheal'] }, // Effekte müssen implementiert werden
                 { name: 'Baby Drache', health: 65, attack: 13, levelMin: 11, levelMax: 15, xp: 130, gold: 170, pixelImageKey: 'Baby Drache', gemChance: 7, description: 'Speit Feuerstöße.', traits: ['Verspielt', 'Feueratem'] }, // Effekte müssen implementiert werden
                 { name: 'Charged Golem', health: 75, attack: 12, levelMin: 12, levelMax: 16, xp: 170, gold: 180, pixelImageKey: 'Charged Golem', gemChance: 7, description: 'Mächtiger Elementar Golem.', traits: ['Statisch', 'Regeneration'], regen: 3 }, // Effekte müssen implementiert werden
                 { name: 'Dracula', health: 65, attack: 10, levelMin: 13, levelMax: 17, xp: 190, gold: 190, pixelImageKey: 'Dracula', gemChance: 8, description: 'Dein Blut macht ihn stärker.', traits: ['Vamp', 'Stark'] }, // Effekte müssen implementiert werden
-                { name: 'Dämon', health: 75, attack: 13, levelMin: 14, levelMax: 18, xp: 280, gold: 210, pixelImageKey: 'Dämon', gemChance: 9, description: 'Feuer und Schatten. Resistent.', traits: ['Höllen Krallen'] }, // Effekte müssen implementiert werden
-                { name: 'Verfluchter Ritter', health: 75, attack: 10, levelMin: 15, levelMax: 19, xp: 360, gold: 250, pixelImageKey: 'Verfluchter Ritter', gemChance: 10, description: 'Ein wandelnde Geisterrüstung', traits: ['Rüstung', 'Krieger']}, // Effekte müssen implementiert werden
-                { name: 'Bagdos Riese', health: 110, attack: 12, levelMin: 16, levelMax: 20, xp: 400, gold: 300, pixelImageKey: 'Bagdos Riese', gemChance: 10, description: 'Ein Dummer aber leider auch starker Riese', traits: ['Stark', 'Dämlich'] }, // Effekte müssen implementiert werden
-                { name: 'Erzengel', health: 90, attack: 13, levelMin: 16, levelMax: 20, xp: 400, gold: 300, pixelImageKey: 'Erzengel', gemChance: 10, description: 'Ein mächtiger gefallener Engel.', traits: ['Segen', 'Fliegend'] }, // Effekte müssen implementiert werden
-                { name: 'Gargoyle', health: 85, attack: 15, levelMin: 17, levelMax: 21, xp: 450, gold: 320, pixelImageKey: 'Gargoyle', gemChance: 11, description: 'Einst da um die Menschen zu beschützen. Jetzt ein unbändiges Monster', traits: ['Gepanzerte Schuppen', 'Tank'] }, 
-                { name: 'Drache', health: 110, attack: 16, levelMin: 18, levelMax: 22, xp: 650, gold: 330, pixelImageKey: 'Drache', gemChance: 12, description: 'Ein mächtiger, alter Drache.', traits: ['Feueratem', 'Fliegend', 'Gepanzerte Schuppen'] }, 
-                { name: 'Teufel', health: 70, attack: 7, levelMin: 19, levelMax: 24, xp: 750, gold: 380, pixelImageKey: 'Teufel', gemChance: 13, description: 'Der Herrscher der Unterwelt.', traits: ['Höllenwache'] },
-                { name: 'Spinnenkönigin', health: 100, attack: 14, levelMin: 20, levelMax: 25, xp: 750, gold: 390, pixelImageKey: 'Spinnenkönigin', gemChance: 14, description: 'Eine Spinne die selbst der Teufel fürchtet.', traits: ['Antiheal', 'Giftig'] },
-                { name: 'Rainbow', health: 110, attack: 13, levelMin: 21, levelMax: 26, xp: 900, gold: 400, pixelImageKey: 'Rainbow', gemChance: 16, description: 'Meister über alle Elemente', traits: ['Frost-Aura', 'Giftig', 'Feueratem', 'Statisch'] },
-                { name: 'Bagdos Leibgarde', health: 90, attack: 17, levelMin: 21, levelMax: 26, xp: 900, gold: 400, pixelImageKey: 'Bagdos Leibgarde', gemChance: 16, description: 'Lässt seinen Meister nie im stich', traits: ['Rüstung', 'Tank'] },
-                { name: 'Yokai', health: 100, attack: 16, levelMin: 22, levelMax: 28, xp: 1100, gold: 450, pixelImageKey: 'Yokai', gemChance: 16, description: 'Ein hochrangiger fliegender Yokai-Demon', traits: ['Fliegend', 'Höllenkrallen','Untotenbeschwörer'] },
-                { name: 'Yagdril', health: 90, attack: 28, levelMin: 23, levelMax: 100, xp: 1200, gold: 500, pixelImageKey: 'Yagdril', gemChance: 18, description: 'Ein Wesen dessen Macht unbeschreiblich ist', traits: ['Fliegend', 'YinYang'] },
-                { name: 'Leviathan', health: 150, attack: 20, levelMin: 24, levelMax: 100, xp: 1300, gold: 520, pixelImageKey: 'Leviathan', gemChance: 23, description: 'Das Symbol des Schreckens', traits: ['Antiheal', 'Vision'] },
-                { name: 'Bagdo', health: 120, maxHealth: 120, attack: 30, levelMin: 25, levelMax: 100, xp: 1500, gold: 600, pixelImageKey: 'Bagdo', gemChance: 25, description: 'Der gefallene Lichking', traits: ['Entfesselung'] },
+                { name: 'Dämon', health: 85, attack: 13, levelMin: 14, levelMax: 18, xp: 280, gold: 210, pixelImageKey: 'Dämon', gemChance: 9, description: 'Feuer und Schatten. Resistent.', traits: ['Höllen Krallen'] }, // Effekte müssen implementiert werden
+                { name: 'Verfluchter Ritter', health: 85, attack: 10, levelMin: 15, levelMax: 19, xp: 360, gold: 250, pixelImageKey: 'Verfluchter Ritter', gemChance: 10, description: 'Ein wandelnde Geisterrüstung', traits: ['Rüstung', 'Krieger']}, // Effekte müssen implementiert werden
+                { name: 'Bagdos Riese', health: 120, attack: 12, levelMin: 16, levelMax: 20, xp: 400, gold: 300, pixelImageKey: 'Bagdos Riese', gemChance: 10, description: 'Ein Dummer aber leider auch starker Riese', traits: ['Stark', 'Dämlich'] }, // Effekte müssen implementiert werden
+                { name: 'Erzengel', health: 110, attack: 13, levelMin: 16, levelMax: 20, xp: 400, gold: 300, pixelImageKey: 'Erzengel', gemChance: 10, description: 'Ein mächtiger gefallener Engel.', traits: ['Segen', 'Fliegend'] }, // Effekte müssen implementiert werden
+                { name: 'Gargoyle', health: 105, attack: 15, levelMin: 17, levelMax: 21, xp: 450, gold: 320, pixelImageKey: 'Gargoyle', gemChance: 11, description: 'Einst da um die Menschen zu beschützen. Jetzt ein unbändiges Monster', traits: ['Gepanzerte Schuppen', 'Tank'] }, 
+                { name: 'Drache', health: 130, attack: 16, levelMin: 18, levelMax: 22, xp: 650, gold: 330, pixelImageKey: 'Drache', gemChance: 12, description: 'Ein mächtiger, alter Drache.', traits: ['Feueratem', 'Fliegend', 'Gepanzerte Schuppen'] }, 
+                { name: 'Teufel', health: 90, attack: 7, levelMin: 19, levelMax: 24, xp: 750, gold: 380, pixelImageKey: 'Teufel', gemChance: 13, description: 'Der Herrscher der Unterwelt.', traits: ['Höllenwache'] },
+                { name: 'Spinnenkönigin', health: 130, attack: 14, levelMin: 20, levelMax: 25, xp: 750, gold: 390, pixelImageKey: 'Spinnenkönigin', gemChance: 14, description: 'Eine Spinne die selbst der Teufel fürchtet.', traits: ['Antiheal', 'Giftig'] },
+                { name: 'Rainbow', health: 150, attack: 13, levelMin: 21, levelMax: 26, xp: 900, gold: 400, pixelImageKey: 'Rainbow', gemChance: 16, description: 'Meister über alle Elemente', traits: ['Frost-Aura', 'Giftig', 'Feueratem', 'Statisch'] },
+                { name: 'Bagdos Leibgarde', health: 180, attack: 17, levelMin: 21, levelMax: 26, xp: 900, gold: 400, pixelImageKey: 'Bagdos Leibgarde', gemChance: 16, description: 'Lässt seinen Meister nie im stich', traits: ['Rüstung', 'Tank'] },
+                { name: 'Yokai', health: 110, attack: 16, levelMin: 22, levelMax: 28, xp: 1100, gold: 450, pixelImageKey: 'Yokai', gemChance: 16, description: 'Ein hochrangiger fliegender Yokai-Demon', traits: ['Fliegend', 'Höllenkrallen','Untotenbeschwörer'] },
+                { name: 'Yagdril', health: 150, attack: 28, levelMin: 23, levelMax: 100, xp: 1200, gold: 500, pixelImageKey: 'Yagdril', gemChance: 18, description: 'Ein Wesen dessen Macht unbeschreiblich ist', traits: ['Fliegend', 'YinYang'] },
+                { name: 'Leviathan', health: 180, attack: 20, levelMin: 24, levelMax: 100, xp: 1300, gold: 520, pixelImageKey: 'Leviathan', gemChance: 23, description: 'Das Symbol des Schreckens', traits: ['Antiheal', 'Vision'] },
+                { name: 'Bagdo', health: 200, maxHealth: 120, attack: 30, levelMin: 25, levelMax: 100, xp: 1500, gold: 600, pixelImageKey: 'Bagdo', gemChance: 25, description: 'Der gefallene Lichking', traits: ['Entfesselung', 'Lichking'] },
         ];
     
         // --- Upgrade-Typen ---
@@ -2686,7 +2687,7 @@ function initGame() {
                 'Teilung': 'Teil sich in einen Mini-Schleim nach dem Tod',
                 'Dämlich': 'Zu dumm um den Genger zu treffen. Macht sich gelgentlich selber 10 schaden',
                 'Tank': 'Erleidet weniger Schaden, je weniger Leben er hat (bis zu 40 % Reduktion).',
-                'Entfesselung': 'Braucht 2 Runden um seine Angriff aufzuladen!',
+                'Entfesselung': 'Greift dich erst nach 2 Runden an',
                 'Lichking': 'Wird nach dem Tot mit 50% Leben wiederbelebt und bekommt einen Schadensboost',
             };
                 monsterTraitsElem.innerHTML = '';
