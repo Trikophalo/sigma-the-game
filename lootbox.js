@@ -92,7 +92,7 @@ function animateGemDrop(amount = 1) {
   const ITEMS = {
     common: ['🪨', '🪙','💎'], // Häufige Items
     uncommon: ['🪙', { emoji: '👤', skinId: 'skin_goofy' }, { emoji: '👤', skinId: 'skin_gamer'}, '💎'], // Ungewöhnliche Items
-    rare: ['🪙', { emoji: '👤', skinId: 'skin_qualle' }, { emoji: '🌪️', cardId: 22 }, { emoji: '🐗', cardId: 21 }, { emoji: '👤', skinId: 'skin_gamerchad' },'💎'], // Seltene Items
+    rare: ['🪙', { emoji: '👤', skinId: 'skin_qualle' }, { emoji: '🌪️', cardId: 22 }, { emoji: '🐗', cardId: 21 }, { emoji: '👤', skinId: 'skin_gamerchad' }, { emoji: '☣️', cardId: 24 },'💎'], // Seltene Items
     epic: [{ emoji: '🗡️', cardId: 23 }, '🪙', { emoji: '👤', skinId: 'skin_paladin' }] // Epische Items
   };
 
