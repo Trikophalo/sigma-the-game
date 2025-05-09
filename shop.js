@@ -53,7 +53,7 @@ const SHOP_ITEMS = [
       id: 'elementaramulett',
       name: 'Elementar-Amulett',
       cost: 1750,
-      description: 'Heilt dich um 100 % deiner Statuseffekte. (Gift/Feuer Schaden & so viel Angriff wie Paralyse wegnimmt)',
+      description: 'Heilt dich um 100 % deiner Statuseffekte am Gegner. (Gift/Feuer Schaden & so viel Angriff wie Paralyse wegnimmt)',
       icon: 'images/elementar-amulett.png',
       effect: 'elemental_lifesteal'
     },
@@ -416,7 +416,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     if (playerInventory.has('elementaramulett')) {
       icons.push(`
-        <span class="item-icon-wrapper" data-tooltip="Heilt dich um 100 % von Gift/Feuer Schaden & so viel Angriff wie Paralyse wegnimmt">
+        <span class="item-icon-wrapper" data-tooltip="Verbenne/Vergifte oder Paralysiere den Gegner für Heilung">
           <img src="images/elementar-amulett.png" alt="Elementar-Amulett" class="item-icon" />
         </span>
       `);

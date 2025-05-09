@@ -3278,7 +3278,7 @@ function applyDragonScaleBurn(target) {
 
     const alreadyBurning = target.statusEffects.some(e => e.type === 'burn');
     if (!alreadyBurning) {
-        target.statusEffects.push({ type: 'burn', power: 5, duration: 2 });
+        target.statusEffects.push({ type: 'burn', power: 6, duration: 2 });
         logMessage(`🔥 Drachenschuppen: ${target.name} wurde verbrannt!`, 'burn');
     }
 }
