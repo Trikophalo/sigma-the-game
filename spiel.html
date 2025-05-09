@@ -4786,6 +4786,11 @@ function executeCardEffect(card) {
                     if (effect.type === 'poison' || effect.type === 'burn') {
                         logMessage(`☠️ ${effect.type === 'burn' ? 'Verbrennung' : 'Vergiftung'} fügt dir ${effect.power} Schaden zu.`, 'player');
                         state.player.health -= effect.power;
+                        if (state.player.health <= 0) {
+                        state.player.health = 0;
+                        gameOver(); // beendet das Spiel
+                        return; // verhindert weiteren Code
+                    }
                         effect.duration -= 1;
                     } else if (effect.type === 'paralyze') {
                         logMessage(`⚡ Du bist paralysiert und kannst nur 3 Karten spielen. (${effect.duration} Runden)`, 'system');
