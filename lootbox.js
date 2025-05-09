@@ -321,39 +321,50 @@ function animateGemDrop(amount = 1) {
     document.getElementById('lootboxModal')?.remove();
   }
   
-  function getRandomItem(boxType) {
-    const roll = Math.floor(Math.random() * 1000) + 1;
-    const chances = LOOTBOXES[boxType].chances;
-  
-    let threshold = 0;
-  
-    const pick = (list, rarity) => {
-      const reward = list[Math.floor(Math.random() * list.length)];
-      if (typeof reward === 'string') {
-        return { item: reward, rarity };
-      } else {
-        return {
-          item: reward.emoji,
-          rarity,
-          ...(reward.cardId !== undefined ? { cardId: reward.cardId } : {}),
-          ...(reward.skinId !== undefined ? { skinId: reward.skinId } : {})
-        };
-      }
-    };
-  
-    if (roll <= (threshold += chances.common)) {
-      return pick(ITEMS.common, 'common');
+function getRandomItem(boxType) {
+  const roll = Math.floor(Math.random() * 1000) + 1;
+  const chances = LOOTBOXES[boxType].chances;
+  const unlockedSkins = new Set(JSON.parse(localStorage.getItem('unlockedSkins') || '[]'));
+  const wonCards = new Set(JSON.parse(localStorage.getItem('wonCards') || '[]'));
+
+  let threshold = 0;
+
+  const pick = (list, rarity) => {
+    const pool = list.filter(item => {
+      if (typeof item === 'string') return true; // 🪨, 🪙, 💎 sind immer erlaubt
+      if (item.skinId && unlockedSkins.has(item.skinId)) return false;
+      if (item.cardId !== undefined && wonCards.has(item.cardId)) return false;
+      return true;
+    });
+
+    if (pool.length === 0) return { item: '🪨', rarity: 'common' }; // Fallback, falls alles doppelt
+
+    const reward = pool[Math.floor(Math.random() * pool.length)];
+    if (typeof reward === 'string') {
+      return { item: reward, rarity };
+    } else {
+      return {
+        item: reward.emoji,
+        rarity,
+        ...(reward.cardId !== undefined ? { cardId: reward.cardId } : {}),
+        ...(reward.skinId !== undefined ? { skinId: reward.skinId } : {})
+      };
     }
-    if (roll <= (threshold += chances.uncommon)) {
-      return pick(ITEMS.uncommon, 'uncommon');
-    }
-    if (roll <= (threshold += chances.rare)) {
-      return pick(ITEMS.rare, 'rare');
-    }
-    if (roll <= (threshold += chances.epic)) {
-      return pick(ITEMS.epic, 'epic');
-    }
+  };
+
+  if (roll <= (threshold += chances.common)) {
+    return pick(ITEMS.common, 'common');
   }
+  if (roll <= (threshold += chances.uncommon)) {
+    return pick(ITEMS.uncommon, 'uncommon');
+  }
+  if (roll <= (threshold += chances.rare)) {
+    return pick(ITEMS.rare, 'rare');
+  }
+  if (roll <= (threshold += chances.epic)) {
+    return pick(ITEMS.epic, 'epic');
+  }
+}
   
   
   function getRandomItemsForAnimation(boxType, finalItem) {
