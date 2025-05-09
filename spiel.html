@@ -3344,7 +3344,7 @@ function executeCardEffect(card) {
                 
             // Prozentualer Lifesteal (aus Upgrade)
             const lifestealPercent = state.player.lifestealPercent || 0;
-
+                let damageDealt = netDamage;
                 if (lifestealPercent > 0 && damageDealt > 0) {
                     const rawHeal = Math.floor(damageDealt * lifestealPercent);
                     const effectiveHeal = Math.min(rawHeal, state.player.maxHealth - state.player.health);
@@ -3354,10 +3354,7 @@ function executeCardEffect(card) {
                         logMessage(`🧛 Du absorbierst ${effectiveHeal} Leben durch ${Math.round(lifestealPercent * 100)} % Lebensraub.`, 'lifesteal');
                     }
                 }
-
-                enemyContainerElem.classList.add('hit');
-                setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
-                    break;
+            break;
                 }
         case 'damage_selfhit': {
                 let damage = applyDamageBonuses(card.power);
@@ -3391,6 +3388,7 @@ function executeCardEffect(card) {
                 
             // Prozentualer Lifesteal (aus Upgrade)
             const lifestealPercent = state.player.lifestealPercent || 0;
+            let damageDealt = finalDamage;
 
                 if (lifestealPercent > 0 && damageDealt > 0) {
                     const rawHeal = Math.floor(damageDealt * lifestealPercent);
@@ -3401,9 +3399,6 @@ function executeCardEffect(card) {
                         logMessage(`🧛 Du absorbierst ${effectiveHeal} Leben durch ${Math.round(lifestealPercent * 100)} % Lebensraub.`, 'lifesteal');
                     }
                 }
-
-                enemyContainerElem.classList.add('hit');
-                setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
                 break;
             }
                 case 'paralyze': {
@@ -3457,53 +3452,51 @@ function executeCardEffect(card) {
                 tryApplyParalyze(state.currentEnemy, 0.45); // 45 % Chance
                 break;
         case 'whirlwind': {
-                let rawDamage = card.power;
-                let totalDamage = applyDamageBonuses(rawDamage); // ✅ alle Boni berücksichtigen
+            let rawDamage = card.power;
+            let totalDamage = applyDamageBonuses(rawDamage);
+            let damageDealt = 0;
 
-                // Minions zuerst treffen
-                if (state.currentEnemy.minions?.length > 0) {
-                    state.currentEnemy.minions.forEach((minion, index) => {
-                        minion.health -= totalDamage;
-                        logMessage(`🌀 ${minion.name} erleidet ${totalDamage} Schaden (ignoriert Block).`, 'enemy');
-                    });
+            // Minions zuerst treffen
+            if (state.currentEnemy.minions?.length > 0) {
+                state.currentEnemy.minions.forEach((minion) => {
+                    minion.health -= totalDamage;
+                    damageDealt += totalDamage;
+                    logMessage(`🌀 ${minion.name} erleidet ${totalDamage} Schaden (ignoriert Block).`, 'enemy');
+                });
 
-                    // Entferne besiegte Minions
-                    state.currentEnemy.minions = state.currentEnemy.minions.filter(m => m.health > 0);
-                }
-
-                // Hauptgegner angreifen (Block ignorieren)
-                state.currentEnemy.health -= totalDamage;
-                logMessage(`🌀 ${state.currentEnemy.name} erleidet ${totalDamage} Schaden durch Klingenwirbel (ignoriert Block).`, 'enemy');
-
-                enemyContainerElem.classList.add('hit');
-                setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
-                            if (state.player.hasDragonscale) {
-                const target = state.currentEnemy.minions?.[0] || state.currentEnemy;
-                applyDragonScaleBurn(target);
+                // Entferne besiegte Minions
+                state.currentEnemy.minions = state.currentEnemy.minions.filter(m => m.health > 0);
             }
-                
+
+            // Hauptgegner angreifen (Block ignorieren)
+            state.currentEnemy.health -= totalDamage;
+            damageDealt += totalDamage;
+            logMessage(`🌀 ${state.currentEnemy.name} erleidet ${totalDamage} Schaden durch Klingenwirbel (ignoriert Block).`, 'enemy');
+
+            // Trefferanimation
+            enemyContainerElem.classList.add('hit');
+            setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
+
+            // 🔥 Drachenschuppen-Effekt
             if (state.player.hasDragonscale) {
                 const target = state.currentEnemy.minions?.[0] || state.currentEnemy;
                 applyDragonScaleBurn(target);
             }
-                
-            // Prozentualer Lifesteal (aus Upgrade)
+
+            // 🧛 Lifesteal
             const lifestealPercent = state.player.lifestealPercent || 0;
+            if (lifestealPercent > 0 && damageDealt > 0) {
+                const rawHeal = Math.floor(damageDealt * lifestealPercent);
+                const effectiveHeal = Math.min(rawHeal, state.player.maxHealth - state.player.health);
 
-                if (lifestealPercent > 0 && damageDealt > 0) {
-                    const rawHeal = Math.floor(damageDealt * lifestealPercent);
-                    const effectiveHeal = Math.min(rawHeal, state.player.maxHealth - state.player.health);
-
-                    if (effectiveHeal > 0) {
-                        state.player.health += effectiveHeal;
-                        logMessage(`🧛 Du absorbierst ${effectiveHeal} Leben durch ${Math.round(lifestealPercent * 100)} % Lebensraub.`, 'lifesteal');
-                    }
+                if (effectiveHeal > 0) {
+                    state.player.health += effectiveHeal;
+                    logMessage(`🧛 Du absorbierst ${effectiveHeal} Leben durch ${Math.round(lifestealPercent * 100)} % Lebensraub.`, 'lifesteal');
                 }
-
-                enemyContainerElem.classList.add('hit');
-                setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
-                break;
             }
+
+            break;
+        }
         case 'power_surge': {
             const spentMana = state.player.mana;
 
@@ -3540,6 +3533,12 @@ function executeCardEffect(card) {
 
             let damageDealt = applyDamageBonuses(rawDamage);
 
+          // 🪓 Kritischer Treffer durch Katryns Axt
+            if (state.player.critChance && Math.random() < state.player.critChance) {
+                 const critBonus = Math.floor(damageDealt * 0.5);
+                 damageDealt += critBonus;
+                 logMessage(`💥 Kritischer Treffer! Schaden um +${critBonus} erhöht!`, 'player');
+                }            
             
             if (state.currentEnemy.minions?.length > 0) {
                 const target = state.currentEnemy.minions[0];
@@ -3564,13 +3563,6 @@ function executeCardEffect(card) {
                     logMessage(`${state.currentEnemy.name} blockt den gesamten Schaden!`, 'block');
                 }
             }
-
-            // 🪓 Kritischer Treffer durch Katryns Axt
-                if (state.player.critChance && Math.random() < state.player.critChance) {
-                    const critBonus = Math.floor(damageDealt * 0.5);
-                    damageDealt += critBonus;
-                    logMessage(`💥 Kritischer Treffer! Schaden um +${critBonus} erhöht!`, 'player');
-                }
 
 
             // 🔥 Drachenschuppen-Effekt: 100% Chance auf leichte Verbrennung
@@ -3682,44 +3674,43 @@ function executeCardEffect(card) {
             state.currentEnemy.statusEffects = [];
                     }
 
-    switch (effectType) {
-    case 'poison':
-    case 'burn':
-    case 'paralyze': {
-        const immunityTraits = {
-            poison: ['Gepanzerte Schuppen', 'Massiv'],
-            burn: ['Gepanzerte Schuppen'],
-            paralyze: ['Gepanzerte Schuppen']
-        };
+         switch (effectType) {
+                case 'poison':
+                case 'burn':
+                case 'paralyze': {
+                    const immunityTraits = {
+                        poison: ['Gepanzerte Schuppen', 'Massiv'],
+                        burn: ['Gepanzerte Schuppen'],
+                        paralyze: ['Gepanzerte Schuppen']
+                    };
 
-        const immune = immunityTraits[effectType]?.some(trait =>
-            state.currentEnemy.traits?.includes(trait)
-        );
+                    const immune = immunityTraits[effectType]?.some(trait =>
+                        state.currentEnemy.traits?.includes(trait)
+                    );
 
-        if (immune) {
-            logMessage(`${state.currentEnemy.name} ist immun gegen ${effectType}.`, 'enemy');
-            return;
-        }
+                    if (immune) {
+                        logMessage(`${state.currentEnemy.name} ist immun gegen ${effectType}.`, 'enemy');
+                        return;
+                    }
 
-        const power = card.power || 4;
-        const duration = card.duration || 3;
+                    const power = card.power || 4;
+                    const duration = card.duration || 3;
 
-        const existing = state.currentEnemy.statusEffects?.find(e => e.type === effectType);
-        if (existing) {
-            existing.power = Math.max(existing.power, power);
-            existing.duration = Math.max(existing.duration, duration);
-            logMessage(`🌀 ${state.currentEnemy.name} ist bereits betroffen – ${effectType} verstärkt/verlängert.`, 'effect');
-        } else {
-            if (!state.currentEnemy.statusEffects) state.currentEnemy.statusEffects = [];
-            state.currentEnemy.statusEffects.push({ type: effectType, power, duration });
-            logMessage(`🌀 ${state.currentEnemy.name} ist nun betroffen: ${effectType} (${power}, ${duration} Runden).`, 'effect');
-        }
+                    const existing = state.currentEnemy.statusEffects?.find(e => e.type === effectType);
+                    if (existing) {
+                        existing.power = Math.max(existing.power, power);
+                        existing.duration = Math.max(existing.duration, duration);
+                        logMessage(`🌀 ${state.currentEnemy.name} ist bereits betroffen – ${effectType} verstärkt/verlängert.`, 'effect');
+                    } else {
+                        if (!state.currentEnemy.statusEffects) state.currentEnemy.statusEffects = [];
+                        state.currentEnemy.statusEffects.push({ type: effectType, power, duration });
+                        logMessage(`🌀 ${state.currentEnemy.name} ist nun betroffen: ${effectType} (${power}, ${duration} Runden).`, 'effect');
+                    }
 
-        updateEnemyUI();
-        break;
-    }
-}
-
+                    updateEnemyUI();
+                    break;
+                }
+            }
 
             case 'lifesteal':
                 let rawLifestealDamage = card.power;
