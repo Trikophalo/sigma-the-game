@@ -2044,8 +2044,8 @@ h2 {
                 { name: 'Bagdos Leibgarde', health: 180, attack: 17, levelMin: 21, levelMax: 26, xp: 900, gold: 400, pixelImageKey: 'Bagdos Leibgarde', gemChance: 16, description: 'Lässt seinen Meister nie im stich', traits: ['Rüstung', 'Tank'] },
                 { name: 'Yokai', health: 110, attack: 16, levelMin: 22, levelMax: 28, xp: 1100, gold: 450, pixelImageKey: 'Yokai', gemChance: 16, description: 'Ein hochrangiger fliegender Yokai-Demon', traits: ['Fliegend', 'Höllenkrallen','Untotenbeschwörer'] },
                 { name: 'Yagdril', health: 150, attack: 28, levelMin: 23, levelMax: 100, xp: 1200, gold: 500, pixelImageKey: 'Yagdril', gemChance: 18, description: 'Ein Wesen dessen Macht unbeschreiblich ist', traits: ['Fliegend', 'YinYang'] },
-                { name: 'Leviathan', health: 180, attack: 20, levelMin: 24, levelMax: 100, xp: 1300, gold: 520, pixelImageKey: 'Leviathan', gemChance: 23, description: 'Das Symbol des Schreckens', traits: ['Antiheal', 'Vision'] },
-                { name: 'Bagdo', health: 200, maxHealth: 120, attack: 30, levelMin: 25, levelMax: 100, xp: 1500, gold: 600, pixelImageKey: 'Bagdo', gemChance: 25, description: 'Der gefallene Lichking', traits: ['Entfesselung', 'Lichking'] },
+                { name: 'Leviathan', health: 160, attack: 20, levelMin: 24, levelMax: 100, xp: 1300, gold: 520, pixelImageKey: 'Leviathan', gemChance: 23, description: 'Das Symbol des Schreckens', traits: ['Antiheal', 'Vision'] },
+                { name: 'Bagdo', health: 200, maxHealth: 200, attack: 30, levelMin: 25, levelMax: 100, xp: 1500, gold: 600, pixelImageKey: 'Bagdo', gemChance: 25, description: 'Der gefallene Lichking', traits: ['Entfesselung', 'Lichking'] },
         ];
     
         // --- Upgrade-Typen ---
@@ -2686,7 +2686,7 @@ function initGame() {
                 'YinYang': 'Yin: 30 Shield / Yang: 2x Angriff. Verändert sich zufällig',
                 'Teilung': 'Teil sich in einen Mini-Schleim nach dem Tod',
                 'Dämlich': 'Zu dumm um den Genger zu treffen. Macht sich gelgentlich selber 10 schaden',
-                'Tank': 'Erleidet weniger Schaden, je weniger Leben er hat (bis zu 40 % Reduktion).',
+                'Tank': 'Erleidet weniger Schaden, je weniger Leben er hat (bis zu 50 % Reduktion).',
                 'Entfesselung': 'Greift dich erst nach 2 Runden an',
                 'Lichking': 'Wird nach dem Tot mit 50% Leben wiederbelebt und bekommt einen Schadensboost',
             };
@@ -3298,7 +3298,7 @@ function applyTankTraitReduction(target, incomingDamage) {
     if (!target.traits?.includes('Tank') || !target.maxHealth) return incomingDamage;
 
     const missingPercent = 1 - (target.health / target.maxHealth);
-    const reductionFactor = Math.min(0.4, missingPercent * 0.4); // max 40%
+    const reductionFactor = Math.min(0.5, missingPercent * 0.5); // max 50%
     const reducedDamage = Math.floor(incomingDamage * (1 - reductionFactor));
 
     if (reductionFactor > 0) {
