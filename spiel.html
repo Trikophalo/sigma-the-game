@@ -3596,14 +3596,26 @@ function executeCardEffect(card) {
                 setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
                 break;
 
-        case 'multi_hit': {
-                const hits = card.minHits && card.hits
-                    ? getRandomInt(card.minHits, card.hits)
-                    : 2 + Math.floor(Math.random() * 2); // fallback
+            case 'multi_hit': {
+                // Hilfsfunktion zum Warten
+                const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+                // Trefferanzahl sicher bestimmen
+                let hits;
+                if (card.minHits != null && card.hits != null && card.minHits <= card.hits) {
+                    hits = getRandomInt(card.minHits, card.hits);
+                } else {
+                    hits = 2 + Math.floor(Math.random() * 2); // Fallback: 2 oder 3
+                }
+
+                let damageDealt = 0;
 
                 for (let i = 0; i < hits; i++) {
+                    if (!state.currentEnemy || state.currentEnemy.health <= 0) break;
+
                     const baseDamage = applyDamageBonuses(card.power);
                     const block = card.ignoreBlock ? 0 : Math.min(state.currentEnemy.block || 0, baseDamage);
+
                     if (block > 0 && !card.ignoreBlock) {
                         state.currentEnemy.block -= block;
                         logMessage(`${state.currentEnemy.name} blockt ${block} Schaden.`, 'block');
@@ -3612,21 +3624,23 @@ function executeCardEffect(card) {
                     const final = baseDamage - block;
                     if (final > 0) {
                         state.currentEnemy.health -= final;
+                        damageDealt += final;
                         logMessage(`🌪️ Tornado trifft (${i + 1}) – ${state.currentEnemy.name} nimmt ${final} Schaden.`, 'enemy');
                     }
 
                     enemyContainerElem.classList.add('hit');
-                    setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
+                    await wait(300);
+                    enemyContainerElem.classList.remove('hit');
                 }
-            // 🔥 Drachenschuppen-Effekt: 100% Chance auf leichte Verbrennung
-                    if (state.player.hasDragonscale) {
-                const target = state.currentEnemy.minions?.[0] || state.currentEnemy;
-                applyDragonScaleBurn(target);
-            }
-                
-            // Prozentualer Lifesteal (aus Upgrade)
-            const lifestealPercent = state.player.lifestealPercent || 0;
 
+                // 🔥 Drachenschuppen-Effekt
+                if (state.player.hasDragonscale && state.currentEnemy) {
+                    const target = state.currentEnemy.minions?.[0] || state.currentEnemy;
+                    applyDragonScaleBurn(target);
+                }
+
+                // 🧛 Lifesteal-Effekt
+                const lifestealPercent = state.player.lifestealPercent || 0;
                 if (lifestealPercent > 0 && damageDealt > 0) {
                     const rawHeal = Math.floor(damageDealt * lifestealPercent);
                     const effectiveHeal = Math.min(rawHeal, state.player.maxHealth - state.player.health);
@@ -3637,8 +3651,6 @@ function executeCardEffect(card) {
                     }
                 }
 
-                enemyContainerElem.classList.add('hit');
-                setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
                 break;
             }
         
