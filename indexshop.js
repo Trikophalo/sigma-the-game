@@ -36,6 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
         qualle: 500,
         greendragon: 1000,
         paladin: 5000,
+        lichking: 99999,
     };
 
     const cardPriceMap = {
@@ -60,7 +61,8 @@ document.addEventListener("DOMContentLoaded", () => {
       "reddragon.png",
       "qualle.png",
       "greendragon.png",
-      "paladin.png"
+      "paladin.png",
+      "lichking.png"
     ];
   
     // Shop-Items: Karten und Skins
@@ -71,19 +73,24 @@ document.addEventListener("DOMContentLoaded", () => {
         { id: "card_8", type: "card", cardId: 8, name: "Vampirbiss", price: cardPriceMap[8], description: "8 schaden, heilt 8", icon: "🧛" },
         { id: "card_12", type: "card", cardId: 12, name: "Genesung", price: cardPriceMap[12], description: "Heilt 15 Leben", icon: "💖" },
         { id: "card_24", type: "card", cardId: 24, name: "Biohazard", price: cardPriceMap[24], description: 'Verursacht Schwere Vergiftung.(6 Schaden, 3 Rd.)', icon: "☣️" },
-      ...playerSkinFiles.map(filename => {
+    ...playerSkinFiles
+.filter(filename => {
+  const id = filename.replace(/\.[^/.]+$/, "");
+  return true; // NICHT ausfiltern – sichtbar, aber später gesperrt behandeln
+})
+      .map(filename => {
         const id = filename.replace(/\.[^/.]+$/, "");
         return {
-          id:          `skin_${id}`,
-          type:        "skin",
-          name:        `${id.charAt(0).toUpperCase() + id.slice(1)} Skin`,
-          price:       skinPriceMap[id] || 200,   // Fallback-Preis 200
-          image:       `images/players/${filename}`,
-          icon:        ""
+          id: `skin_${id}`,
+          type: "skin",
+          name: `${id.charAt(0).toUpperCase() + id.slice(1)} Skin`,
+          price: skinPriceMap[id] || 200,
+          image: `images/players/${filename}`,
+          icon: ""
         };
       })
     ];
-  
+
     function getSigmaCoins() {
       return parseInt(localStorage.getItem("sigmaCoins") || "0", 10);
     }
@@ -143,7 +150,9 @@ document.addEventListener("DOMContentLoaded", () => {
           ${imgHtml}
           <strong>${item.name}</strong><br>
           ${item.description ? `<small>${item.description}</small><br>` : ''}
-          <div style="margin:6px 0;">Preis: ${item.price} 🪙</div>
+          <div style="margin:6px 0;">
+          ${item.id === 'skin_lichking' ? '🔒 Besiege Bagdo, um diesen Skin freizuschalten' : `Preis: ${item.price} 🪙`}
+        </div>
         `;
       
     
@@ -204,9 +213,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
               });
             }
-          } else {
-            btn.textContent = 'Kaufen';
-            btn.disabled = getSigmaCoins() < item.price;
+         } else if (item.id === 'skin_lichking') {
+          btn.textContent = 'Gesperrt';
+          btn.disabled = true;
+          Object.assign(btn.style, {
+            backgroundColor: '#444',
+            color: '#aaa',
+            fontStyle: 'italic'
+          });
+        } else {
+          btn.textContent = 'Kaufen';
+          btn.disabled = getSigmaCoins() < item.price;
+
             Object.assign(btn.style, {
               backgroundColor: '#ff9800',
               color: '#000'

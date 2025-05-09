@@ -105,7 +105,6 @@
       opacity: 0;
       animation: fade-in 0.8s forwards 0.5s;
     }
-
     input[type="text"] {
       padding: 12px 20px;
       font-size: 16px;
@@ -118,11 +117,12 @@
       text-align: center;
       outline: none;
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-      transform: translateY(20px);
+      transform: translateY(-20px); /* weiter oben */
+      margin-bottom: 30px; /* ⬅️ mehr Abstand nach unten */
       opacity: 0;
-      animation: slide-up 0.8s forwards 0.3s;
+      animation: slide-up 0.33s forwards 0.3s;
     }
-    
+ 
     input[type="text"]:focus {
       border-color: var(--accent-color);
       box-shadow: 0 0 15px var(--accent-glow);
@@ -387,6 +387,45 @@
         max-width: 280px;
       }
     }
+
+.title-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 180px; /* passt vertikal den Abstand an */
+  margin-bottom: 40px;
+}
+
+.subtitle-tilted {
+  position: absolute;
+  top: 90px; /* <- Statt 20px */
+  left: 57%;
+  transform: translateX(-190px) rotate(-18deg);
+  font-size: 20px;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: bold;
+  color: yellow;
+  animation: pulseSplash 2.5s infinite ease-in-out;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+
+
+
+@keyframes pulseSplash {
+  0%, 100% {
+    transform: scale(1) rotate(-18deg);
+  }
+  50% {
+    transform: scale(1.12) rotate(-18deg);
+  }
+}
+
+
+
+
   </style>
 </head>
 <body>
@@ -429,8 +468,10 @@
 </div>
 
   
-  <div class="menu-container" id="mainMenu">
-    <h1>SIGMA THE GAME</h1>
+<div class="title-container">
+  <h1>SIGMA THE GAME</h1>
+  <div class="subtitle-tilted">Bagdo ist da! + Neuer Skin</div>
+</div>
     <input type="text" id="playerNameInput" placeholder="Spielername eingeben" maxlength="15" autocomplete="off" required />
     <h3>Wähle eine passive Fähigkeit</h3>
 

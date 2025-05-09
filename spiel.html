@@ -1724,6 +1724,43 @@ h2 {
         .card.vision-penalty {
             border: 2px solid #e53935;
         }
+@keyframes lichReviveGlow {
+    0% {
+        box-shadow: 0 0 0px rgba(0, 255, 255, 0);
+        transform: scale(0.6);
+        opacity: 0.1;
+        filter: brightness(0.6) saturate(0.5);
+    }
+
+    30% {
+        box-shadow: 0 0 120px rgba(0, 255, 255, 1),
+                    0 0 40px rgba(255, 255, 255, 0.9) inset;
+        transform: scale(1.4);
+        opacity: 1;
+        filter: brightness(5.5) saturate(3.5);
+    }
+
+    60% {
+        box-shadow: 0 0 80px rgba(0, 255, 255, 0.8),
+                    0 0 25px rgba(255, 255, 255, 0.6) inset;
+        transform: scale(1.2);
+        filter: brightness(2.5) saturate(1.8);
+    }
+
+    100% {
+        box-shadow: 0 0 0px rgba(0, 255, 255, 0);
+        transform: scale(1);
+        opacity: 1;
+        filter: none;
+    }
+}
+
+.lich-revive-effect {
+    animation: lichReviveGlow 10s ease-in-out;
+    border-radius: 16px;
+    transition: all 10.5s ease;
+}
+
 
 
     </style>
@@ -1952,7 +1989,15 @@ h2 {
                 'Rainbow': IMAGE_FOLDER + 'rainbow.png',
                 'Yagdril': IMAGE_FOLDER + 'yagdril.png',
                 'Spinnenkönigin': IMAGE_FOLDER + 'spinnenboss.png',
-                'Yokai': IMAGE_FOLDER + 'yokai.png'               
+                'Yokai': IMAGE_FOLDER + 'yokai.png',           
+                'Wutferkel': IMAGE_FOLDER + 'pig.png',  
+                'Bagdos Krieger': IMAGE_FOLDER + 'krieger.png',  
+                'Schleim': IMAGE_FOLDER + 'schleim.png',  
+                'mini_slime': IMAGE_FOLDER + 'mini_slime.png',  
+                'Leecher': IMAGE_FOLDER + 'leecher.png',  
+                'Bagdos Magier': IMAGE_FOLDER + 'magier.png',  
+                'Bagdos Riese': IMAGE_FOLDER + 'riese.png',  
+                'Bagdos Leibgarde': IMAGE_FOLDER + 'leibgarde.png',  
         };
 
         console.log("selectedSkinRaw:", localStorage.getItem('selectedSkinPath'));
@@ -1968,29 +2013,37 @@ h2 {
         // --- Gegnertypen ---
         const ENEMY_TYPES = [
             // ... (deine Gegnertypen bleiben hier unverändert) ...
-                { name: 'Goblin', health: 20, attack: 5, levelMin: 1, levelMax: 5, xp: 35, gold: 60, pixelImageKey: 'Goblin', gemChance: 1, description: 'Ein kleiner, flinker Goblin.', traits: ['Keine Fähigkeit'] },
-                { name: 'Gepanzertes Skelett', health: 25, attack: 4, levelMin: 2, levelMax: 6, xp: 55, gold: 75, pixelImageKey: 'Gepanzertes Skelett', gemChance: 2, description: 'Ein ehmaliger stolzer Krieger.', traits: ['Rüstung'] },
+                { name: 'Goblin', health: 20, attack: 5, levelMin: 1, levelMax: 4, xp: 35, gold: 60, pixelImageKey: 'Goblin', gemChance: 1, description: 'Ein kleiner, flinker Goblin.', traits: ['Keine Fähigkeit'] },
+                { name: 'Schleim', health: 26, attack: 6, levelMin: 1, levelMax: 4, xp: 65, gold: 85, pixelImageKey: 'Schleim', gemChance: 1, description: 'Ein fieser Schleim.', traits: ['Teilung'] },
+                { name: 'Gepanzertes Skelett', health: 25, attack: 4, levelMin: 2, levelMax: 6, xp: 55, gold: 75, pixelImageKey: 'Gepanzertes Skelett', gemChance: 2, description: 'Ein ehmaliger stolzer Soldat.', traits: ['Rüstung'] },
+                { name: 'Leecher', health: 25, attack: 6, levelMin: 2, levelMax: 6, xp: 55, gold: 75, pixelImageKey: 'Leecher', gemChance: 2, description: 'Blutsüchtig Mini Dämonen.', traits: ['Vamp'] },
+                { name: 'Wutferkel', health: 35, attack: 8, levelMin: 3, levelMax: 6, xp: 65, gold: 80, pixelImageKey: 'Wutferkel', gemChance: 2, description: 'Ein Wildes wütendes Schwein', traits: ['Rücksichtslos'] },
                 { name: 'Ork', health: 35, attack: 5, levelMin: 3, levelMax: 7, xp: 60, gold: 65, pixelImageKey: 'Ork', gemChance: 4, description: 'Ein brutaler Ork-Krieger.', traits: ['Stark'] },
-                { name: 'Riesen Spinne', health: 40, attack: 6, levelMin: 4, levelMax: 7, xp: 65, gold: 80, pixelImageKey: 'Riesen Spinne', gemChance: 4, description: 'Spuckt lähmendes Gift.', traits: ['Giftig'] }, // 'Netzwerfer' Effekt muss implementiert werden
-                { name: 'Troll', health: 50, attack: 8, levelMin: 5, levelMax: 9, xp: 70, gold: 100, pixelImageKey: 'Troll', gemChance: 5, description: 'Regeneriert 3 Leben pro Runde.', traits: ['Regeneration', 'Massiv'], regen: 3 }, // Regeneration implementiert
+                { name: 'Riesen Spinne', health: 40, attack: 6, levelMin: 4, levelMax: 7, xp: 65, gold: 80, pixelImageKey: 'Riesen Spinne', gemChance: 4, description: 'Spuckt lähmendes Gift.', traits: ['Giftig'] }, 
+                { name: 'Bagdos Krieger', health: 45, attack: 7, levelMin: 4, levelMax: 8, xp: 68, gold: 85, pixelImageKey: 'Bagdos Krieger', gemChance: 5, description: 'Ein Lakeie Bagods.', traits: ['Krieger'] }, 
+                { name: 'Troll', health: 50, attack: 8, levelMin: 5, levelMax: 9, xp: 70, gold: 100, pixelImageKey: 'Troll', gemChance: 5, description: 'Regeneriert 3 Leben pro Runde.', traits: ['Regeneration', 'Massiv'], regen: 3 }, 
                 { name: 'Donnerschlange', health: 45, attack: 11, levelMin: 6, levelMax: 10, xp: 120, gold: 105, pixelImageKey: 'Donnerschlange', gemChance: 5, description: 'Eine lähmende Donnerschlange', traits: ['Statisch'] },
+                { name: 'Bagdos Magier', health: 45, attack: 10, levelMin: 6, levelMax: 11, xp: 120, gold: 105, pixelImageKey: 'Bagdos Magier', gemChance: 5, description: 'Bagdos treuster Magier', traits: ['Feueratem', 'Vision'] },
                 { name: 'Nekromant', health: 50, attack: 7, levelMin: 8, levelMax: 12, xp: 80, gold: 120, pixelImageKey: 'Nekromant', gemChance: 6, description: 'Schwächt dich oder ruft Diener.', traits: ['Untotenbeschwörer'] }, // Effekte müssen implementiert werden
                 { name: 'Eiskönig', health: 65, attack: 10, levelMin: 9, levelMax: 13, xp: 100, gold: 130, pixelImageKey: 'Eiskönig', gemChance: 6, description: 'Verlangsamt dich mit Kälte.', traits: ['Eis-Elementar', 'Frost-Aura'] }, // Effekte müssen implementiert werden
-                { name: 'Alchemie Kobold', health: 60, attack: 13, levelMin: 10, levelMax: 15, xp: 110, gold: 140, pixelImageKey: 'Alchemie Kobold', gemChance: 7, description: 'Der Albtraum jeder Medizin (fast jeder).', traits: ['Antiheal'] }, // Effekte müssen implementiert werden
+                { name: 'Alchemie Kobold', health: 60, attack: 13, levelMin: 10, levelMax: 15, xp: 110, gold: 140, pixelImageKey: 'Alchemie Kobold', gemChance: 7, description: 'Der Albtraum jeder Medizin (fast jeder).', traits: ['Giftig', 'Antiheal'] }, // Effekte müssen implementiert werden
                 { name: 'Baby Drache', health: 65, attack: 13, levelMin: 11, levelMax: 15, xp: 130, gold: 170, pixelImageKey: 'Baby Drache', gemChance: 7, description: 'Speit Feuerstöße.', traits: ['Verspielt', 'Feueratem'] }, // Effekte müssen implementiert werden
                 { name: 'Charged Golem', health: 75, attack: 12, levelMin: 12, levelMax: 16, xp: 170, gold: 180, pixelImageKey: 'Charged Golem', gemChance: 7, description: 'Mächtiger Elementar Golem.', traits: ['Statisch', 'Regeneration'], regen: 3 }, // Effekte müssen implementiert werden
                 { name: 'Dracula', health: 65, attack: 10, levelMin: 13, levelMax: 17, xp: 190, gold: 190, pixelImageKey: 'Dracula', gemChance: 8, description: 'Dein Blut macht ihn stärker.', traits: ['Vamp', 'Stark'] }, // Effekte müssen implementiert werden
                 { name: 'Dämon', health: 75, attack: 13, levelMin: 14, levelMax: 18, xp: 280, gold: 210, pixelImageKey: 'Dämon', gemChance: 9, description: 'Feuer und Schatten. Resistent.', traits: ['Höllen Krallen'] }, // Effekte müssen implementiert werden
                 { name: 'Verfluchter Ritter', health: 75, attack: 10, levelMin: 15, levelMax: 19, xp: 360, gold: 250, pixelImageKey: 'Verfluchter Ritter', gemChance: 10, description: 'Ein wandelnde Geisterrüstung', traits: ['Rüstung', 'Krieger']}, // Effekte müssen implementiert werden
+                { name: 'Bagdos Riese', health: 110, attack: 12, levelMin: 16, levelMax: 20, xp: 400, gold: 300, pixelImageKey: 'Bagdos Riese', gemChance: 10, description: 'Ein Dummer aber leider auch starker Riese', traits: ['Stark', 'Dämlich'] }, // Effekte müssen implementiert werden
                 { name: 'Erzengel', health: 90, attack: 13, levelMin: 16, levelMax: 20, xp: 400, gold: 300, pixelImageKey: 'Erzengel', gemChance: 10, description: 'Ein mächtiger gefallener Engel.', traits: ['Segen', 'Fliegend'] }, // Effekte müssen implementiert werden
-                { name: 'Gargoyle', health: 90, attack: 13, levelMin: 17, levelMax: 21, xp: 450, gold: 320, pixelImageKey: 'Gargoyle', gemChance: 11, description: 'Einst da um die Menschen zu beschützen. Jetzt ein unbändiges Monster', traits: ['Gepanzerte Schuppen', 'Vision'] }, 
+                { name: 'Gargoyle', health: 85, attack: 15, levelMin: 17, levelMax: 21, xp: 450, gold: 320, pixelImageKey: 'Gargoyle', gemChance: 11, description: 'Einst da um die Menschen zu beschützen. Jetzt ein unbändiges Monster', traits: ['Gepanzerte Schuppen', 'Tank'] }, 
                 { name: 'Drache', health: 110, attack: 16, levelMin: 18, levelMax: 22, xp: 650, gold: 330, pixelImageKey: 'Drache', gemChance: 12, description: 'Ein mächtiger, alter Drache.', traits: ['Feueratem', 'Fliegend', 'Gepanzerte Schuppen'] }, 
                 { name: 'Teufel', health: 70, attack: 7, levelMin: 19, levelMax: 24, xp: 750, gold: 380, pixelImageKey: 'Teufel', gemChance: 13, description: 'Der Herrscher der Unterwelt.', traits: ['Höllenwache'] },
                 { name: 'Spinnenkönigin', health: 100, attack: 14, levelMin: 20, levelMax: 25, xp: 750, gold: 390, pixelImageKey: 'Spinnenkönigin', gemChance: 14, description: 'Eine Spinne die selbst der Teufel fürchtet.', traits: ['Antiheal', 'Giftig'] },
                 { name: 'Rainbow', health: 110, attack: 13, levelMin: 21, levelMax: 26, xp: 900, gold: 400, pixelImageKey: 'Rainbow', gemChance: 16, description: 'Meister über alle Elemente', traits: ['Frost-Aura', 'Giftig', 'Feueratem', 'Statisch'] },
+                { name: 'Bagdos Leibgarde', health: 90, attack: 17, levelMin: 21, levelMax: 26, xp: 900, gold: 400, pixelImageKey: 'Bagdos Leibgarde', gemChance: 16, description: 'Lässt seinen Meister nie im stich', traits: ['Rüstung', 'Tank'] },
                 { name: 'Yokai', health: 100, attack: 16, levelMin: 22, levelMax: 28, xp: 1100, gold: 450, pixelImageKey: 'Yokai', gemChance: 16, description: 'Ein hochrangiger fliegender Yokai-Demon', traits: ['Fliegend', 'Höllenkrallen','Untotenbeschwörer'] },
-                { name: 'Yagdril', health: 130, attack: 27, levelMin: 23, levelMax: 100, xp: 1200, gold: 500, pixelImageKey: 'Yagdril', gemChance: 18, description: 'Ein Wesen dessen Macht unbeschreiblich ist', traits: ['Fliegend', 'Segen'] },
+                { name: 'Yagdril', health: 90, attack: 28, levelMin: 23, levelMax: 100, xp: 1200, gold: 500, pixelImageKey: 'Yagdril', gemChance: 18, description: 'Ein Wesen dessen Macht unbeschreiblich ist', traits: ['Fliegend', 'YinYang'] },
                 { name: 'Leviathan', health: 150, attack: 20, levelMin: 24, levelMax: 100, xp: 1300, gold: 520, pixelImageKey: 'Leviathan', gemChance: 23, description: 'Das Symbol des Schreckens', traits: ['Antiheal', 'Vision'] },
+                { name: 'Bagdo', health: 120, maxHealth: 120, attack: 30, levelMin: 25, levelMax: 100, xp: 1500, gold: 600, pixelImageKey: 'Bagdo', gemChance: 25, description: 'Der gefallene Lichking', traits: ['Entfesselung'] },
         ];
     
         // --- Upgrade-Typen ---
@@ -2588,7 +2641,9 @@ function initGame() {
             enemyHealthElem.textContent = enemy.health;
             enemyMaxHealthElem.textContent = enemy.maxHealth;
             enemyHealthBarElem.style.width = `${Math.max(0, (enemy.health / enemy.maxHealth)) * 100}%`;
-            let displayedAttack = enemy.attack || 0;
+            let baseAttack = enemy.attack || 0;
+            let modifier = enemy.attackModifier != null ? enemy.attackModifier : 1;
+            let displayedAttack = Math.floor(baseAttack * modifier);
             if (enemy.statusEffects?.some(e => e.type === 'paralyze')) {
                 displayedAttack = Math.floor(displayedAttack / 2);
             }
@@ -2624,18 +2679,45 @@ function initGame() {
                 'Statisch': 'Angriffe Paralysieren dich zu 45% (Paraylse = 2 Karte nur Spielbar)',
                 'Höllenwache': 'Beschwört einen sehr starken Höllenhund',
                 'Antiheal': 'Vehindert jegliche Heilung (Ausgenommen: Lotus Trank)',
-                'Vision': 'Erhöht deine Manakosten um 1'
+                'Vision': 'Erhöht deine Manakosten um 1',
+                'Rücksichtslos': 'Fügt sich bei jedem Angriff selbst Schaden in Höhe von 50 % seines Angriffs zu.',
+                'YinYang': 'Yin: 30 Shield / Yang: 2x Angriff. Verändert sich zufällig',
+                'Teilung': 'Teil sich in einen Mini-Schleim nach dem Tod',
+                'Dämlich': 'Zu dumm um den Genger zu treffen. Macht sich gelgentlich selber 10 schaden',
+                'Tank': 'Erleidet weniger Schaden, je weniger Leben er hat (bis zu 40 % Reduktion).',
+                'Entfesselung': 'Braucht 2 Runden um seine Angriff aufzuladen!',
+                'Lichking': 'Wird nach dem Tot mit 50% Leben wiederbelebt und bekommt einen Schadensboost',
             };
+                monsterTraitsElem.innerHTML = '';
+                if (enemy.traits?.length) {
+                    enemy.traits.forEach(trait => {
+                        const span = document.createElement('span');
+                        span.classList.add('monster-trait');
 
-            monsterTraitsElem.innerHTML = '';
-            if (enemy.traits?.length) {
-                enemy.traits.forEach(trait => {
-                    const span = document.createElement('span');
-                    span.classList.add('monster-trait');
-                    span.textContent = trait;
-                    span.setAttribute('data-tooltip', traitDescriptions[trait] || 'Keine Beschreibung verfügbar.');
-                    monsterTraitsElem.appendChild(span);
-                });
+                        if (trait === 'Lichking') {
+                            span.style.backgroundColor = '#00e0e0';  // Türkis
+                            span.style.color = '#002020';           // Dunkle Schrift
+                            span.style.border = '1px solid #00cccc';
+                        }
+
+                        if (trait === 'YinYang') {
+                            const yinYangState = enemy.yinYangState || 'yin'; // Sicherer Fallback
+                            if (yinYangState === 'yin') {
+                                span.style.backgroundColor = '#fff';
+                                span.style.color = '#000';
+                                span.textContent = 'Yin';
+                            } else {
+                                span.style.backgroundColor = '#000';
+                                span.style.color = '#fff';
+                                span.textContent = 'Yang';
+                            }
+                        } else {
+                            span.textContent = trait;
+                        }
+
+                        span.setAttribute('data-tooltip', traitDescriptions[trait] || 'Keine Beschreibung verfügbar.');
+                        monsterTraitsElem.appendChild(span);
+                    });
                 }
 
                 //Block enemy
@@ -2947,6 +3029,33 @@ function getEffectiveManaCost(card, forDisplay = false) {
                 }
             }
 
+
+
+        function updateYinYangState(enemy) {
+                if (!enemy.traits?.includes('YinYang')) return;
+
+                if (enemy.yinYangTurnsRemaining > 0) {
+                    enemy.yinYangTurnsRemaining--; // Zustand bleibt noch bestehen
+                    return;
+                }
+                // Zustand wechseln
+                const newState = Math.random() < 0.5 ? 'yin' : 'yang';
+                enemy.yinYangState = newState;
+
+                if (newState === 'yin') {
+                    enemy.attackModifier = 0.5;
+                    enemy.block = 30;
+                    logMessage(`${enemy.name} geht in den Yin-Zustand: Verteidigung +20 Block, halber Angriff.`, 'enemy');
+                } else {
+                    enemy.attackModifier = 1;
+                    enemy.block = 0;
+                    logMessage(`${enemy.name} geht in den Yang-Zustand: voller Angriff, keine Verteidigung.`, 'enemy');
+                }
+                // Zustand bleibt mindestens 1 Gegnerzug lang bestehen
+                enemy.yinYangTurnsRemaining = 1;
+            }
+
+
         // Lädt einen neuen Gegner basierend auf dem Spielerlevel
         function loadEnemy() {
 
@@ -2965,24 +3074,29 @@ function getEffectiveManaCost(card, forDisplay = false) {
             }
     
             // WICHTIG: Eine *Kopie* des Gegners erstellen, um das Original nicht zu ändern!
-            state.currentEnemy = {
-                 ...enemyTemplate,
-                 health: enemyTemplate.health, // Startleben setzen
-                 maxHealth: enemyTemplate.health, // MaxLeben speichern
-                 poisonTurns: 0,
-                 statusEffects: [], // Initial leere Status-Effekte
-                 minions: [],
-                 block: 0 
-             };
+                    state.currentEnemy = {
+                        ...enemyTemplate,
+                        health: enemyTemplate.health, // Startleben setzen
+                        maxHealth: enemyTemplate.health, // MaxLeben speichern
+                        poisonTurns: 0,
+                        statusEffects: [],
+                        minions: [],
+                        block: 0,
+                        yinYangState: null,
+                        yinYangTurnsRemaining: 0,
+                        attackModifier: 1
+                    };
 
-
-            // Vision-Effekt setzen oder entfernen
-if (enemyTemplate.traits?.includes('Vision')) {
-    state.player.tempManaCostPenalty = 1;
-    logMessage(`👁️ Vision: Deine Handkarten kosten in dieser Runde +1 Mana!`, 'debuff');
-} else if (!state.player.frozen) {
-    state.player.tempManaCostPenalty = 0;
-}
+                    if (state.currentEnemy.traits?.includes('YinYang')) {
+                        updateYinYangState(state.currentEnemy);
+                    }
+                            // Vision-Effekt setzen oder entfernen
+                if (enemyTemplate.traits?.includes('Vision')) {
+                    state.player.tempManaCostPenalty = 1;
+                    logMessage(`👁️ Vision: Deine Handkarten kosten in dieser Runde +1 Mana!`, 'debuff');
+                } else if (!state.player.frozen) {
+                    state.player.tempManaCostPenalty = 0;
+                }
 
 
         
@@ -3178,6 +3292,19 @@ const applyLifesteal = (damageDealt) => {
 };
 
 
+function applyTankTraitReduction(target, incomingDamage) {
+    if (!target.traits?.includes('Tank') || !target.maxHealth) return incomingDamage;
+
+    const missingPercent = 1 - (target.health / target.maxHealth);
+    const reductionFactor = Math.min(0.4, missingPercent * 0.4); // max 40%
+    const reducedDamage = Math.floor(incomingDamage * (1 - reductionFactor));
+
+    if (reductionFactor > 0) {
+        logMessage(`🛡️ ${target.name} reduziert den Schaden um ${Math.round(reductionFactor * 100)} %.`, 'enemy');
+    }
+
+    return reducedDamage;
+}
 
 
 // Refactored playSingleEffect for Fusion Effects
@@ -3232,6 +3359,7 @@ function playSingleEffect(effect, power, card) {
         updateEnemyUI();
     };
 
+
     switch (effect) {
         case 'damage': {
             let base = applyDamageBonuses(remaining);
@@ -3247,8 +3375,9 @@ function playSingleEffect(effect, power, card) {
             }
             const dmg = base - block;
             if (dmg > 0) {
-                enemy.health -= dmg;
-                logMessage(`${enemy.name} erleidet ${dmg} Schaden.`, 'enemy');
+                const finalDmg = applyTankTraitReduction(enemy, dmg);
+                enemy.health -= finalDmg;
+                logMessage(`${enemy.name} erleidet ${finalDmg} Schaden.`, 'enemy');
                 applyLifesteal(dmg);
             } else {
                 logMessage(`${enemy.name} blockt den gesamten Schaden!`, 'block');
@@ -3273,7 +3402,9 @@ function playSingleEffect(effect, power, card) {
                 const dmg = remaining - block;
 
                 if (dmg > 0) {
-                    enemy.health -= dmg;
+                    const finalDmg = applyTankTraitReduction(enemy, dmg);
+                    enemy.health -= finalDmg;
+                    logMessage(`${enemy.name} erleidet ${finalDmg} Schaden.`, 'enemy');
                     // ❌ Anti-Heal wird in applyLifesteal geprüft
                     applyLifesteal(dmg);
                 }
@@ -3322,8 +3453,9 @@ function playSingleEffect(effect, power, card) {
                 }
                 const dmg = remaining - block;
                 if (dmg > 0) {
-                    enemy.health -= dmg;
-                    logMessage(`🌪️ Treffer ${i + 1}: ${enemy.name} nimmt ${dmg} Schaden.`, 'enemy');
+                    const finalDmg = applyTankTraitReduction(enemy, dmg);
+                    enemy.health -= finalDmg;
+                    logMessage(`🌪️ Treffer ${i + 1}: ${enemy.name} nimmt ${finalDmg} Schaden.`, 'enemy');
                     applyLifesteal(dmg);
                 }
                 hitAnimation();
@@ -3352,8 +3484,9 @@ function playSingleEffect(effect, power, card) {
             }
             const dmg = remaining - block;
             if (dmg > 0) {
-                enemy.health -= dmg;
-                logMessage(`${enemy.name} erleidet ${dmg} Schaden durch Ansturm.`, 'enemy');
+                const finalDmg = applyTankTraitReduction(enemy, dmg);
+                enemy.health -= finalDmg;
+                logMessage(`${enemy.name} erleidet ${finalDmg} Schaden durch Ansturm.`, 'enemy');
                 applyLifesteal(dmg);
             }
             if (card.selfDamage) {
@@ -3367,17 +3500,21 @@ function playSingleEffect(effect, power, card) {
 
         case 'whirlwind': {
             const targets = [enemy, ...(enemy.minions || [])];
+            let totalDamageDealt = 0;
+
             targets.forEach(target => {
-                target.health -= remaining;
-                logMessage(`🌀 ${target.name} erleidet ${remaining} Schaden durch Klingenwirbel.`, 'enemy');
+                const adjustedDamage = applyTankTraitReduction(target, remaining);
+                target.health -= adjustedDamage;
+                totalDamageDealt += adjustedDamage;
+                logMessage(`🌀 ${target.name} erleidet ${adjustedDamage} Schaden durch Klingenwirbel.`, 'enemy');
             });
+
             enemy.minions = enemy.minions?.filter(m => m.health > 0) || [];
-            applyLifesteal(remaining * targets.length);
+            applyLifesteal(totalDamageDealt);
             applyDragonscale();
             hitAnimation();
             break;
         }
-
         default:
             logMessage(`⚠️ Effekt ${effect} ist nicht bekannt.`, 'system');
     }
@@ -3422,8 +3559,10 @@ function executeCardEffect(card) {
 
                     const netDamage = totalDamage - blockUsed;
                     if (netDamage > 0) {
-                        state.currentEnemy.health -= netDamage;
-                        logMessage(`${state.currentEnemy.name} erleidet ${netDamage} Schaden durch Blutung.`, 'enemy');
+                        const adjustedDamage = applyTankTraitReduction(state.currentEnemy, netDamage);
+                        state.currentEnemy.health -= adjustedDamage;
+                        logMessage(`${state.currentEnemy.name} erleidet ${adjustedDamage} Schaden durch Blutung.`, 'enemy');
+                        applyLifesteal(adjustedDamage);
                     } else {
                         logMessage(`${state.currentEnemy.name} blockt den gesamten Blutungsschaden!`, 'block');
                     }
@@ -3467,8 +3606,12 @@ function executeCardEffect(card) {
 
                 const finalDamage = damage - blockUsed;
                 if (finalDamage > 0) {
-                    state.currentEnemy.health -= finalDamage;
-                    logMessage(`${state.currentEnemy.name} erleidet ${finalDamage} Schaden durch Ansturm.`, 'enemy');
+                    const adjustedDamage = applyTankTraitReduction(state.currentEnemy, finalDamage);
+                    state.currentEnemy.health -= adjustedDamage;
+                    logMessage(`${state.currentEnemy.name} erleidet ${adjustedDamage} Schaden durch Ansturm.`, 'enemy');
+                    applyLifesteal(adjustedDamage);
+                } else {
+                    applyLifesteal(0);
                 }
 
                 // Rückstoß-Schaden auf Spieler
@@ -3556,9 +3699,10 @@ function executeCardEffect(card) {
             }
 
             // Hauptgegner angreifen (Block ignorieren)
-            state.currentEnemy.health -= totalDamage;
-            damageDealt += totalDamage;
-            logMessage(`🌀 ${state.currentEnemy.name} erleidet ${totalDamage} Schaden durch Klingenwirbel (ignoriert Block).`, 'enemy');
+            const adjustedDamage = applyTankTraitReduction(state.currentEnemy, totalDamage);
+            state.currentEnemy.health -= adjustedDamage;
+            damageDealt += adjustedDamage;
+            logMessage(`🌀 ${state.currentEnemy.name} erleidet ${adjustedDamage} Schaden durch Klingenwirbel (ignoriert Block).`, 'enemy');
 
             // Trefferanimation
             enemyContainerElem.classList.add('hit');
@@ -3633,7 +3777,7 @@ function executeCardEffect(card) {
                     logMessage(`${state.currentEnemy.name} blockt ${blockUsed} Schaden.`, 'block');
                 }
 
-                remainingDamage = damageDealt - blockUsed;
+                remainingDamage = applyTankTraitReduction(state.currentEnemy, damageDealt - blockUsed);
                 if (remainingDamage > 0) {
                     state.currentEnemy.health -= remainingDamage;
                     logMessage(`${state.currentEnemy.name} erleidet ${remainingDamage} Schaden.`, 'enemy');
@@ -3679,7 +3823,8 @@ function executeCardEffect(card) {
                         logMessage(`${state.currentEnemy.name} blockt ${block} Schaden.`, 'block');
                     }
 
-                    const final = baseDamage - block;
+                    let raw = baseDamage - block;
+                    const final = applyTankTraitReduction(state.currentEnemy, raw);
                     if (final > 0) {
                         state.currentEnemy.health -= final;
                         damageDealt += final;
@@ -3788,10 +3933,10 @@ function executeCardEffect(card) {
                         state.currentEnemy.block -= enemyBlockUsed;
                         logMessage(`${state.currentEnemy.name} blockt ${enemyBlockUsed} Schaden.`, 'block');
                     }
-
                     const remainingDamage = lsDamage - enemyBlockUsed;
                     if (remainingDamage > 0) {
-                        state.currentEnemy.health -= remainingDamage;
+                        const finalDamage = applyTankTraitReduction(state.currentEnemy, remainingDamage);
+                        state.currentEnemy.health -= finalDamage;
                     }
 
                     // Lifesteal der Karte (unabhängig von Upgrade)
@@ -3833,8 +3978,9 @@ function executeCardEffect(card) {
                         logMessage(`🛡️ ${state.currentEnemy.name} blockt ${blockUsed} Schaden.`, 'block');
                     }
 
-                    state.currentEnemy.health -= damageAfterBlock;
-                    logMessage(`${state.currentEnemy.name} erleidet ${damageAfterBlock} Schaden durch Feuerpfeil.`, 'enemy');
+                    const finalFireDamage = applyTankTraitReduction(state.currentEnemy, damageAfterBlock);
+                    state.currentEnemy.health -= finalFireDamage;
+                    logMessage(`${state.currentEnemy.name} erleidet ${finalFireDamage} Schaden durch Feuerpfeil.`, 'enemy');
 
                     // 🧛 Lifesteal (aus Upgrades)
                     applyLifesteal(damageAfterBlock);
@@ -4036,6 +4182,36 @@ function executeCardEffect(card) {
                     logMessage(`${enemy.name} wird wütend! Angriff verdoppelt auf ${enemy.attack}!`, 'enemy');
                 }
 
+                //YinYang
+                if (enemy.traits?.includes('YinYang')) {
+                    const current = enemy.yinYangState;
+                    const next = Math.random() < 0.5 ? 'yin' : 'yang';
+
+                    // Zustand nur ändern, wenn er sich unterscheidet
+                    if (current !== next) {
+                        enemy.yinYangState = next;
+
+                        if (next === 'yin') {
+                            enemy.block = 30;
+                            enemy.attackModifier = 0.5;
+                            logMessage(`${enemy.name} wechselt in den Yin-Zustand: 🛡️ 20 Block, ⚔️ -50 % Angriff.`, 'enemy');
+                        } else {
+                            enemy.block = 0;
+                            enemy.attackModifier = 1.0;
+                            logMessage(`${enemy.name} wechselt in den Yang-Zustand: ⚔️ voller Angriff, 🛡️ kein Block.`, 'enemy');
+                        }
+                    } else {
+                        // Gleicher Zustand bleibt bestehen → Effekte erneut setzen
+                        if (current === 'yin') {
+                            enemy.block = 30;
+                            enemy.attackModifier = 0.5;
+                        } else {
+                            enemy.block = 0;
+                            enemy.attackModifier = 1.0;
+                        }
+                    }
+                }
+
                 // UNTOTENBESCHWÖRER – nur beim ersten Mal
                 if (enemy.traits?.includes('Untotenbeschwörer') && !enemy.summoned) {
                     logMessage(`${enemy.name} beschwört zwei Skelette zur Unterstützung!`, 'enemy');
@@ -4185,6 +4361,24 @@ function executeCardEffect(card) {
                 state.currentEnemy.damagedThisTurn = false;
 
                 logMessage("🔁 Gegner ist am Zug...", 'enemy');
+                // 🔓 Entfesselung – Angriff erst nach 2 Runden
+                if (state.currentEnemy.traits?.includes('Entfesselung')) {
+                    if (state.currentEnemy.entfesselungTurns == null) {
+                        state.currentEnemy.entfesselungTurns = 2;
+                        state.currentEnemy.originalAttack = state.currentEnemy.attack || 0;
+                    }
+
+                    if (state.currentEnemy.entfesselungTurns > 0) {
+                        state.currentEnemy.entfesselungTurns--;
+                        state.currentEnemy.attack = 0;
+                        logMessage(`${state.currentEnemy.name} bereitet sich vor... (Entfesselung ${state.currentEnemy.entfesselungTurns} Runden verbleiben)`, 'enemy');
+                    } else {
+                        state.currentEnemy.attack = state.currentEnemy.originalAttack;
+                        delete state.currentEnemy.entfesselungTurns;
+                        delete state.currentEnemy.originalAttack;
+                        logMessage(`${state.currentEnemy.name} entfesselt seine Kraft!`, 'enemy');
+                    }
+                }
 
                 applyEnemyTraitEffectsBeforeAttack();
 
@@ -4223,7 +4417,24 @@ function executeCardEffect(card) {
                     return;
                 }
 
-                let damage = state.currentEnemy.attack || 0;
+                // 🧠 Dämlich – 40% Chance, sich selbst zu verletzen
+                if (state.currentEnemy.traits?.includes('Dämlich') && Math.random() < 0.4) {
+                    state.currentEnemy.health -= 10;
+                    logMessage(`🤪 ${state.currentEnemy.name} greift sich selbst an! -10 Leben.`, 'enemy');
+                    updateEnemyUI();
+                    // Kein Angriff diese Runde
+                    applyEnemyStatusEffectsAfterTurn();
+                    updateUIDisplay();
+                    setTimeout(startNewTurn, 800);
+                    return;
+                }
+
+                let baseAttack = state.currentEnemy.attack || 0;
+                let damage = baseAttack;
+
+                if (state.currentEnemy.attackModifier != null) {
+                    damage = Math.floor(baseAttack * state.currentEnemy.attackModifier);
+                }
 
                 const paralyzeEffect = state.currentEnemy.statusEffects?.find(e => e.type === 'paralyze');
                 if (paralyzeEffect) {
@@ -4252,6 +4463,22 @@ function executeCardEffect(card) {
                     state.player.health -= damageTaken;
                     logMessage(`💥 Spieler erleidet ${damageTaken} Schaden.`, 'player');
 
+                        // 🩸 Rücksichtslos – Gegner verletzt sich selbst
+                if (state.currentEnemy.traits?.includes('Rücksichtslos')) {
+                    const selfDamage = Math.floor((state.currentEnemy.attack || 0) / 2);
+                    if (selfDamage > 0) {
+                        state.currentEnemy.health -= selfDamage;
+                        logMessage(`🤕 ${state.currentEnemy.name} fügt sich ${selfDamage} Schaden zu (Rücksichtslos).`, 'enemy');
+                        updateEnemyUI();
+
+                        // Falls Selbstschaden tödlich war
+                        if (state.currentEnemy.health <= 0) {
+                            logMessage(`${state.currentEnemy.name} stirbt durch Rücksichtslosigkeit!`, 'system');
+                            checkEnemyDefeat();
+                            return;
+                        }
+                    }
+                }
 
                     // ⚡ Paralyse durch "Statisch"-Trait
                     const hasStaticTrait = state.currentEnemy.traits?.includes('Statisch');
@@ -4430,7 +4657,9 @@ function executeCardEffect(card) {
             } else {
                 state.player.tempManaCostPenalty = 0;
             }
-            state.currentEnemy.block = 0;
+            if (!state.currentEnemy.traits?.includes('YinYang') || state.currentEnemy.yinYangState !== 'yin') {
+                 state.currentEnemy.block = 0;
+            }       
 
                  // RÜSTUNG: 5 Block pro Runde
             if (state.currentEnemy.traits?.includes('Rüstung')) {
@@ -4607,8 +4836,61 @@ function executeCardEffect(card) {
         // Prüft, ob der aktuelle Gegner besiegt ist
         function checkEnemyDefeat() {
     if (state.currentEnemy && state.currentEnemy.health <= 0) {
+        // 💀 Lichking – 1-malige Wiederbelebung
+            if (state.currentEnemy.traits?.includes('Lichking') && !state.currentEnemy.hasResurrected) {
+                state.currentEnemy.hasResurrected = true;
+                state.currentEnemy.health = Math.floor(state.currentEnemy.maxHealth / 2);
+
+                // ⬇️ HIER EINSETZEN
+                state.currentEnemy.attack += 20;
+                logMessage(`⚔️ ${state.currentEnemy.name} erhält +20 Angriff nach der Wiederbelebung!`, 'enemy');
+
+                logMessage(`💀 ${state.currentEnemy.name} erhebt sich als Lich!`, 'enemy');
+                const enemyElem = document.getElementById('enemyContainer') || enemyContainerElem;
+                enemyElem.classList.add('lich-revive-effect');
+                setTimeout(() => {
+                    enemyElem.classList.remove('lich-revive-effect');
+                }, 1600);
+                updateEnemyUI();
+                return true; // verhindere normales Weiterlaufen
+            }
+
+
         const defeatedName = state.currentEnemy.name;
-        logMessage(`${defeatedName} besiegt!`, 'system');
+        logMessage(`${defeatedName} besiegt!`, 'system')
+
+            // 🧪 Teilung – Erzeugt Mini-Schleim statt neuen Gegner zu laden
+        if (state.currentEnemy.traits?.includes('Teilung') && !state.currentEnemy.hasSplit) {
+            const original = state.currentEnemy;
+
+            // Markiere originalen Schleim als bereits geteilt
+            original.hasSplit = true;
+
+            const miniSlime = {
+                name: 'Mini-Schleim',
+                health: Math.floor(original.maxHealth / 2),
+                maxHealth: Math.floor(original.maxHealth / 2),
+                attack: Math.max(1, Math.floor((original.attack || 0) / 2)),
+                traits: [], // Mini bekommt keine Traits
+                pixelImageKey: 'mini_slime',
+                description: 'Ein kleiner, aber zäher Schleim!',
+                xp: Math.floor((original.xp || 50) / 2),
+                gold: Math.floor((original.gold || 10) / 2),
+                levelMin: original.levelMin,
+                levelMax: original.levelMax
+            };
+
+            logMessage(`🧪 Der Schleim teilt sich in einen Mini-Schleim!`, 'enemy');
+
+            // Ersetze den Gegner durch den Mini
+            state.currentEnemy = miniSlime;
+
+            updateEnemyUI();
+            updateUIDisplay();
+            startNewTurn();
+            return true; // Wichtig: Stoppt restliche Verarbeitung
+        }
+
         state.defeatedEnemies++;
 
         // 🕰 Zeitklingenpassiv: alle 5 Kills → +1 Damage Bonus
@@ -4637,6 +4919,12 @@ function executeCardEffect(card) {
             localStorage.setItem('unlockedUndead', 'true');
             logMessage('🗝️ Passive "Totenbeschwörer" freigeschaltet!', 'system');
         }
+        if (defeatedName === 'Goblin') {
+            localStorage.setItem('unlockedLichkingSkin', 'true');
+            unlockSkin('skin_lichking');
+            logMessage('🧊 Du hast den Lichkönig besiegt! Skin freigeschaltet.', 'system');
+        }
+
 
         const xpGained = state.currentEnemy.xp || 50;
         gainXP(xpGained);
@@ -4679,10 +4967,14 @@ function executeCardEffect(card) {
         updateCardAvailability();
         return false;
     }
-}
+ }
 
+    function unlockSkin(skinId) {
+                const skins = new Set(JSON.parse(localStorage.getItem("unlockedSkins") || "[]"));
+                skins.add(skinId);
+                localStorage.setItem("unlockedSkins", JSON.stringify(Array.from(skins)));
+            }
 
-    
             // Verarbeitet erhaltene XP und prüft auf Level Up
             function gainXP(amount) {
                 if (state.gameOver) return;

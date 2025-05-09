@@ -144,7 +144,7 @@ function animateGemDrop(amount = 1) {
     gold: {
       name: 'Maxcase - 5%',
       cost: 25,
-      chances: { common: 0, uncommon: 600, rare: 350, epic: 50 }
+      chances: { common: 0, uncommon: 500, rare: 450, epic: 50 }
     }
   };
   
