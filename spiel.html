@@ -1977,7 +1977,7 @@ h2 {
                 'Eiskönig': IMAGE_FOLDER + 'Eiskönig.png', // Umlaut vermieden
                 'Erzengel': IMAGE_FOLDER + 'Erzengel.png',
                 'Dracula': IMAGE_FOLDER + 'Drakula.png',
-                'Alchemie Kobold': IMAGE_FOLDER + 'alchemie.png',
+                'Alchemie Kobold': IMAGE_FOLDER + 'alchemiekobold.png',
                 'Drache': IMAGE_FOLDER + 'Drache.png',
                 'Verfluchter Ritter': IMAGE_FOLDER + 'CursedKnight.png',
                 'Gepanzertes Skelett': IMAGE_FOLDER + 'armorskelett.png',
@@ -1998,6 +1998,7 @@ h2 {
                 'Bagdos Magier': IMAGE_FOLDER + 'magier.png',  
                 'Bagdos Riese': IMAGE_FOLDER + 'riese.png',  
                 'Bagdos Leibgarde': IMAGE_FOLDER + 'leibgarde.png',  
+                'Bagdo': IMAGE_FOLDER + 'bagdoboss.png',  
         };
 
         console.log("selectedSkinRaw:", localStorage.getItem('selectedSkinPath'));
@@ -2026,7 +2027,7 @@ h2 {
                 { name: 'Bagdos Magier', health: 45, attack: 10, levelMin: 6, levelMax: 11, xp: 120, gold: 105, pixelImageKey: 'Bagdos Magier', gemChance: 5, description: 'Bagdos treuster Magier', traits: ['Feueratem', 'Vision'] },
                 { name: 'Nekromant', health: 50, attack: 7, levelMin: 8, levelMax: 12, xp: 80, gold: 120, pixelImageKey: 'Nekromant', gemChance: 6, description: 'Schwächt dich oder ruft Diener.', traits: ['Untotenbeschwörer'] }, // Effekte müssen implementiert werden
                 { name: 'Eiskönig', health: 65, attack: 10, levelMin: 9, levelMax: 13, xp: 100, gold: 130, pixelImageKey: 'Eiskönig', gemChance: 6, description: 'Verlangsamt dich mit Kälte.', traits: ['Eis-Elementar', 'Frost-Aura'] }, // Effekte müssen implementiert werden
-                { name: 'Alchemie Kobold', health: 60, attack: 13, levelMin: 10, levelMax: 15, xp: 110, gold: 140, pixelImageKey: 'Alchemie Kobold', gemChance: 7, description: 'Der Albtraum jeder Medizin (fast jeder).', traits: ['Giftig', 'Antiheal'] }, // Effekte müssen implementiert werden
+                { name: 'Alchemie Kobold', health: 60, attack: 10, levelMin: 10, levelMax: 15, xp: 110, gold: 140, pixelImageKey: 'Alchemie Kobold', gemChance: 7, description: 'Der Albtraum jeder Medizin (fast jeder).', traits: ['Giftig', 'Antiheal'] }, // Effekte müssen implementiert werden
                 { name: 'Baby Drache', health: 65, attack: 13, levelMin: 11, levelMax: 15, xp: 130, gold: 170, pixelImageKey: 'Baby Drache', gemChance: 7, description: 'Speit Feuerstöße.', traits: ['Verspielt', 'Feueratem'] }, // Effekte müssen implementiert werden
                 { name: 'Charged Golem', health: 75, attack: 12, levelMin: 12, levelMax: 16, xp: 170, gold: 180, pixelImageKey: 'Charged Golem', gemChance: 7, description: 'Mächtiger Elementar Golem.', traits: ['Statisch', 'Regeneration'], regen: 3 }, // Effekte müssen implementiert werden
                 { name: 'Dracula', health: 65, attack: 10, levelMin: 13, levelMax: 17, xp: 190, gold: 190, pixelImageKey: 'Dracula', gemChance: 8, description: 'Dein Blut macht ihn stärker.', traits: ['Vamp', 'Stark'] }, // Effekte müssen implementiert werden
