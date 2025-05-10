@@ -2001,6 +2001,7 @@ h2 {
                 'Bagdos Leibgarde': IMAGE_FOLDER + 'leibgarde.png',  
                 'Bagdo': IMAGE_FOLDER + 'bagdoboss.png',  
                 'Leviathan': IMAGE_FOLDER + 'Leviathan.png',  
+                'awakened': IMAGE_FOLDER + 'awakened.png', 
         };
 
         console.log("selectedSkinRaw:", localStorage.getItem('selectedSkinPath'));
@@ -2046,7 +2047,7 @@ h2 {
                 { name: 'Yokai', health: 110, attack: 16, levelMin: 22, levelMax: 28, xp: 1100, gold: 450, pixelImageKey: 'Yokai', gemChance: 16, description: 'Ein hochrangiger fliegender Yokai-Demon', traits: ['Fliegend', 'Höllenkrallen','Untotenbeschwörer'] },
                 { name: 'Yagdril', health: 150, attack: 28, levelMin: 23, levelMax: 100, xp: 1200, gold: 500, pixelImageKey: 'Yagdril', gemChance: 18, description: 'Ein Wesen dessen Macht unbeschreiblich ist', traits: ['Fliegend', 'YinYang'] },
                 { name: 'Leviathan', health: 160, attack: 20, levelMin: 24, levelMax: 100, xp: 1300, gold: 520, pixelImageKey: 'Leviathan', gemChance: 23, description: 'Das Symbol des Schreckens', traits: ['Antiheal', 'Vision'] },
-                { name: 'Bagdo', health: 200, maxHealth: 200, attack: 30, levelMin: 25, levelMax: 100, xp: 1500, gold: 600, pixelImageKey: 'Bagdo', gemChance: 25, description: 'Der gefallene Lichking', traits: ['Entfesselung', 'Lichking', 'Vision'] },
+                { name: 'Bagdo', health: 220, maxHealth: 200, attack: 30, levelMin: 25, levelMax: 100, xp: 1500, gold: 600, pixelImageKey: 'Bagdo', gemChance: 25, description: 'Der gefallene Lichking', traits: ['Entfesselung', 'Lichking', 'Vision'] },
         ];
     
         // --- Upgrade-Typen ---
@@ -3819,7 +3820,7 @@ function executeCardEffect(card) {
                 setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
                 break;
 
-            case 'multi_hit': {
+          case 'multi_hit': {
                 let hits;
                 if (card.minHits != null && card.hits != null && card.minHits <= card.hits) {
                     hits = getRandomInt(card.minHits, card.hits);
@@ -3829,14 +3830,14 @@ function executeCardEffect(card) {
 
                 let damageDealt = 0;
 
-                // 🕰️ Zeitklinge: Einmaligen Bonus ermitteln
-                const bonusOnce = (state.player.hasZeitklinge) ? 5 : 0;
+                // 🕰️ Zeitklinge: Einmaligen Bonus vorbereiten
+                const zeitklingeBonus = state.player.hasZeitklinge ? applyDamageBonuses(5) : 0;
 
                 for (let i = 0; i < hits; i++) {
                     if (!state.currentEnemy || state.currentEnemy.health <= 0) break;
 
-                    const bonus = (i === 0) ? bonusOnce : 0; // Nur beim ersten Schlag
-                    const baseDamage = applyDamageBonuses(card.power + bonus);
+                    const rawBase = card.power + (i === 0 ? zeitklingeBonus : 0);
+                    const baseDamage = applyDamageBonuses(rawBase);
 
                     const block = card.ignoreBlock ? 0 : Math.min(state.currentEnemy.block || 0, baseDamage);
                     if (block > 0 && !card.ignoreBlock) {
@@ -4380,24 +4381,25 @@ function executeCardEffect(card) {
                 state.player.frozen = false;
                 state.currentEnemy.damagedThisTurn = false;
 
-                logMessage("🔁 Gegner ist am Zug...", 'enemy');
-                // 🔓 Entfesselung – Angriff erst nach 2 Runden
-                if (state.currentEnemy.traits?.includes('Entfesselung')) {
-                    if (state.currentEnemy.entfesselungTurns == null) {
-                        state.currentEnemy.entfesselungTurns = 2;
-                        state.currentEnemy.originalAttack = state.currentEnemy.attack || 0;
-                    }
+            logMessage("🔁 Gegner ist am Zug...", 'enemy');
 
-                    if (state.currentEnemy.entfesselungTurns > 0) {
-                        state.currentEnemy.entfesselungTurns--;
-                        state.currentEnemy.attack = 0;
-                        logMessage(`${state.currentEnemy.name} bereitet sich vor... (Entfesselung ${state.currentEnemy.entfesselungTurns} Runden verbleiben)`, 'enemy');
-                    } else {
-                        state.currentEnemy.attack = state.currentEnemy.originalAttack;
-                        delete state.currentEnemy.entfesselungTurns;
-                        delete state.currentEnemy.originalAttack;
-                        logMessage(`${state.currentEnemy.name} entfesselt seine Kraft!`, 'enemy');
-                    }
+                // 🔓 ENTFESELUNG – Gegner setzt 2 Runden aus, dann voller Angriff
+                if (state.currentEnemy.traits?.includes('Entfesselung')) {
+                // Einmalige Initialisierung
+                if (typeof state.currentEnemy.entfesselungTurns === 'undefined') {
+                    state.currentEnemy.entfesselungTurns = 2;
+                    state.currentEnemy.originalAttack = state.currentEnemy.attack;
+                }
+
+                if (state.currentEnemy.entfesselungTurns > 0) {
+                    state.currentEnemy.entfesselungTurns--;
+                    state.currentEnemy.attack = 0;
+                    logMessage(`${state.currentEnemy.name} bereitet sich vor... (Entfesselung – ${state.currentEnemy.entfesselungTurns} Runden verbleiben)`, 'enemy');
+                } else if (state.currentEnemy.attack === 0) {
+                    // Entfesselung endet – einmalig zurückgeben
+                    state.currentEnemy.attack = state.currentEnemy.originalAttack;
+                    logMessage(`${state.currentEnemy.name} entfesselt seine volle Kraft!`, 'enemy');
+                }
                 }
 
                 applyEnemyTraitEffectsBeforeAttack();
@@ -4865,10 +4867,13 @@ if (state.currentEnemy && state.currentEnemy.health <= 0) {
     if (state.currentEnemy.traits?.includes('Lichking') && !state.currentEnemy.hasResurrected) {
         state.currentEnemy.hasResurrected = true;
         state.currentEnemy.health = Math.floor(state.currentEnemy.maxHealth / 2);
-        state.currentEnemy.attack += 50;
+        state.currentEnemy.attack += 30;
 
         logMessage(`⚔️ ${state.currentEnemy.name} erhält +20 Angriff nach der Wiederbelebung!`, 'enemy');
         logMessage(`💀 ${state.currentEnemy.name} erhebt sich als Lich!`, 'enemy');
+
+        // 👑 Ändere Bild dauerhaft
+        state.currentEnemy.pixelImageKey = 'awakened';
 
         const enemyElem = document.getElementById('enemyContainer') || enemyContainerElem;
         enemyElem.classList.add('lich-revive-effect');
@@ -4886,6 +4891,8 @@ if (state.currentEnemy && state.currentEnemy.health <= 0) {
 
         return true; // verhindert restlichen Ablauf
     }
+
+
 
 
     // Normales Besiegt-Verhalten
