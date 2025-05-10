@@ -1631,7 +1631,6 @@ window.openDeck = window.showStarterDeckSelection = function () {
         // Mehr Informationen anzeigen
         const infoArray = [`Mana: ${card.manaCost}`];
         if (card.damage) infoArray.push(`DMG: ${card.damage}`);
-        if (card.weight) infoArray.push(`Rarity: ${card.weight}`);
         
         cardInfo.textContent = infoArray.join(' | ');
         
@@ -2017,9 +2016,9 @@ function confirmName() {
   }
 
   localStorage.setItem('playerName', name);
+  localStorage.setItem('selectedPassive', selectedPassive); // 🔧 Wichtig!
   document.getElementById('namePopup').style.display = 'none';
 
-  // Optional: Weiterleitung oder Spielstart
   window.location.href = 'spiel.html';
 }
 
