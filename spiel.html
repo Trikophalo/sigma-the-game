@@ -2016,7 +2016,7 @@ h2 {
         // --- Gegnertypen ---
         const ENEMY_TYPES = [
             // ... (deine Gegnertypen bleiben hier unverändert) ...
-                { name: 'Goblin', health: 20, attack: 5, levelMin: 1, levelMax: 4, xp: 35, gold: 60, pixelImageKey: 'Goblin', gemChance: 1, description: 'Ein kleiner, flinker Goblin.', traits: ['Keine Fähigkeit'] },
+                { name: 'Goblin', health: 20, attack: 5, levelMin: 1, levelMax: 4, xp: 35, gold: 60, pixelImageKey: 'Goblin', gemChance: 1, description: 'Ein kleiner, flinker Goblin.', traits: ['Keine Fähigkeit', 'Lichking'] },
                 { name: 'Schleim', health: 20, attack: 6, levelMin: 1, levelMax: 4, xp: 65, gold: 85, pixelImageKey: 'Schleim', gemChance: 1, description: 'Ein fieser Schleim.', traits: ['Teilung'] },
                 { name: 'Gepanzertes Skelett', health: 25, attack: 4, levelMin: 2, levelMax: 6, xp: 55, gold: 75, pixelImageKey: 'Gepanzertes Skelett', gemChance: 2, description: 'Ein ehmaliger stolzer Soldat.', traits: ['Rüstung'] },
                 { name: 'Leecher', health: 30, attack: 6, levelMin: 2, levelMax: 6, xp: 55, gold: 75, pixelImageKey: 'Leecher', gemChance: 2, description: 'Blutsüchtiger Mini Dämonen.', traits: ['Vamp'] },
@@ -4860,26 +4860,42 @@ function applyEnemyStatusEffectsAfterTurn() {
 
     
         // Prüft, ob der aktuelle Gegner besiegt ist
-        function checkEnemyDefeat() {
-    if (state.currentEnemy && state.currentEnemy.health <= 0) {
+ function checkEnemyDefeat() {
+    if (!state.currentEnemy) return false;
+
+    if (state.currentEnemy.health <= 0) {
         // 💀 Lichking – 1-malige Wiederbelebung
-            if (state.currentEnemy.traits?.includes('Lichking') && !state.currentEnemy.hasResurrected) {
-                state.currentEnemy.hasResurrected = true;
-                state.currentEnemy.health = Math.floor(state.currentEnemy.maxHealth / 2);
+        if (state.currentEnemy.traits?.includes('Lichking') && !state.currentEnemy.hasResurrected) {
+            state.currentEnemy.hasResurrected = true;
+            state.currentEnemy.health = Math.floor((state.currentEnemy.maxHealth || 100) / 2);
+            state.currentEnemy.block = 0;
+            state.currentEnemy.attack += 20;
 
-                // ⬇️ HIER EINSETZEN
-                state.currentEnemy.attack += 20;
-                logMessage(`⚔️ ${state.currentEnemy.name} erhält +20 Angriff nach der Wiederbelebung!`, 'enemy');
+            logMessage(`⚔️ ${state.currentEnemy.name} erhält +20 Angriff nach der Wiederbelebung!`, 'enemy');
+            logMessage(`💀 ${state.currentEnemy.name} erhebt sich als Lich!`, 'enemy');
 
-                logMessage(`💀 ${state.currentEnemy.name} erhebt sich als Lich!`, 'enemy');
-                const enemyElem = document.getElementById('enemyContainer') || enemyContainerElem;
-                enemyElem.classList.add('lich-revive-effect');
-                setTimeout(() => {
-                    enemyElem.classList.remove('lich-revive-effect');
-                }, 1600);
-                updateEnemyUI();
-                return true; // verhindere normales Weiterlaufen
-            }
+            const enemyElem = document.getElementById('enemyContainer') || enemyContainerElem;
+            enemyElem.classList.add('lich-revive-effect');
+            setTimeout(() => {
+                enemyElem.classList.remove('lich-revive-effect');
+            }, 1600);
+
+            updateEnemyUI();
+            updateUIDisplay(); // ggf. auch das
+            state.turnInProgress = false; // WICHTIG!
+            return true; // Wiederbelebung – kein Tod
+        }
+
+        // Normales Besiegen
+        const defeatedName = state.currentEnemy.name;
+        logMessage(`${defeatedName} besiegt!`, 'system');
+
+        handleVictory(); // oder was immer dein Sieg-Handler ist
+        return true;
+    }
+
+    return false;
+}
 
 
         const defeatedName = state.currentEnemy.name;
@@ -4950,7 +4966,7 @@ function applyEnemyStatusEffectsAfterTurn() {
             localStorage.setItem('unlockedUndead', 'true');
             logMessage('🗝️ Passive "Totenbeschwörer" freigeschaltet!', 'system');
         }
-        if (defeatedName === 'Goblin') {
+        if (defeatedName === 'Bagdo') {
             localStorage.setItem('unlockedLichkingSkin', 'true');
             unlockSkin('skin_lichking');
             logMessage('🧊 Du hast den Lichkönig besiegt! Skin freigeschaltet.', 'system');
