@@ -48,6 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
         24: 750,
         25: 350,
         26: 500,
+        27: 350
       };       
   
     // Hier die Dateinamen deiner Skins im Ordner images/players
@@ -77,6 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
         { id: "card_24", type: "card", cardId: 24, name: "Biohazard", price: cardPriceMap[24], description: 'Verursacht Schwere Vergiftung.(6 Schaden, 3 Rd.)', icon: "☣️" },
         { id: "card_25", type: "card", cardId: 25, name: "Grande Schilde", price: cardPriceMap[25], description: 'Erhalte 20 Block', icon: "🔰" },
         { id: "card_26", type: "card", cardId: 26, name: "Rage", price: cardPriceMap[26], description: 'Kann bis zu 3-5x treffen je 5 Schaden. Umgeht Block', icon: "💢" },
+        { id: "card_27", type: "card", cardId: 27, name: "Rage", price: cardPriceMap[27], description: 'Ein schwacher aber effizienter Angriff', icon: "🥏" },
     ...playerSkinFiles
 .filter(filename => {
   const id = filename.replace(/\.[^/.]+$/, "");
