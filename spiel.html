@@ -2031,14 +2031,14 @@ h2 {
                 { name: 'Alchemie Kobold', health: 60, attack: 10, levelMin: 10, levelMax: 15, xp: 110, gold: 140, pixelImageKey: 'Alchemie Kobold', gemChance: 7, description: 'Der Albtraum jeder Medizin (fast jeder).', traits: ['Giftig', 'Antiheal'] }, // Effekte müssen implementiert werden
                 { name: 'Baby Drache', health: 65, attack: 13, levelMin: 11, levelMax: 15, xp: 130, gold: 170, pixelImageKey: 'Baby Drache', gemChance: 7, description: 'Speit Feuerstöße.', traits: ['Verspielt', 'Feueratem'] }, // Effekte müssen implementiert werden
                 { name: 'Charged Golem', health: 75, attack: 12, levelMin: 12, levelMax: 16, xp: 170, gold: 180, pixelImageKey: 'Charged Golem', gemChance: 7, description: 'Mächtiger Elementar Golem.', traits: ['Statisch', 'Regeneration'], regen: 3 }, // Effekte müssen implementiert werden
-                { name: 'Dracula', health: 65, attack: 10, levelMin: 13, levelMax: 17, xp: 190, gold: 190, pixelImageKey: 'Dracula', gemChance: 8, description: 'Dein Blut macht ihn stärker.', traits: ['Vamp', 'Stark'] }, // Effekte müssen implementiert werden
+                { name: 'Dracula', health: 68, attack: 10, levelMin: 13, levelMax: 17, xp: 190, gold: 190, pixelImageKey: 'Dracula', gemChance: 8, description: 'Dein Blut macht ihn stärker.', traits: ['Vamp', 'Stark'] }, // Effekte müssen implementiert werden
                 { name: 'Dämon', health: 85, attack: 13, levelMin: 14, levelMax: 18, xp: 280, gold: 210, pixelImageKey: 'Dämon', gemChance: 9, description: 'Feuer und Schatten. Resistent.', traits: ['Höllen Krallen'] }, // Effekte müssen implementiert werden
                 { name: 'Verfluchter Ritter', health: 85, attack: 10, levelMin: 15, levelMax: 19, xp: 360, gold: 250, pixelImageKey: 'Verfluchter Ritter', gemChance: 10, description: 'Ein wandelnde Geisterrüstung', traits: ['Rüstung', 'Krieger']}, // Effekte müssen implementiert werden
                 { name: 'Bagdos Riese', health: 120, attack: 12, levelMin: 16, levelMax: 20, xp: 400, gold: 300, pixelImageKey: 'Bagdos Riese', gemChance: 10, description: 'Ein Dummer aber leider auch starker Riese', traits: ['Stark', 'Dämlich'] }, // Effekte müssen implementiert werden
                 { name: 'Erzengel', health: 110, attack: 13, levelMin: 16, levelMax: 20, xp: 400, gold: 300, pixelImageKey: 'Erzengel', gemChance: 10, description: 'Ein mächtiger gefallener Engel.', traits: ['Segen', 'Fliegend'] }, // Effekte müssen implementiert werden
                 { name: 'Gargoyle', health: 105, attack: 15, levelMin: 17, levelMax: 21, xp: 450, gold: 320, pixelImageKey: 'Gargoyle', gemChance: 11, description: 'Einst da um die Menschen zu beschützen. Jetzt ein unbändiges Monster', traits: ['Gepanzerte Schuppen', 'Tank'] }, 
                 { name: 'Drache', health: 130, attack: 16, levelMin: 18, levelMax: 22, xp: 650, gold: 330, pixelImageKey: 'Drache', gemChance: 12, description: 'Ein mächtiger, alter Drache.', traits: ['Feueratem', 'Fliegend', 'Gepanzerte Schuppen'] }, 
-                { name: 'Teufel', health: 90, attack: 7, levelMin: 19, levelMax: 24, xp: 750, gold: 380, pixelImageKey: 'Teufel', gemChance: 13, description: 'Der Herrscher der Unterwelt.', traits: ['Höllenwache'] },
+                { name: 'Teufel', health: 95, attack: 7, levelMin: 19, levelMax: 24, xp: 750, gold: 380, pixelImageKey: 'Teufel', gemChance: 13, description: 'Der Herrscher der Unterwelt.', traits: ['Höllenwache'] },
                 { name: 'Spinnenkönigin', health: 130, attack: 14, levelMin: 20, levelMax: 25, xp: 750, gold: 390, pixelImageKey: 'Spinnenkönigin', gemChance: 14, description: 'Eine Spinne die selbst der Teufel fürchtet.', traits: ['Antiheal', 'Giftig'] },
                 { name: 'Rainbow', health: 150, attack: 13, levelMin: 21, levelMax: 26, xp: 900, gold: 400, pixelImageKey: 'Rainbow', gemChance: 16, description: 'Meister über alle Elemente', traits: ['Frost-Aura', 'Giftig', 'Feueratem', 'Statisch'] },
                 { name: 'Bagdos Leibgarde', health: 180, attack: 17, levelMin: 21, levelMax: 26, xp: 900, gold: 400, pixelImageKey: 'Bagdos Leibgarde', gemChance: 16, description: 'Lässt seinen Meister nie im stich', traits: ['Rüstung', 'Tank'] },
@@ -4895,11 +4895,16 @@ function applyEnemyStatusEffectsAfterTurn() {
 
             // Ersetze den Gegner durch den Mini
             state.currentEnemy = miniSlime;
-
             updateEnemyUI();
             updateUIDisplay();
             startNewTurn();
-            return true; // Wichtig: Stoppt restliche Verarbeitung
+
+            // Statt return true:
+            setTimeout(() => {
+            checkEnemyDefeat();
+            }, 50);
+            return;
+
         }
 
         state.defeatedEnemies++;
@@ -4908,7 +4913,7 @@ function applyEnemyStatusEffectsAfterTurn() {
         if (playerInventory.has('zeitklinge')) {
             state.player.zeitklingeKills += 1;
 
-            if (state.player.zeitklingeKills % 5 === 0 && state.player.zeitklingeBonus < 13) {
+            if (state.player.zeitklingeKills % 6 === 0 && state.player.zeitklingeBonus < 13) {
                 state.player.zeitklingeBonus++;
                 logMessage(`🕰 Zeitklinge-Buff: +1 permanenter Schaden! (gesamt ${state.player.zeitklingeBonus})`, 'buff');
             }
@@ -4939,28 +4944,27 @@ function applyEnemyStatusEffectsAfterTurn() {
             
             // 🏆 ACHIEVEMENT CHECK
             if (defeatedName) {
-            console.log("🧟 Besiegt:", defeatedName);
+            const name = defeatedName.trim().toLowerCase();
+            console.log("🧟 Besiegt:", name);
 
-            switch (defeatedName) {
-                case 'Drache':
+            if (name === 'drache') {
                 unlockAchievement('dragonSlayer');
-                const dragonKills = parseInt(localStorage.getItem('dragonKills') || '0') + 1;
+                let dragonKills = parseInt(localStorage.getItem('dragonKills') || '0', 10) + 1;
                 localStorage.setItem('dragonKills', dragonKills);
                 if (dragonKills >= 10) unlockAchievement('dragonHunter');
-                break;
+            } 
+                else if (name === 'goblin') {
+                let goblinKills = parseInt(localStorage.getItem('goblinKills') || '0', 10) + 1;
+                localStorage.setItem('goblinKills', goblinKills);
+                console.log("🪓 Goblins gesamt:", goblinKills);
+                if (goblinKills >= 50) unlockAchievement('goblin100');
+            }
 
-                case 'Schleim':
-                const slimeKills = parseInt(localStorage.getItem('slimeKills') || '0') + 1;
-                localStorage.setItem('slimeKills', slimeKills);
-                console.log("💧 Schleime gesamt:", slimeKills);
-                if (slimeKills >= 100) unlockAchievement('slime100');
-                break;
-
-                case 'Bagdo':
+            else if (name === 'bagdo') {
                 unlockAchievement('bagdoDown');
-                break;
             }
             }
+
 
 
         const xpGained = state.currentEnemy.xp || 50;
@@ -5503,6 +5507,6 @@ function applyEnemyStatusEffectsAfterTurn() {
     <script src="shop.js"></script>
     <script src="fusion.js"></script>
     <script src="lootbox.js"></script>
-
+    <script src="achievements.js"></script>
 </body>
 </html>

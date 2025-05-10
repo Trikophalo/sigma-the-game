@@ -1,7 +1,8 @@
 const achievements = [
-  { id: 'slime100', name: 'Schleimkiller', desc: 'Besiege 100 Schleime.', gems: 10 },
-  { id: 'dragonHunter', name: 'Drachenjäger', desc: 'Besiege 10 Drachen.', gems: 12 },
-  { id: 'bagdoDown', name: 'Bagdo Bezwinger', desc: 'Besiege Bagdo im Kampf.', gems: 15 },
+ 
+  { id: 'goblin100', name: 'Goblinkiller', desc: 'Besiege 50 Goblins.', gems: 15 },
+  { id: 'dragonHunter', name: 'Drachenjäger', desc: 'Besiege 10 Drachen.', gems: 50 },
+  { id: 'bagdoDown', name: 'Bagdo Bezwinger', desc: 'Besiege Bagdo im Kampf.', gems: 75 },
 ];
 
 function openAchievementsModal() {
@@ -9,7 +10,7 @@ function openAchievementsModal() {
   const unlocked = new Set(JSON.parse(localStorage.getItem('unlockedAchievements') || '[]'));
   const claimed = new Set(JSON.parse(localStorage.getItem('claimedAchievements') || '[]'));
 
-  const slimeKills = parseInt(localStorage.getItem('slimeKills') || '0');
+  const goblinKills = parseInt(localStorage.getItem('goblinKills') || '0');
   const dragonKills = parseInt(localStorage.getItem('dragonKills') || '0');
 
   container.innerHTML = `
@@ -20,8 +21,8 @@ function openAchievementsModal() {
 
       // Dynamische Fortschrittsanzeige je nach ID
       let progressText = '';
-      if (ach.id === 'slime100') {
-        progressText = `<br/><small style="color:#888;">Fortschritt: ${slimeKills}/100 Schleime</small>`;
+      if (ach.id === 'goblin100') {
+       progressText = `<br/><small style="color:#888;">Fortschritt: ${goblinKills}/50 Goblins</small>`;
       }
       if (ach.id === 'dragonHunter') {
         progressText = `<br/><small style="color:#888;">Fortschritt: ${dragonKills}/10 Drachen</small>`;
@@ -82,3 +83,33 @@ function closeAchievementsModal() {
   }
 }
 window.closeAchievementsModal = closeAchievementsModal;
+
+// Immer ganz unten im achievements.js oder direkt im <script>, aber NACH der Definition
+  function claimAchievement(id, gems) {
+    const claimed = new Set(JSON.parse(localStorage.getItem('claimedAchievements') || '[]'));
+    if (claimed.has(id)) return;
+
+    claimed.add(id);
+    localStorage.setItem('claimedAchievements', JSON.stringify([...claimed]));
+
+    const currentGems = parseInt(localStorage.getItem('gems') || '0', 10);
+    localStorage.setItem('gems', currentGems + gems);
+
+    console.log(`🎁 ${gems} Gems erhalten für ${id}`);
+    if (typeof updateGemDisplay === 'function') updateGemDisplay();
+
+    openAchievementsModal(); // Neu rendern
+  }
+
+  function unlockAchievement(id) {
+    const unlocked = new Set(JSON.parse(localStorage.getItem('unlockedAchievements') || '[]'));
+    if (!unlocked.has(id)) {
+      unlocked.add(id);
+      localStorage.setItem('unlockedAchievements', JSON.stringify([...unlocked]));
+      console.log("🏆 Achievement freigeschaltet:", id);
+    }
+  }
+
+  // 🔓 MACH SIE GLOBAL VERFÜGBAR
+  window.claimAchievement = claimAchievement;
+  window.unlockAchievement = unlockAchievement;
