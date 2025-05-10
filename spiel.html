@@ -2424,7 +2424,7 @@ function initGame() {
         case 'undead':
             state.player.passive = 'undead';
             state.player.hellhound = {
-                damage: 2,
+                damage: 4,
                 icon: 'images/hellhound.png'
             };
             break;
@@ -4780,7 +4780,7 @@ function applyEnemyStatusEffectsAfterTurn() {
             // 🔥 HÖLLENHUND → jetzt immer separat prüfen!
             if (state.player.hellhound) {
                 setTimeout(() => {
-                    const hellhoundDamage = state.player.hellhound.damage || 2;
+                    const hellhoundDamage = state.player.hellhound.damage || 4;
                     state.currentEnemy.health -= hellhoundDamage;
                     logMessage(`🔥 Dein Teufelshund greift an und verursacht ${hellhoundDamage} Schaden!`, 'enemy');
 
