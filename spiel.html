@@ -1958,7 +1958,8 @@ h2 {
                  {id: 22, name: 'Tornado', icon: '🌪️', description: 'Kann 2-3x treffen je 5 Schaden. Umgeht Block', power: 5, effect: 'multi_hit', hits: 3, minHits: 2, manaCost: 3, weight: 2 },
                  {id: 23, name: 'The Knive', icon: '🗡️', description: 'Verursacht Blutungen. Der Gegner bekommt durch The Knive doppelten Schaden bis zum Tod', power: 12, effect: 'bleed', manaCost: 4, weight: 3 },
                  {id: 24, name: 'Biohazard', icon: '☣️', description: 'Verursacht Schwere Vergiftung.(7 Schaden, 3 Rd.)', power: 7, duration: 3, effect: 'poison', manaCost: 4, weight: 1 },
-
+                 { id: 25, name: 'Grande Schild', icon: '🔰', description: 'Erhalte 20 Block', power: 20, effect: 'block', manaCost: 4, weight: 1 },
+                 {id: 26, name: 'Rage', icon: '💢', description: 'Kann bis zu 3-5x treffen je 5 Schaden. Umgeht Block', power: 5, effect: 'multi_hit', hits: 5, minHits: 3, manaCost: 5, weight: 2 },
         ];
         window.cards = CARD_TYPES;
         localStorage.setItem('allCards', JSON.stringify(CARD_TYPES));
@@ -3449,21 +3450,33 @@ function playSingleEffect(effect, power, card) {
             const hits = card.minHits && card.hits
                 ? getRandomInt(card.minHits, card.hits)
                 : 2 + Math.floor(Math.random() * 2);
+
+            const basePower = card.power || 0;
+            const bonusOnce = state.player.hasZeitklinge ? 5 : 0;
+
             for (let i = 0; i < hits; i++) {
-                const block = card.ignoreBlock ? 0 : Math.min(enemy.block || 0, remaining);
+                const bonus = i === 0 ? bonusOnce : 0;
+                const totalPower = basePower + bonus;
+
+                const rawDamage = applyDamageBonuses(totalPower); // Oder direkt: totalPower
+                const block = card.ignoreBlock ? 0 : Math.min(enemy.block || 0, rawDamage);
+
                 if (!card.ignoreBlock && block > 0) {
                     enemy.block -= block;
                     logMessage(`${enemy.name} blockt ${block} Schaden.`, 'block');
                 }
-                const dmg = remaining - block;
+
+                const dmg = rawDamage - block;
                 if (dmg > 0) {
                     const finalDmg = applyTankTraitReduction(enemy, dmg);
                     enemy.health -= finalDmg;
-                    logMessage(`🌪️ Treffer ${i + 1}: ${enemy.name} nimmt ${finalDmg} Schaden.`, 'enemy');
+                    logMessage(`Treffer ${i + 1}: ${enemy.name} nimmt ${finalDmg} Schaden.`, 'enemy');
                     applyLifesteal(dmg);
                 }
+
                 hitAnimation();
             }
+
             applyDragonscale();
             break;
         }
@@ -3807,22 +3820,25 @@ function executeCardEffect(card) {
                 break;
 
             case 'multi_hit': {
-                // Trefferanzahl sicher bestimmen
                 let hits;
                 if (card.minHits != null && card.hits != null && card.minHits <= card.hits) {
                     hits = getRandomInt(card.minHits, card.hits);
                 } else {
-                    hits = 2 + Math.floor(Math.random() * 2); // Fallback: 2 oder 3
+                    hits = 2 + Math.floor(Math.random() * 2);
                 }
 
                 let damageDealt = 0;
 
+                // 🕰️ Zeitklinge: Einmaligen Bonus ermitteln
+                const bonusOnce = (state.player.hasZeitklinge) ? 5 : 0;
+
                 for (let i = 0; i < hits; i++) {
                     if (!state.currentEnemy || state.currentEnemy.health <= 0) break;
 
-                    const baseDamage = applyDamageBonuses(card.power);
-                    const block = card.ignoreBlock ? 0 : Math.min(state.currentEnemy.block || 0, baseDamage);
+                    const bonus = (i === 0) ? bonusOnce : 0; // Nur beim ersten Schlag
+                    const baseDamage = applyDamageBonuses(card.power + bonus);
 
+                    const block = card.ignoreBlock ? 0 : Math.min(state.currentEnemy.block || 0, baseDamage);
                     if (block > 0 && !card.ignoreBlock) {
                         state.currentEnemy.block -= block;
                         logMessage(`${state.currentEnemy.name} blockt ${block} Schaden.`, 'block');
@@ -3833,10 +3849,9 @@ function executeCardEffect(card) {
                     if (final > 0) {
                         state.currentEnemy.health -= final;
                         damageDealt += final;
-                        logMessage(`🌪️ Tornado trifft (${i + 1}) – ${state.currentEnemy.name} nimmt ${final} Schaden.`, 'enemy');
+                        logMessage(`Multihit trifft (${i + 1}) – ${state.currentEnemy.name} nimmt ${final} Schaden.`, 'enemy');
                     }
 
-                    // Nur Animation, blockiert nicht
                     enemyContainerElem.classList.add('hit');
                     setTimeout(() => {
                         enemyContainerElem.classList.remove('hit');

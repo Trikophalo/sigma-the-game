@@ -24,6 +24,8 @@ window.CARD_TYPES = [
                  {id: 22, name: 'Tornado', icon: '🌪️', description: 'Kann 2-3x treffen je 5 Schaden. Umgeht Block', power: 5, effect: 'multi_hit', hits: 3, minHits: 2, manaCost: 3, weight: 2 },
                  {id: 23, name: 'The Knive', icon: '🗡️', description: 'Verursacht Blutungen. Der Gegner bekommt durch The Knive doppelten Schaden bis zum Tod', power: 12, effect: 'bleed', manaCost: 4, weight: 3 },
                  {id: 24, name: 'Biohazard', icon: '☣️', description: 'Verursacht Schwere Vergiftung.(7 Schaden, 3 Rd.)', power: 7, duration: 3, effect: 'poison', manaCost: 4, weight: 1 },
+                 { id: 25, name: 'Grande Schild', icon: '🔰', description: 'Erhalte 20 Block', power: 20, effect: 'block', manaCost: 4, weight: 1 },
+                 {id: 26, name: 'Rage', icon: '💢', description: 'Kann bis zu 3-5x treffen je 5 Schaden. Umgeht Block', power: 5, effect: 'multi_hit', hits: 5, minHits: 3, manaCost: 5, weight: 2 },
 ];
 
 window.cards = window.CARD_TYPES;

@@ -1812,18 +1812,6 @@ window.openDeck = window.showStarterDeckSelection = function () {
       cardStats.appendChild(damageEl);
     }
     
-    if (card.weight) {
-      const rarityEl = document.createElement('span');
-      rarityEl.style = `
-        background: rgba(0,0,100,0.3);
-        color: rgba(200,200,255,0.9);
-        padding: 1px 5px;
-        border-radius: 3px;
-        font-size: 10px;
-      `;
-      rarityEl.textContent = `R: ${card.weight}`;
-      cardStats.appendChild(rarityEl);
-    }
     
     // Alle Elemente zusammenfügen
     cardHeader.appendChild(cardCost);
@@ -1831,7 +1819,7 @@ window.openDeck = window.showStarterDeckSelection = function () {
     cardEl.appendChild(cardHeader);
     cardEl.appendChild(cardIconWrapper);
     cardEl.appendChild(cardName);
-    cardEl.appendChild(cardStats);
+   
 
     // Klick-Event
     cardEl.onclick = () => {
