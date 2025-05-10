@@ -2416,8 +2416,8 @@ function initGame() {
         case 'shieldmaster':
             state.player.isShieldmaster = true;
             state.player.swordPenalty = 1;
-            state.player.block = 5;
-            logMessage('🛡️ Schildmeister: Du startest mit 5 Block.', 'block');
+            state.player.block = 3;
+            logMessage('🛡️ Schildmeister: Du startest mit 3 Block.', 'block');
             break;
         case 'martyr':
             state.player.isMartyr = true;
@@ -4670,10 +4670,15 @@ function applyEnemyStatusEffectsAfterTurn() {
                     state.player.block = 0;
                 }
 
-            if (state.player.isShieldmaster) {
-                state.player.block += 5;
-                logMessage('🛡️ Schildmeister: Du erhältst 5 Block.', 'block');
-                }
+                if (state.player.isShieldmaster) {
+                const level = state.player.level || 1; // Standardmäßig Level 1
+                const baseBlock = 3;
+                const bonusBlock = Math.floor(level / 3); // +1 alle 3 Level
+                const totalBlock = Math.min(baseBlock + bonusBlock, 10); // Maximal 10 Block
+
+                state.player.block += totalBlock;
+                logMessage(`🛡️ Schildmeister: Du erhältst ${totalBlock} Block.`, 'block');
+            }
                 
             if (state.currentEnemy?.traits?.includes('Vision')) {
                 state.player.tempManaCostPenalty = 1;
