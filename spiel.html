@@ -2685,7 +2685,7 @@ function initGame() {
                 'Antiheal': 'Vehindert jegliche Heilung (Ausgenommen: Lotus Trank)',
                 'Vision': 'Erhöht deine Manakosten um 1',
                 'Rücksichtslos': 'Fügt sich bei jedem Angriff selbst Schaden in Höhe von 50 % seines Angriffs zu.',
-                'YinYang': 'Yin: 30 Shield / Yang: 2x Angriff. Verändert sich zufällig',
+                'YinYang': 'Yin: 40 Shield / Yang: 2x Angriff. Verändert sich zufällig',
                 'Teilung': 'Teil sich in einen Mini-Schleim nach dem Tod',
                 'Dämlich': 'Zu dumm um den Genger zu treffen. Macht sich gelgentlich selber 10 schaden',
                 'Tank': 'Erleidet weniger Schaden, je weniger Leben er hat (bis zu 50 % Reduktion).',
@@ -3048,7 +3048,7 @@ function getEffectiveManaCost(card, forDisplay = false) {
 
                 if (newState === 'yin') {
                     enemy.attackModifier = 0.5;
-                    enemy.block = 30;
+                    enemy.block = 40;
                     logMessage(`${enemy.name} geht in den Yin-Zustand: Verteidigung +20 Block, halber Angriff.`, 'enemy');
                 } else {
                     enemy.attackModifier = 1;
