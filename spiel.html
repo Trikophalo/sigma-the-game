@@ -2048,7 +2048,7 @@ h2 {
                 { name: 'Yokai', health: 110, attack: 16, levelMin: 22, levelMax: 28, xp: 1100, gold: 450, pixelImageKey: 'Yokai', gemChance: 16, description: 'Ein hochrangiger fliegender Yokai-Demon', traits: ['Fliegend', 'Höllenkrallen','Untotenbeschwörer'] },
                 { name: 'Yagdril', health: 150, attack: 28, levelMin: 23, levelMax: 100, xp: 1200, gold: 500, pixelImageKey: 'Yagdril', gemChance: 18, description: 'Ein Wesen dessen Macht unbeschreiblich ist', traits: ['Fliegend', 'YinYang'] },
                 { name: 'Leviathan', health: 160, attack: 20, levelMin: 24, levelMax: 100, xp: 1300, gold: 520, pixelImageKey: 'Leviathan', gemChance: 23, description: 'Das Symbol des Schreckens', traits: ['Antiheal', 'Vision'] },
-                { name: 'Bagdo', health: 220, maxHealth: 200, attack: 30, levelMin: 25, levelMax: 100, xp: 1500, gold: 600, pixelImageKey: 'Bagdo', gemChance: 25, description: 'Der gefallene Lichking', traits: ['Entfesselung', 'Lichking', 'Vision'] },
+                { name: 'Bagdo', health: 220, maxHealth: 200, attack: 30, levelMin: 25, levelMax: 100, xp: 1500, gold: 600, pixelImageKey: 'Bagdo', gemChance: 25, description: 'Der gefallene Lichking', traits: ['Entfesselung', 'Lichking'] },
         ];
     
         // --- Upgrade-Typen ---
@@ -4873,7 +4873,7 @@ if (state.currentEnemy && state.currentEnemy.health <= 0) {
     if (state.currentEnemy.traits?.includes('Lichking') && !state.currentEnemy.hasResurrected) {
         state.currentEnemy.hasResurrected = true;
         state.currentEnemy.health = Math.floor(state.currentEnemy.maxHealth / 2);
-        state.currentEnemy.attack += 30;
+        state.currentEnemy.attack += 20;
 
         logMessage(`⚔️ ${state.currentEnemy.name} erhält +20 Angriff nach der Wiederbelebung!`, 'enemy');
         logMessage(`💀 ${state.currentEnemy.name} erhebt sich als Lich!`, 'enemy');
