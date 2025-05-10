@@ -3555,63 +3555,69 @@ function applyDragonScaleBurn(target) {
 function executeCardEffect(card) {
     switch (card.effect) {
             case 'bleed': {
-                    let rawDamage = card.power;
+                let rawDamage = card.power;
 
-                    // Prüfe, ob der Gegner in dieser Runde bereits Schaden erlitten hat
-                    const alreadyDamaged = state.currentEnemy.damagedThisTurn === true;
+                // Prüfe, ob der Gegner in dieser Runde bereits Schaden erlitten hat
+                const alreadyDamaged = state.currentEnemy.damagedThisTurn === true;
 
-                    // Wenn ja, Schaden verdoppeln
-                    if (alreadyDamaged) {
-                        rawDamage *= 2;
-                        logMessage(`🩸 Blutung! Schaden verdoppelt.`, 'effect');
-                    }
-
-                    // Bonus-Schaden durch Effekte anwenden
-                    const totalDamage = applyDamageBonuses(rawDamage);
-
-                    // Block berücksichtigen
-                    const blockUsed = Math.min(state.currentEnemy.block || 0, totalDamage);
-                    if (blockUsed > 0) {
-                        state.currentEnemy.block -= blockUsed;
-                        logMessage(`${state.currentEnemy.name} blockt ${blockUsed} Schaden.`, 'block');
-                    }
-
-                    const netDamage = totalDamage - blockUsed;
-                    if (netDamage > 0) {
-                        const adjustedDamage = applyTankTraitReduction(state.currentEnemy, netDamage);
-                        state.currentEnemy.health -= adjustedDamage;
-                        logMessage(`${state.currentEnemy.name} erleidet ${adjustedDamage} Schaden durch Blutung.`, 'enemy');
-                        applyLifesteal(adjustedDamage);
-                    } else {
-                        logMessage(`${state.currentEnemy.name} blockt den gesamten Blutungsschaden!`, 'block');
-                    }
-
-                    // Gegner gilt nun als verletzt für diese Runde
-                    state.currentEnemy.damagedThisTurn = true;
-
-                    // 🩸 Blutung als Statuseffekt für 1 Runde anzeigen
-                    if (!state.currentEnemy.statusEffects) {
-                        state.currentEnemy.statusEffects = [];
-                    }
-                    const alreadyBleeding = state.currentEnemy.statusEffects.some(e => e.type === 'bleed');
-                    if (!alreadyBleeding) {
-                        state.currentEnemy.statusEffects.push({
-                            type: 'bleed',
-                            duration: 1
-                        });
-                    }
-
-                    // Trefferanimation
-                    enemyContainerElem.classList.add('hit');
-                    setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
-                                if (state.player.hasDragonscale) {
-                const target = state.currentEnemy.minions?.[0] || state.currentEnemy;
-                applyDragonScaleBurn(target);
-            }            
-               applyLifesteal(netDamage);
-
-            break;
+                // Wenn ja, Schaden verdoppeln
+                if (alreadyDamaged) {
+                    rawDamage *= 2;
+                    logMessage(`🩸 Blutung! Schaden verdoppelt.`, 'effect');
                 }
+
+                // Bonus-Schaden anwenden
+                const totalDamage = applyDamageBonuses(rawDamage);
+
+                // Block abziehen
+                const blockUsed = Math.min(state.currentEnemy.block || 0, totalDamage);
+                if (blockUsed > 0) {
+                    state.currentEnemy.block -= blockUsed;
+                    logMessage(`${state.currentEnemy.name} blockt ${blockUsed} Schaden.`, 'block');
+                }
+
+                const netDamage = totalDamage - blockUsed;
+
+                if (netDamage > 0) {
+                    const adjustedDamage = applyTankTraitReduction(state.currentEnemy, netDamage);
+                    state.currentEnemy.health -= adjustedDamage;
+                    logMessage(`${state.currentEnemy.name} erleidet ${adjustedDamage} Schaden durch Blutung.`, 'enemy');
+                    applyLifesteal(adjustedDamage);
+                } else {
+                    logMessage(`${state.currentEnemy.name} blockt den gesamten Blutungsschaden!`, 'block');
+                }
+
+                // Gegner als "diese Runde verletzt" markieren
+                state.currentEnemy.damagedThisTurn = true;
+
+                // Blutungseffekt einmalig dauerhaft anwenden
+                if (!state.currentEnemy.statusEffects) {
+                    state.currentEnemy.statusEffects = [];
+                }
+                const alreadyBleeding = state.currentEnemy.statusEffects.some(e => e.type === 'bleed');
+                if (!alreadyBleeding) {
+                    state.currentEnemy.statusEffects.push({
+                        type: 'bleed',
+                        permanent: true
+                    });
+                }
+
+                // Trefferanimation
+                enemyContainerElem.classList.add('hit');
+                setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
+
+                // Drachenhaut-Effekt (wenn aktiv)
+                if (state.player.hasDragonscale) {
+                    const target = state.currentEnemy.minions?.[0] || state.currentEnemy;
+                    applyDragonScaleBurn(target);
+                }
+
+                // Lebensraub nochmal absichern
+                applyLifesteal(netDamage);
+
+                break;
+            }
+
         case 'damage_selfhit': {
                 let damage = applyDamageBonuses(card.power);
                 let recoil = card.selfDamage || 0;
