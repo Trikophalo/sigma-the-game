@@ -48,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
         24: 750,
         25: 350,
         26: 500,
-        27: 350
+        27: 350,
       };       
   
     // Hier die Dateinamen deiner Skins im Ordner images/players
