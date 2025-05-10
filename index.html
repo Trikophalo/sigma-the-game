@@ -16,6 +16,7 @@
 
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
+
 </script>
 
   <meta charset="UTF-8">
@@ -2029,6 +2030,12 @@ localStorage.setItem('allCards', JSON.stringify(cards));
     if (!menu) return;
     menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
   }
+
+  if (!localStorage.getItem('freeGiftUnlocked')) {
+  unlockAchievement('freeGift');
+  localStorage.setItem('freeGiftUnlocked', 'true');
+}
+
 </script>
 
 

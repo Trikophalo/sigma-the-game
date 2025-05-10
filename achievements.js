@@ -1,5 +1,5 @@
 const achievements = [
- 
+  { id: 'freeGift', name: 'Sorry for gamecrash', desc: 'Hier', gems: 75 },
   { id: 'goblin100', name: 'Goblinkiller', desc: 'Besiege 50 Goblins.', gems: 15 },
   { id: 'dragonHunter', name: 'Drachenjäger', desc: 'Besiege 10 Drachen.', gems: 50 },
   { id: 'bagdoDown', name: 'Bagdo Bezwinger', desc: 'Besiege Bagdo im Kampf.', gems: 75 },
