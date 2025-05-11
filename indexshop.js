@@ -49,6 +49,7 @@ document.addEventListener("DOMContentLoaded", () => {
         25: 350,
         26: 500,
         27: 350,
+        28: 350,
       };       
   
     // Hier die Dateinamen deiner Skins im Ordner images/players
@@ -76,9 +77,10 @@ document.addEventListener("DOMContentLoaded", () => {
         { id: "card_8", type: "card", cardId: 8, name: "Vampirbiss", price: cardPriceMap[8], description: "8 schaden, heilt 8", icon: "🧛" },
         { id: "card_12", type: "card", cardId: 12, name: "Genesung", price: cardPriceMap[12], description: "Heilt 15 Leben", icon: "💖" },
         { id: "card_24", type: "card", cardId: 24, name: "Biohazard", price: cardPriceMap[24], description: 'Verursacht Schwere Vergiftung.(6 Schaden, 3 Rd.)', icon: "☣️" },
-        { id: "card_25", type: "card", cardId: 25, name: "Grande Schilde", price: cardPriceMap[25], description: 'Erhalte 20 Block', icon: "🔰" },
+        { id: "card_25", type: "card", cardId: 25, name: "Grande Schilde", price: cardPriceMap[25], description: 'Erhalte 15 Block', icon: "🔰" },
         { id: "card_26", type: "card", cardId: 26, name: "Rage", price: cardPriceMap[26], description: 'Kann bis zu 3-5x treffen je 5 Schaden. Umgeht Block', icon: "💢" },
         { id: "card_27", type: "card", cardId: 27, name: "Slash", price: cardPriceMap[27], description: 'Ein schwacher aber effizienter Angriff', icon: "🥏" },
+        { id: "card_28", type: "card", cardId: 28, name: "Konter", price: cardPriceMap[28], description: 'Kontert mit 120% des erlittenen Angriffs.', icon: "💫" },
     ...playerSkinFiles
 .filter(filename => {
   const id = filename.replace(/\.[^/.]+$/, "");

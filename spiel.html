@@ -1956,11 +1956,12 @@ h2 {
                  {id: 20, name: 'Unwetter', icon: '🌩️', description: 'Paralysiere den Gegner (Halbiert den Angriff 2 Runden)', power: 0, effect: 'paralyze', manaCost: 1, weight: 2 },
                  {id: 21, name: 'Ansturm', icon: '🐗', description: 'Ein Rücksichtsloser Angriff, 15 schaden aber 5 Schaden Rückstoß', power: 15, selfDamage: 5, effect: 'damage_selfhit', manaCost: 3, weight: 1 },
                  {id: 22, name: 'Tornado', icon: '🌪️', description: 'Kann 2-3x treffen je 5 Schaden. Umgeht Block', power: 5, effect: 'multi_hit', hits: 3, minHits: 2, manaCost: 3, weight: 2 },
-                 {id: 23, name: 'The Knive', icon: '🗡️', description: 'Verursacht Blutungen. Der Gegner bekommt durch The Knive doppelten Schaden bis zum Tod', power: 12, effect: 'bleed', manaCost: 4, weight: 3 },
+                 {id: 23, name: 'The Knive', icon: '🗡️', description: 'Verursacht Blutungen. The Knive doppelten Schaden bei Blutungen', power: 12, effect: 'bleed', manaCost: 4, weight: 3 },
                  {id: 24, name: 'Biohazard', icon: '☣️', description: 'Verursacht Schwere Vergiftung.(7 Schaden, 3 Rd.)', power: 7, duration: 3, effect: 'poison', manaCost: 4, weight: 1 },
-                 { id: 25, name: 'Grande Schild', icon: '🔰', description: 'Erhalte 20 Block', power: 20, effect: 'block', manaCost: 4, weight: 1 },
+                 { id: 25, name: 'Grande Schild', icon: '🔰', description: 'Erhalte 15 Block', power: 15, effect: 'block', manaCost: 4, weight: 1 },
                  {id: 26, name: 'Rage', icon: '💢', description: 'Kann bis zu 3-5x treffen je 5 Schaden. Umgeht Block', power: 5, effect: 'multi_hit', hits: 5, minHits: 3, manaCost: 5, weight: 2 },
                  {id: 27, name: 'Slash', icon: '🥏', description: 'Ein schwacher aber effizienter Angriff', power: 2, effect: 'damage', manaCost: 0, weight: 2 },
+                 {id: 28, name: 'Konter', icon: '💫', description: 'Beendet deinen Zug. Kontert mit 120% des erlittenen Angriffs.', power: 1, effect: 'counter', manaCost: 5, weight: 1 },
         ];
         window.cards = CARD_TYPES;
         localStorage.setItem('allCards', JSON.stringify(CARD_TYPES));
@@ -2927,9 +2928,16 @@ function createCardElement(card) {
         <div class="card-power" title="${powerHint.trim()}">${formattedPower}</div>
     `;
 
-    if (!state.player.frozen) {
-        cardDiv.addEventListener('click', () => playCard(card.uniqueId));
-    }
+ cardDiv.addEventListener('click', () => {
+    if (
+        cardDiv.classList.contains('disabled') ||
+        state.player.frozen ||
+        state.turnInProgress ||
+        state.player.isCountering
+    ) return;
+
+    playCard(card.uniqueId);
+});
 
     return cardDiv;
 }
@@ -2963,7 +2971,11 @@ function getEffectiveManaCost(card, forDisplay = false) {
                 let manaCost = getEffectiveManaCost(card);
 
                 const hasEnoughMana = state.player.mana >= manaCost;
-                const shouldDisable = (manaCost > 0 && !hasEnoughMana) || state.player.frozen;
+                const shouldDisable = 
+                    (manaCost > 0 && !hasEnoughMana) ||
+                    state.player.frozen ||
+                    state.turnInProgress ||      // 🆕 Zug blockiert
+                    state.player.isCountering;  // 🆕 Konter aktiv
 
                 if (shouldDisable) {
                     cardElem.classList.add('disabled');
@@ -3554,6 +3566,19 @@ function applyDragonScaleBurn(target) {
     
 function executeCardEffect(card) {
     switch (card.effect) {
+case 'counter':
+    logMessage("🛡 Du bereitest einen Konter vor...", 'player');
+    state.player.isCountering = true;
+
+    // ✨ Sofort blockieren
+    state.turnInProgress = true;
+
+    setTimeout(() => {
+        state.turnInProgress = false; // Optional: falls endTurn das nicht tut
+        endTurn();
+    }, 150);
+    break;
+
             case 'bleed': {
                 let rawDamage = card.power;
 
@@ -4580,6 +4605,25 @@ function executeCardEffect(card) {
                     logMessage(`✨ Heilt ${healAmount} Leben.`, 'heal');
                     updateEnemyUI();
                 }
+
+
+                if (state.player.isCountering) {
+                    state.player.isCountering = false; // Verhindert Doppelkonter
+
+                    setTimeout(() => {
+                        const counterDamage = Math.round((state.currentEnemy.attack || 0) * 1.2);
+                        state.currentEnemy.health -= counterDamage;
+                        logMessage(`🔁 Du konterst mit ${counterDamage} Schaden!`, 'player');
+
+                        updateEnemyUI();
+
+                        if (state.currentEnemy.health <= 0) {
+                            handleEnemyDefeated();
+                            return;
+                        }
+                    }, 500); // 1 Sekunde Verzögerung
+                }
+
 
                 applyEnemyStatusEffectsAfterTurn();
 
