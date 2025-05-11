@@ -3566,19 +3566,18 @@ function applyDragonScaleBurn(target) {
     
 function executeCardEffect(card) {
     switch (card.effect) {
-case 'counter':
-    logMessage("🛡 Du bereitest einen Konter vor...", 'player');
-    state.player.isCountering = true;
+            case 'counter':
+                logMessage("🛡 Du bereitest einen Konter vor...", 'player');
+                state.player.isCountering = true;
 
-    // ✨ Sofort blockieren
-    state.turnInProgress = true;
+                // ✨ Sofort blockieren
+                state.turnInProgress = true;
 
-    setTimeout(() => {
-        state.turnInProgress = false; // Optional: falls endTurn das nicht tut
-        endTurn();
-    }, 150);
-    break;
-
+                setTimeout(() => {
+                    state.turnInProgress = false; // Optional: falls endTurn das nicht tut
+                    endTurn();
+                }, 500);
+                break;
             case 'bleed': {
                 let rawDamage = card.power;
 
