@@ -3510,13 +3510,10 @@ function createCardElement(card) {
     cardDiv.classList.add('card', 'card-animation');
     cardDiv.dataset.uniqueId = card.uniqueId;
     
-    // Neue Typ-Farbzuweisung
-if (card.effect === 'damage' || card.effect?.startsWith('damage')) {
-  cardDiv.classList.add(card.type === 'physical' ? 'physical' : 'special');
-}
-
-    if (getEffectiveManaCost(card) > card.manaCost) {
-    cardDiv.classList.add('vision-penalty');
+if (card.type === 'physical') {
+  cardDiv.classList.add('physical');
+} else if (card.type === 'special') {
+  cardDiv.classList.add('special');
 }
 
 
