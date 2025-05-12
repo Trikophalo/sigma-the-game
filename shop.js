@@ -60,7 +60,7 @@ const SHOP_ITEMS = [
      {
       id: 'leechblade',
       name: 'Leechklinge',
-      cost: 4500,
+      cost: 3500,
       description: 'Erhöht deinen Lebensraub um +20 %.',
       icon: 'images/leechblade.png',
       effect: 'addLifestealFlat'

@@ -2575,7 +2575,7 @@
             // ... (deine Kartendefinitionen bleiben hier unverändert) ...
                  { id: 1, name: 'Schwert', icon: '⚔️', description: 'Ein einfaches Schwert.', power: 5, effect: 'damage', manaCost: 2, weight: 5, tags: ['sword'], type: 'physical' },
                  { id: 2, name: 'Schild', icon: '🛡️', description: 'Erhalte 5 Block', power: 5, effect: 'block', manaCost: 2, weight: 1 },
-                 { id: 3, name: 'Heilung', icon: '❤️', description: 'Heilt 8 Leben', power: 8, effect: 'heal', manaCost: 3, weight: 1 },
+                 { id: 3, name: 'Heilung', icon: '❤️', description: 'Heilt 10 Leben', power: 10, effect: 'heal', manaCost: 3, weight: 1 },
                  { id: 4, name: 'Gift', icon: '☠️', description: 'Vergiftung (3 Schaden, 3 Rd.)', power: 3, duration: 3, effect: 'poison', manaCost: 2, weight: 1 },
                  { id: 5, name: 'Blitz', icon: '⚡', description: '12 Schaden, Paralysiert Gegner zu 45% (Halbiert den Angriff 2 Runden)', power: 12, effect: 'damage_paralyze', manaCost: 4, weight: 2, type: 'special' },
                  { id: 6, name: 'Großer Schlag', icon: '💥', description: 'Fügt 15 Schaden zu', power: 15, effect: 'damage', manaCost: 4, weight: 2, type: 'physical' },
@@ -2584,7 +2584,7 @@
                  { id: 9, name: 'Manatrank', icon: '🧪', description: 'Erhalte 2 Mana', power: 2, effect: 'gain_mana', manaCost: 0, weight: 3 },
                  { id: 10, name: 'Fokus', icon: '🎯', description: 'Ziehe 3 Karten', power: 3, effect: 'draw', manaCost: 1, weight: 1 },
                  { id: 11, name: 'Heilige Macht', icon: '✨', description: 'Fügt 25 Schaden zu', power: 25, effect: 'damage', manaCost: 6, weight: 1, type: 'special' },
-                 { id: 12, name: 'Genesung', icon: '💖', description: 'Heilt 15 Leben', power: 15, effect: 'heal', manaCost: 5, weight: 1 },
+                 { id: 12, name: 'Genesung', icon: '💖', description: 'Heilt 15 Leben', power: 15, effect: 'heal', manaCost: 4, weight: 1 },
                  {id: 13, name: 'Feuerball', icon: '🔥', description: 'Fügt 12 Schaden zu. 50% Chance auf Verbrennung (5 Schaden für 2 Runden).', power: 12, effect: 'firearrow', manaCost: 5, weight: 2, type: 'special'},
                  {id: 14, name: 'Gambler’s Luck', icon: '🎲', description: 'Gegner nimmt 5 Schaden und du erhältst 100 Gold (Ignoriert Block) oder Du nimmst 5 Schaden.', power: 5, effect: 'gamble', manaCost: 0, weight: 1, type: 'special'},
                  { id: 15, name: 'Kraft Sammeln', icon: '🔋', description: 'Heilt dich um dein gesamtes Mana.<br><br>Einmaliger Schadensboost i.H.v. Manakosten -1', power: 0, effect: 'power_surge', manaCost: 'X', weight: 1 },
@@ -2668,23 +2668,23 @@
         // --- Gegnertypen ---
         const ENEMY_TYPES = [
             // ... (deine Gegnertypen bleiben hier unverändert) ...
-                { name: 'Goblin', health: 20, attack: 5, levelMin: 1, levelMax: 4, xp: 35, gold: 60, pixelImageKey: 'Goblin', gemChance: 1, description: 'Ein kleiner, flinker Goblin.', traits: ['Keine Fähigkeit'] },
-                { name: 'Schleim', health: 20, attack: 6, levelMin: 1, levelMax: 4, xp: 65, gold: 85, pixelImageKey: 'Schleim', gemChance: 1, description: 'Ein fieser Schleim.', traits: ['Teilung'] },
-                { name: 'Gepanzertes Skelett', health: 25, attack: 4, levelMin: 2, levelMax: 6, xp: 55, gold: 75, pixelImageKey: 'Gepanzertes Skelett', gemChance: 2, description: 'Ein ehmaliger stolzer Soldat.', traits: ['Rüstung', 'Defense'] },
-                { name: 'Leecher', health: 30, attack: 6, levelMin: 2, levelMax: 6, xp: 55, gold: 75, pixelImageKey: 'Leecher', gemChance: 2, description: 'Blutsüchtiger Mini Dämonen.', traits: ['Vamp'] },
-                { name: 'Wutferkel', health: 35, attack: 8, levelMin: 3, levelMax: 6, xp: 65, gold: 80, pixelImageKey: 'Wutferkel', gemChance: 2, description: 'Ein Wildes wütendes Schwein', traits: ['Rücksichtslos'] },
-                { name: 'Ork', health: 35, attack: 5, levelMin: 3, levelMax: 7, xp: 60, gold: 65, pixelImageKey: 'Ork', gemChance: 4, description: 'Ein brutaler Ork-Krieger.', traits: ['Stark'] },
-                { name: 'Riesen Spinne', health: 40, attack: 6, levelMin: 4, levelMax: 9, xp: 65, gold: 80, pixelImageKey: 'Riesen Spinne', gemChance: 4, description: 'Spuckt lähmendes Gift.', traits: ['Giftig'] }, 
-                { name: 'Bagdos Krieger', health: 45, attack: 7, levelMin: 5, levelMax: 9, xp: 68, gold: 85, pixelImageKey: 'Bagdos Krieger', gemChance: 5, description: 'Ein Lakeie Bagods.', traits: ['Krieger'] }, 
-                { name: 'Troll', health: 47, attack: 8, levelMin: 5, levelMax: 9, xp: 70, gold: 100, pixelImageKey: 'Troll', gemChance: 5, description: 'Regeneriert 3 Leben pro Runde.', traits: ['Regeneration', 'Massiv'], regen: 3 }, 
-                { name: 'Donnerschlange', health: 45, attack: 9, levelMin: 6, levelMax: 10, xp: 120, gold: 105, pixelImageKey: 'Donnerschlange', gemChance: 5, description: 'Eine lähmende Donnerschlange', traits: ['Statisch', 'Special Defense'] },
-                { name: 'Bagdos Magier', health: 45, attack: 9, levelMin: 6, levelMax: 11, xp: 120, gold: 105, pixelImageKey: 'Bagdos Magier', gemChance: 5, description: 'Bagdos treuster Magier', traits: ['Feueratem', 'Vision'] },
-                { name: 'Nekromant', health: 50, attack: 7, levelMin: 8, levelMax: 12, xp: 80, gold: 120, pixelImageKey: 'Nekromant', gemChance: 6, description: 'Schwächt dich oder ruft Diener.', traits: ['Untotenbeschwörer'] }, // Effekte müssen implementiert werden
-                { name: 'Eiskönig', health: 65, attack: 10, levelMin: 9, levelMax: 13, xp: 100, gold: 130, pixelImageKey: 'Eiskönig', gemChance: 6, description: 'Verlangsamt dich mit Kälte.', traits: ['Eis-Elementar', 'Frost-Aura', 'Special Defense'] }, // Effekte müssen implementiert werden
-                { name: 'Alchemie Kobold', health: 60, attack: 10, levelMin: 10, levelMax: 15, xp: 110, gold: 140, pixelImageKey: 'Alchemie Kobold', gemChance: 7, description: 'Der Albtraum jeder Medizin (fast jeder).', traits: ['Giftig', 'Antiheal'] }, // Effekte müssen implementiert werden
-                { name: 'Baby Drache', health: 65, attack: 13, levelMin: 11, levelMax: 15, xp: 130, gold: 170, pixelImageKey: 'Baby Drache', gemChance: 7, description: 'Speit Feuerstöße.', traits: ['Verspielt', 'Feueratem'] }, // Effekte müssen implementiert werden
-                { name: 'Charged Golem', health: 75, attack: 12, levelMin: 12, levelMax: 16, xp: 170, gold: 180, pixelImageKey: 'Charged Golem', gemChance: 7, description: 'Mächtiger Elementar Golem.', traits: ['Statisch', 'Regeneration'], regen: 3 }, // Effekte müssen implementiert werden
-                { name: 'Dracula', health: 68, attack: 10, levelMin: 13, levelMax: 17, xp: 190, gold: 190, pixelImageKey: 'Dracula', gemChance: 8, description: 'Dein Blut macht ihn stärker.', traits: ['Vamp', 'Stark'] }, // Effekte müssen implementiert werden
+                { name: 'Goblin', health: 20, attack: 5, levelMin: 1, levelMax: 4, xp: 35, gold: 70, pixelImageKey: 'Goblin', gemChance: 1, description: 'Ein kleiner, flinker Goblin.', traits: ['Keine Fähigkeit'] },
+                { name: 'Schleim', health: 20, attack: 6, levelMin: 1, levelMax: 4, xp: 65, gold: 90, pixelImageKey: 'Schleim', gemChance: 1, description: 'Ein fieser Schleim.', traits: ['Teilung'] },
+                { name: 'Gepanzertes Skelett', health: 25, attack: 4, levelMin: 2, levelMax: 6, xp: 55, gold: 95, pixelImageKey: 'Gepanzertes Skelett', gemChance: 2, description: 'Ein ehmaliger stolzer Soldat.', traits: ['Rüstung', 'Defense'] },
+                { name: 'Leecher', health: 28, attack: 8, levelMin: 2, levelMax: 6, xp: 55, gold: 100, pixelImageKey: 'Leecher', gemChance: 2, description: 'Blutsüchtiger Mini Dämonen.', traits: ['Vamp'] },
+                { name: 'Wutferkel', health: 35, attack: 8, levelMin: 3, levelMax: 6, xp: 65, gold: 100, pixelImageKey: 'Wutferkel', gemChance: 2, description: 'Ein Wildes wütendes Schwein', traits: ['Rücksichtslos'] },
+                { name: 'Ork', health: 35, attack: 5, levelMin: 3, levelMax: 7, xp: 60, gold: 105, pixelImageKey: 'Ork', gemChance: 4, description: 'Ein brutaler Ork-Krieger.', traits: ['Stark'] },
+                { name: 'Riesen Spinne', health: 40, attack: 6, levelMin: 4, levelMax: 9, xp: 65, gold: 120, pixelImageKey: 'Riesen Spinne', gemChance: 4, description: 'Spuckt lähmendes Gift.', traits: ['Giftig'] }, 
+                { name: 'Bagdos Krieger', health: 45, attack: 7, levelMin: 5, levelMax: 9, xp: 68, gold: 130, pixelImageKey: 'Bagdos Krieger', gemChance: 5, description: 'Ein Lakeie Bagods.', traits: ['Krieger'] }, 
+                { name: 'Troll', health: 47, attack: 8, levelMin: 5, levelMax: 9, xp: 70, gold: 140, pixelImageKey: 'Troll', gemChance: 5, description: 'Regeneriert 3 Leben pro Runde.', traits: ['Regeneration', 'Massiv'], regen: 3 }, 
+                { name: 'Donnerschlange', health: 45, attack: 9, levelMin: 6, levelMax: 10, xp: 120, gold: 155, pixelImageKey: 'Donnerschlange', gemChance: 5, description: 'Eine lähmende Donnerschlange', traits: ['Statisch', 'Special Defense'] },
+                { name: 'Bagdos Magier', health: 45, attack: 9, levelMin: 6, levelMax: 11, xp: 120, gold: 165, pixelImageKey: 'Bagdos Magier', gemChance: 5, description: 'Bagdos treuster Magier', traits: ['Feueratem', 'Vision'] },
+                { name: 'Nekromant', health: 50, attack: 7, levelMin: 8, levelMax: 12, xp: 80, gold: 160, pixelImageKey: 'Nekromant', gemChance: 6, description: 'Schwächt dich oder ruft Diener.', traits: ['Untotenbeschwörer'] }, // Effekte müssen implementiert werden
+                { name: 'Eiskönig', health: 65, attack: 10, levelMin: 9, levelMax: 13, xp: 100, gold: 170, pixelImageKey: 'Eiskönig', gemChance: 6, description: 'Verlangsamt dich mit Kälte.', traits: ['Eis-Elementar', 'Frost-Aura', 'Special Defense'] }, // Effekte müssen implementiert werden
+                { name: 'Alchemie Kobold', health: 60, attack: 10, levelMin: 10, levelMax: 15, xp: 110, gold: 190, pixelImageKey: 'Alchemie Kobold', gemChance: 7, description: 'Der Albtraum jeder Medizin (fast jeder).', traits: ['Giftig', 'Antiheal'] }, // Effekte müssen implementiert werden
+                { name: 'Baby Drache', health: 65, attack: 13, levelMin: 11, levelMax: 15, xp: 130, gold: 190, pixelImageKey: 'Baby Drache', gemChance: 7, description: 'Speit Feuerstöße.', traits: ['Verspielt', 'Feueratem'] }, // Effekte müssen implementiert werden
+                { name: 'Charged Golem', health: 75, attack: 12, levelMin: 12, levelMax: 16, xp: 170, gold: 195, pixelImageKey: 'Charged Golem', gemChance: 7, description: 'Mächtiger Elementar Golem.', traits: ['Statisch', 'Regeneration'], regen: 3 }, // Effekte müssen implementiert werden
+                { name: 'Dracula', health: 68, attack: 10, levelMin: 13, levelMax: 17, xp: 190, gold: 200, pixelImageKey: 'Dracula', gemChance: 8, description: 'Dein Blut macht ihn stärker.', traits: ['Vamp', 'Stark'] }, // Effekte müssen implementiert werden
                 { name: 'Dämon', health: 85, attack: 13, levelMin: 14, levelMax: 18, xp: 280, gold: 210, pixelImageKey: 'Dämon', gemChance: 9, description: 'Feuer und Schatten. Resistent.', traits: ['Höllen Krallen'] }, // Effekte müssen implementiert werden
                 { name: 'Verfluchter Ritter', health: 85, attack: 10, levelMin: 15, levelMax: 19, xp: 360, gold: 250, pixelImageKey: 'Verfluchter Ritter', gemChance: 10, description: 'Ein wandelnde Geisterrüstung', traits: ['Defense', 'Rüstung', 'Krieger']}, // Effekte müssen implementiert werden
                 { name: 'Bagdos Riese', health: 120, attack: 12, levelMin: 16, levelMax: 20, xp: 400, gold: 300, pixelImageKey: 'Bagdos Riese', gemChance: 10, description: 'Ein Dummer aber leider auch starker Riese', traits: ['Stark', 'Dämlich'] }, // Effekte müssen implementiert werden
@@ -3929,16 +3929,17 @@ function getEffectiveManaCost(card) {
 
        executeCardEffect(card); // normale Karte
 
-    // ➕ Physischer Bonus-Schaden Schwertkämpfer
-    if (card?.type === 'physical') {
-        const bonus = 3;
-        if (state.currentEnemy?.health > 0) {
-            state.currentEnemy.health -= bonus;
-            logMessage(`⚔️ Physischer Bonus: Gegner erleidet ${bonus} Extraschaden.`, 'player');
-            enemyContainerElem.classList.add('hit');
-            setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
+        // ➕ Physischer Bonus-Schaden nur für Schwertkämpfer
+        if (card?.type === 'physical' && localStorage.getItem('selectedPassive') === 'swordfighter') {
+            const bonus = 3;
+            if (state.currentEnemy?.health > 0) {
+                state.currentEnemy.health -= bonus;
+                logMessage(`⚔️ Physischer Bonus: Gegner erleidet ${bonus} Extraschaden.`, 'player');
+                enemyContainerElem.classList.add('hit');
+                setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
+            }
         }
-    }}
+        }
     // Spezialfall: Anomalie – Effekt hat Karte ersetzt, keine Ablage/Aktion mehr
     if (card.effect === 'anomaly') {
         state.turnInProgress = false;
