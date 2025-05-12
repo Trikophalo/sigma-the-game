@@ -224,41 +224,44 @@ counter(card, state) {
     }, 500);
   },
 
-   multi_hit(card, state) {
-    let hits = (card.minHits && card.hits) ? getRandomInt(card.minHits, card.hits) : 2 + Math.floor(Math.random() * 2);
-    let damageDealt = 0;
-    const zeitklingeBonus = state.player.hasZeitklinge ? applyDamageBonuses(5) : 0;
+multi_hit(card, state) {
+  let hits = (card.minHits && card.hits) ? getRandomInt(card.minHits, card.hits) : 2 + Math.floor(Math.random() * 2);
+  let damageDealt = 0;
 
-    for (let i = 0; i < hits; i++) {
-      if (!state.currentEnemy || state.currentEnemy.health <= 0) break;
-      const rawBase = card.power + (i === 0 ? zeitklingeBonus : 0);
-      const baseDamage = applyDamageBonuses(rawBase);
+  const zeitklingeRawBonus = state.player.hasZeitklinge ? 5 : 0; // nur roher Bonus
+  const baseDamageWithBonus = applyDamageBonuses(card.power + zeitklingeRawBonus); // einmalig berechnet
+  const baseDamageWithoutBonus = applyDamageBonuses(card.power);
 
-      const block = card.ignoreBlock ? 0 : Math.min(state.currentEnemy.block || 0, baseDamage);
-      if (block > 0) {
-        state.currentEnemy.block -= block;
-        logMessage(`${state.currentEnemy.name} blockt ${block} Schaden.`, 'block');
-      }
+  for (let i = 0; i < hits; i++) {
+    if (!state.currentEnemy || state.currentEnemy.health <= 0) break;
 
-      let raw = baseDamage - block;
-      const final = applyTankTraitReduction(state.currentEnemy, raw, card);
-      if (final > 0) {
-        state.currentEnemy.health -= final;
-        damageDealt += final;
-        logMessage(`Multihit trifft (${i + 1}) – ${state.currentEnemy.name} nimmt ${final} Schaden.`, 'enemy');
-      }
+    const baseDamage = i === 0 ? baseDamageWithBonus : baseDamageWithoutBonus;
 
-      enemyContainerElem.classList.add('hit');
-      setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
+    const block = card.ignoreBlock ? 0 : Math.min(state.currentEnemy.block || 0, baseDamage);
+    if (block > 0) {
+      state.currentEnemy.block -= block;
+      logMessage(`${state.currentEnemy.name} blockt ${block} Schaden.`, 'block');
     }
 
-    if (state.player.hasDragonscale && state.currentEnemy) {
-      const target = state.currentEnemy.minions?.[0] || state.currentEnemy;
-      applyDragonScaleBurn(target);
+    let raw = baseDamage - block;
+    const final = applyTankTraitReduction(state.currentEnemy, raw, card);
+    if (final > 0) {
+      state.currentEnemy.health -= final;
+      damageDealt += final;
+      logMessage(`Multihit trifft (${i + 1}) – ${state.currentEnemy.name} nimmt ${final} Schaden.`, 'enemy');
     }
 
-    applyLifesteal(damageDealt);
-  },
+    enemyContainerElem.classList.add('hit');
+    setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
+  }
+
+  if (state.player.hasDragonscale && state.currentEnemy) {
+    const target = state.currentEnemy.minions?.[0] || state.currentEnemy;
+    applyDragonScaleBurn(target);
+  }
+
+  applyLifesteal(damageDealt);
+},
 
   poison(card, state) {
     const enemy = state.currentEnemy;
