@@ -5321,19 +5321,25 @@ if (state.currentEnemy && state.currentEnemy.health <= 0) {
             }
 
             // Führt einen Level Up durch
-            function levelUp() {
-            state.player.level ++; 
+     function levelUp() {
+            state.player.level++; 
             state.player.maxHealth += 1; // 🎉 +1 Max-Leben bei jedem Level-Up
+
+            // Heile 20 % des neuen Max-Lebens
+            const healAmount = Math.floor(state.player.maxHealth * 0.2);
+            state.player.health = Math.min(state.player.health + healAmount, state.player.maxHealth);
+
             state.player.xp -= state.player.xpToNextLevel;
             state.player.xpToNextLevel = Math.floor(BASE_XP_TO_LEVEL_UP * Math.pow(LEVEL_UP_FACTOR, state.player.level - 1));
-            logMessage(`*** Level Up! Spieler erreicht Level ${state.player.level}! Max-Leben erhöht auf ${state.player.maxHealth}! ***`, 'system');
+            
+            logMessage(`*** Level Up! Spieler erreicht Level ${state.player.level}! Max-Leben erhöht auf ${state.player.maxHealth} und heilt ${healAmount} Leben! ***`, 'system');
+            
             updateUIDisplay();
 
             setTimeout(() => {
                 showUpgradeScreen(); // z.B. Kartenwahl oder Bonuswahl
             }, 500);
         }
-
     
             function showUpgradeScreen() {
                 state.turnInProgress = true;
