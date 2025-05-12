@@ -85,8 +85,8 @@ document.addEventListener("DOMContentLoaded", () => {
         { id: "card_26", type: "card", cardId: 26, name: "Rage", price: cardPriceMap[26], description: 'Kann bis zu 3-5x treffen je 5 Schaden. Umgeht Block', icon: "💢" },
         { id: "card_27", type: "card", cardId: 27, name: "Slash", price: cardPriceMap[27], description: 'Ein schwacher aber effizienter Angriff', icon: "🥏" },
         { id: "card_28", type: "card", cardId: 28, name: "Konter", price: cardPriceMap[28], description: 'Kontert mit 120% des erlittenen Angriffs.', icon: "💫" },
-        { id: "card_29", type: "card", cardId: 29, name: "Seelenriss", price: cardPriceMap[29], description: 'Du machte nächste Runde keinen schaden, aber dannach doppelten.', icon: "👻" },
-        { id: "card_30", type: "card", cardId: 30, name: "Mewing", price: cardPriceMap[30], description: '10 Schaden. Wenn tödlich, heile 20% Max-Leben.', icon: "🧏" },
+        { id: "card_29", type: "card", cardId: 29, name: "Seelenriss", price: cardPriceMap[29], description: '10 Schaden. Wenn tödlich, heile 20% Max-Leben.', icon: "👻" },
+        { id: "card_30", type: "card", cardId: 30, name: "Mewing", price: cardPriceMap[30], description: 'Du machte nächste Runde keinen schaden, aber dannach doppelten', icon: "🧏" },
         { id: "card_31", type: "card", cardId: 31, name: "Sigma", price: cardPriceMap[31], description: 'Überlebe mit einem HP', icon: "🗿" },
         { id: "card_32", type: "card", cardId: 32, name: "Anomalie", price: cardPriceMap[32], description: 'Verwandelt sich in eine zufällige Karte.', icon: "🧿" },
     ...playerSkinFiles
