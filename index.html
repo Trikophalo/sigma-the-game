@@ -583,11 +583,39 @@
   <div class="highlight-text hover">Lichking Skin im Shop</div>
 </div>
 
+<script>
+function selectPassive(passiveKey) {
+  window.selectedPassive = passiveKey;
+  localStorage.setItem('selectedPassive', passiveKey);
+  console.log("Passive gewählt:", passiveKey);
+
+  // Visuell markieren
+  document.querySelectorAll('.passive-option').forEach(el => el.classList.remove('active'));
+  const selectedEl = document.querySelector(`.passive-option[data-passive="${passiveKey}"]`);
+  if (selectedEl) selectedEl.classList.add('active');
+}
+
+// Klick-Logik für alle auswählbaren Optionen (nicht locked)
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.passive-option:not(.locked)').forEach(option => {
+    option.addEventListener('click', () => {
+      const passive = option.dataset.passive;
+      selectPassive(passive);
+    });
+  });
+});
+</script>
+
 
     <div class="passive-selection">
       <div class="passive-option active" data-passive="swordfighter">
         <strong>Schwertkämpfer</strong>
-        <p>Schwert macht +3 Schaden</p>
+        <p>Schwerter machen +3 Schaden <br/> Dazu machen alle Physischen Attacken nochmal +3 Schaden</p>
+      </div>
+
+      <div class="passive-option" data-passive="warlock">
+        <strong>Hexenmeister</strong>
+        <p>Du startets mit 12 Mana. <br/>Du bekommst immer wieder kostenlose Tränke</p>
       </div>
 
       <div class="passive-option" data-passive="shieldmaster">
@@ -1254,34 +1282,42 @@ function closeMonsterWiki() {
 }
 
 const cards = [
-                 { id: 1, name: 'Schwert', icon: '⚔️', description: 'Ein einfaches Schwert.', power: 5, effect: 'damage', manaCost: 2, weight: 11, tags: ['damage'] },
+                 { id: 1, name: 'Schwert', icon: '⚔️', description: 'Ein einfaches Schwert.', power: 5, effect: 'damage', manaCost: 2, weight: 10, tags: ['sword'], type: 'physical' },
                  { id: 2, name: 'Schild', icon: '🛡️', description: 'Erhalte 5 Block', power: 5, effect: 'block', manaCost: 2, weight: 1 },
                  { id: 3, name: 'Heilung', icon: '❤️', description: 'Heilt 8 Leben', power: 8, effect: 'heal', manaCost: 3, weight: 1 },
-                 { id: 4, name: 'Gift', icon: '☠️', description: 'Vergiftung', power: 3, duration: 3, effect: 'poison', manaCost: 2, weight: 1 },
-                 { id: 5, name: 'Blitz', icon: '⚡', description: '12 Schaden chance auf Paralyse', power: 12, effect: 'damage_paralyze', manaCost: 4, weight: 2 },
-                 { id: 6, name: 'Großer Schlag', icon: '💥', description: 'Fügt 15 Schaden zu', power: 15, effect: 'damage', manaCost: 4, weight: 2 },
+                 { id: 4, name: 'Gift', icon: '☠️', description: 'Vergiftung (3 Schaden, 3 Rd.)', power: 3, duration: 3, effect: 'poison', manaCost: 2, weight: 1 },
+                 { id: 5, name: 'Blitz', icon: '⚡', description: '12 Schaden, Paralysiert Gegner zu 45% (Halbiert den Angriff 2 Runden)', power: 12, effect: 'damage_paralyze', manaCost: 4, weight: 2, type: 'special' },
+                 { id: 6, name: 'Großer Schlag', icon: '💥', description: 'Fügt 15 Schaden zu', power: 15, effect: 'damage', manaCost: 4, weight: 2, type: 'physical' },
                  { id: 7, name: 'Meditieren', icon: '🧘', description: 'Ziehe 1 Karte', power: 1, effect: 'draw', manaCost: 0, weight: 1 },
-                 { id: 8, name: 'Vampirbiss', icon: '🧛', description: '8 Schaden, heilt 8', power: 8, healAmount: 8, effect: 'lifesteal', manaCost: 4, weight: 2 }, // Direkte Heilung statt %
+                 { id: 8, name: 'Vampirbiss', icon: '🧛', description: '8 Schaden, heilt 8', power: 8, healAmount: 8, effect: 'lifesteal', manaCost: 4, weight: 2, type: 'physical' }, // Direkte Heilung statt %
                  { id: 9, name: 'Manatrank', icon: '🧪', description: 'Erhalte 2 Mana', power: 2, effect: 'gain_mana', manaCost: 0, weight: 3 },
                  { id: 10, name: 'Fokus', icon: '🎯', description: 'Ziehe 2 Karten', power: 2, effect: 'draw', manaCost: 1, weight: 1 },
-                 { id: 11, name: 'Heilige Macht', icon: '✨', description: 'Fügt 25 Schaden zu', power: 25, effect: 'damage', manaCost: 6, weight: 1 },
+                 { id: 11, name: 'Heilige Macht', icon: '✨', description: 'Fügt 25 Schaden zu', power: 25, effect: 'damage', manaCost: 6, weight: 1, type: 'special' },
                  { id: 12, name: 'Genesung', icon: '💖', description: 'Heilt 15 Leben', power: 15, effect: 'heal', manaCost: 5, weight: 1 },
-                 {id: 13, name: 'Feuerpfeil', icon: '🔥', description: 'Fügt 12 Schaden + Chance auf Verbrennung.', power: 12, effect: 'firearrow', manaCost: 5, weight: 2},
-                 {id: 14, name: 'Gambler’s Luck', icon: '🎲', description: '5 Schaden + 100 Gold oder Du nimmst 5 Schaden.', power: 5, effect: 'gamble', manaCost: 0, weight: 1},
-                 { id: 15, name: 'Kraft Sammeln', icon: '🔋', description: 'Heilt dich & Einmaliger Schadensboost', power: 0, effect: 'power_surge', manaCost: 'X', weight: 1 },
-                 {id: 16, name: 'Klingenwirbel', icon: '🌀', description: 'Greift mehrere Gegner gleichzeitig an. (Ignoriert Block.)', power: 8, effect: 'whirlwind', manaCost: 3, weight: 2},
-                 {id: 17, name: 'Todesklinge', icon: '⚔️', description: 'Die stärkste aller Schwerter. 25 Schaden.', power: 25, effect: 'damage', manaCost: 4, weight: 1, tags: ['sword'], rarity: 'superrare'},
+                 {id: 13, name: 'Feuerball', icon: '🔥', description: 'Fügt 12 Schaden zu. 50% Chance auf Verbrennung (5 Schaden für 2 Runden).', power: 12, effect: 'firearrow', manaCost: 5, weight: 2, type: 'special'},
+                 {id: 14, name: 'Gambler’s Luck', icon: '🎲', description: 'Gegner nimmt 5 Schaden und du erhältst 100 Gold (Ignoriert Block) oder Du nimmst 5 Schaden.', power: 5, effect: 'gamble', manaCost: 0, weight: 1, type: 'special'},
+                 { id: 15, name: 'Kraft Sammeln', icon: '🔋', description: 'Heilt dich um dein gesamtes Mana.<br><br>Einmaliger Schadensboost i.H.v. Manakosten -1', power: 0, effect: 'power_surge', manaCost: 'X', weight: 1 },
+                 {id: 16, name: 'Klingenwirbel', icon: '🌀', description: 'Greift mehrere Gegner gleichzeitig an. (Ignoriert Block.)', power: 8, effect: 'whirlwind', manaCost: 3, weight: 2, type: 'physical'},
+                 {id: 17, name: 'Todesklinge', icon: '⚔️', description: 'Die stärkste aller Schwerter. 25 Schaden.', power: 25, effect: 'damage', manaCost: 4, weight: 1, tags: ['sword'], rarity: 'superrare', type: 'physical'},
                  {id: 18, name: 'Mana Oase', icon: '🧪', description: 'Erhalte 5 Mana', power: 5, effect: 'gain_mana', manaCost: 0, weight: 1, rarity: 'superrare'},
-                 {id: 19, name: 'Blutrausch', icon: '🧛', description: '20 Schaden, heilt 12', power: 20, healAmount: 12, effect: 'lifesteal', manaCost: 7, weight: 1, rarity: 'superrare'},
-                 {id: 20, name: 'Unwetter', icon: '🌩️', description: 'Paralysiere den Gegner', power: 0, effect: 'paralyze', manaCost: 1, weight: 2 },
-                 {id: 21, name: 'Ansturm', icon: '🐗', description: '15 schaden aber 5 Schaden Rückstoß', power: 15, selfDamage: 5, effect: 'damage_selfhit', manaCost: 3, weight: 1 },
-                 {id: 22, name: 'Tornado', icon: '🌪️', description: 'Kann 2-3x treffen je 5 Schaden. Umgeht Block', power: 5, effect: 'multi_hit', hits: 3, minHits: 2, manaCost: 3, weight: 2 },
-                 {id: 23, name: 'The Knive', icon: '🗡️', description: 'Verursacht Blutungen', power: 12, effect: 'bleed', manaCost: 4, weight: 3 },
-                 {id: 24, name: 'Biohazard', icon: '☣️', description: 'Schwere Vergiftung', power: 6, duration: 3, effect: 'poison', manaCost: 4, weight: 1 },
+                 {id: 19, name: 'Blutrausch', icon: '🧛', description: '20 Schaden, heilt 12', power: 20, healAmount: 12, effect: 'lifesteal', manaCost: 7, weight: 1, rarity: 'superrare', type: 'physical'},
+                 {id: 20, name: 'Unwetter', icon: '🌩️', description: 'Paralysiere den Gegner (Halbiert den Angriff 2 Runden)', power: 0, effect: 'paralyze', manaCost: 1, weight: 2 },
+                 {id: 21, name: 'Ansturm', icon: '🐗', description: 'Ein Rücksichtsloser Angriff, 15 schaden aber 5 Schaden Rückstoß', power: 15, selfDamage: 5, effect: 'damage_selfhit', manaCost: 3, weight: 1, type: 'physical' },
+                 {id: 22, name: 'Tornado', icon: '🌪️', description: 'Kann 2-3x treffen je 5 Schaden. Umgeht Block', power: 5, effect: 'multi_hit', hits: 3, minHits: 2, manaCost: 3, weight: 2, type: 'special' },
+                 {id: 23, name: 'The Knive', icon: '🗡️', description: 'Verursacht Blutungen. The Knive doppelten Schaden bei Blutungen', power: 12, effect: 'bleed', manaCost: 4, weight: 3, type: 'physical' },
+                 {id: 24, name: 'Biohazard', icon: '☣️', description: 'Verursacht Schwere Vergiftung.(7 Schaden, 3 Rd.)', power: 7, duration: 3, effect: 'poison', manaCost: 4, weight: 1 },
                  { id: 25, name: 'Grande Schild', icon: '🔰', description: 'Erhalte 15 Block', power: 15, effect: 'block', manaCost: 4, weight: 1 },
-                 {id: 26, name: 'Rage', icon: '💢', description: 'Kann bis zu 3-5x treffen je 5 Schaden. Umgeht Block', power: 5, effect: 'multi_hit', hits: 5, minHits: 3, manaCost: 5, weight: 2 },
-                 {id: 27, name: 'Slash', icon: '🥏', description: 'Ein schwacher aber effizienter Angriff', power: 2, effect: 'damage', manaCost: 0, weight: 2 },
-                  {id: 28, name: 'Konter', icon: '💫', description: 'Beendet deinen Zug. Kontert mit 120% des erlittenen Angriffs.', effect: 'counter', manaCost: 5, weight: 1 },
+                 {id: 26, name: 'Rage', icon: '💢', description: 'Kann bis zu 3-5x treffen je 5 Schaden. Umgeht Block', power: 5, effect: 'multi_hit', hits: 5, minHits: 3, manaCost: 5, weight: 2, type: 'physical' },
+                 {id: 27, name: 'Slash', icon: '🥏', description: 'Ein schwacher aber effizienter Angriff', power: 2, effect: 'damage', manaCost: 0, weight: 2, type: 'physical' },
+                 {id: 28, name: 'Konter', icon: '💫', description: 'Beendet den Zug bis der Gegner dir Schaden zufügt. Kontert mit 120% des erlittenen Angriffs.', effect: 'counter', manaCost: 5, weight: 1 },
+                 { id: 29, name: 'Seelenriss', icon: '👻', description: '10 Schaden. Wenn tödlich, heile 20% Max-Leben.', power: 10, effect: 'soul_rip', manaCost: 4, weight: 1, type: 'special' },
+                 { id: 30, name: 'Mewing', icon: '🧏', description: 'Du machte nächste Runde keinen schaden, aber dannach doppelten.', power: 0, effect: 'mewing', manaCost: 3, weight: 1, tags: ['buff'] },
+                 { id: 31, name: 'Sigma', icon: '🗿', description: 'Falls du in dieser Runde tödlichen Schaden erleidest, überlebst du mit 1 HP.', power: 0, effect: 'sigma', manaCost: 3, weight: 1 },
+                 { id: 32, name: 'Anomalie', icon: '🧿', description: 'Verwandelt sich in eine zufällige Karte. Diese bleibt nur für einen einzigen Einsatz.', power: 0, effect: 'anomaly', manaCost: 1, weight: 1 },
+                 { id: 33, name: 'Magie', icon: '🔮', description: 'Leichte Magie.', power: 7, effect: 'damage', manaCost: 2, weight: 10, type: 'special' },
+                 { id: 34, name: 'Manatrank', icon: '🔷', description: 'Erhalte 2 Mana.', power: 2, effect: 'gain_mana', manaCost: 0, type: 'special', weight: 1 },
+                 { id: 35, name: 'Heiltrank', icon: '💗', description: 'Heilt 5 Leben.', power: 5, effect: 'heal', manaCost: 0, type: 'special', weight: 1 },
+                 { id: 36, name: 'Schadenstrank', icon: '💊', description: 'Fügt 5 Schaden zu.', power: 5, effect: 'damage', manaCost: 0, type: 'special', weight: 1 },
 ];
 
 document.getElementById("cardWikiButton").addEventListener("click", function () {
@@ -1324,11 +1360,13 @@ window.openDeck = window.showStarterDeckSelection = function () {
     alert("⚠️ Kartenliste nicht geladen. Bitte lade die Seite neu.");
     return;
   }
-  const DEFAULT_STARTERS = [1, 2, 3, 7, 15, 16];
+
+  const DEFAULT_STARTERS = [1, 2, 3, 7, 15, 16, 33];
+
   const wonCards = JSON.parse(localStorage.getItem('wonCards') || '[]');
   const allowedStarterCardIds = [...new Set([...DEFAULT_STARTERS, ...wonCards])];
   const selected = new Set(JSON.parse(localStorage.getItem('starterDeck') || '[]'));
-  
+
   // Musik entfernt
   
   // Modal erstellen mit atmosphärischem Hintergrund
@@ -2034,7 +2072,10 @@ function closeNamePopup() {
 
 // Karte global verfügbar machen für Starterdeck etc.
 window.cards = cards;
-localStorage.setItem('allCards', JSON.stringify(cards));
+
+localStorage.setItem('allCards', JSON.stringify(window.cards)); // ✅ korrekt
+console.log("💾 Karten gespeichert:", JSON.parse(localStorage.getItem('allCards')).map(c => c.id));
+
 
   </script>
 <script src="card.data.js"></script>
@@ -2054,8 +2095,6 @@ localStorage.setItem('allCards', JSON.stringify(cards));
 }
 
 </script>
-
-
 
 </body>
 </html>

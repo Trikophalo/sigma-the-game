@@ -2392,6 +2392,15 @@
     }
 }
 
+.card.physical {
+  background: linear-gradient(135deg, #502020, #301010); /* rötlich */
+}
+
+.card.special {
+  background: linear-gradient(135deg, #203050, #102030); /* bläulich */
+}
+
+
 
     </style>
 </head>
@@ -2564,35 +2573,45 @@
         // --- Spielkonstanten ---
         const CARD_TYPES = [
             // ... (deine Kartendefinitionen bleiben hier unverändert) ...
-                 { id: 1, name: 'Schwert', icon: '⚔️', description: 'Ein einfaches Schwert.', power: 5, effect: 'damage', manaCost: 2, weight: 11, tags: ['damage'] },
+                 { id: 1, name: 'Schwert', icon: '⚔️', description: 'Ein einfaches Schwert.', power: 5, effect: 'damage', manaCost: 2, weight: 5, tags: ['sword'], type: 'physical' },
                  { id: 2, name: 'Schild', icon: '🛡️', description: 'Erhalte 5 Block', power: 5, effect: 'block', manaCost: 2, weight: 1 },
                  { id: 3, name: 'Heilung', icon: '❤️', description: 'Heilt 8 Leben', power: 8, effect: 'heal', manaCost: 3, weight: 1 },
                  { id: 4, name: 'Gift', icon: '☠️', description: 'Vergiftung (3 Schaden, 3 Rd.)', power: 3, duration: 3, effect: 'poison', manaCost: 2, weight: 1 },
-                 { id: 5, name: 'Blitz', icon: '⚡', description: '12 Schaden, Paralysiert Gegner zu 45% (Halbiert den Angriff 2 Runden)', power: 12, effect: 'damage_paralyze', manaCost: 4, weight: 2 },
-                 { id: 6, name: 'Großer Schlag', icon: '💥', description: 'Fügt 15 Schaden zu', power: 15, effect: 'damage', manaCost: 4, weight: 2 },
+                 { id: 5, name: 'Blitz', icon: '⚡', description: '12 Schaden, Paralysiert Gegner zu 45% (Halbiert den Angriff 2 Runden)', power: 12, effect: 'damage_paralyze', manaCost: 4, weight: 2, type: 'special' },
+                 { id: 6, name: 'Großer Schlag', icon: '💥', description: 'Fügt 15 Schaden zu', power: 15, effect: 'damage', manaCost: 4, weight: 2, type: 'physical' },
                  { id: 7, name: 'Meditieren', icon: '🧘', description: 'Ziehe 1 Karte', power: 1, effect: 'draw', manaCost: 0, weight: 1 },
-                 { id: 8, name: 'Vampirbiss', icon: '🧛', description: '8 Schaden, heilt 8', power: 8, healAmount: 8, effect: 'lifesteal', manaCost: 4, weight: 2 }, // Direkte Heilung statt %
+                 { id: 8, name: 'Vampirbiss', icon: '🧛', description: '8 Schaden, heilt 8', power: 8, healAmount: 8, effect: 'lifesteal', manaCost: 4, weight: 2, type: 'physical' }, // Direkte Heilung statt %
                  { id: 9, name: 'Manatrank', icon: '🧪', description: 'Erhalte 2 Mana', power: 2, effect: 'gain_mana', manaCost: 0, weight: 3 },
                  { id: 10, name: 'Fokus', icon: '🎯', description: 'Ziehe 2 Karten', power: 2, effect: 'draw', manaCost: 1, weight: 1 },
-                 { id: 11, name: 'Heilige Macht', icon: '✨', description: 'Fügt 25 Schaden zu', power: 25, effect: 'damage', manaCost: 6, weight: 1 },
+                 { id: 11, name: 'Heilige Macht', icon: '✨', description: 'Fügt 25 Schaden zu', power: 25, effect: 'damage', manaCost: 6, weight: 1, type: 'special' },
                  { id: 12, name: 'Genesung', icon: '💖', description: 'Heilt 15 Leben', power: 15, effect: 'heal', manaCost: 5, weight: 1 },
-                 {id: 13, name: 'Feuerpfeil', icon: '🔥', description: 'Fügt 12 Schaden zu. 50% Chance auf Verbrennung (5 Schaden für 2 Runden).', power: 12, effect: 'firearrow', manaCost: 5, weight: 2},
-                 {id: 14, name: 'Gambler’s Luck', icon: '🎲', description: 'Gegner nimmt 5 Schaden und du erhältst 100 Gold (Ignoriert Block) oder Du nimmst 5 Schaden.', power: 5, effect: 'gamble', manaCost: 0, weight: 1},
+                 {id: 13, name: 'Feuerball', icon: '🔥', description: 'Fügt 12 Schaden zu. 50% Chance auf Verbrennung (5 Schaden für 2 Runden).', power: 12, effect: 'firearrow', manaCost: 5, weight: 2, type: 'special'},
+                 {id: 14, name: 'Gambler’s Luck', icon: '🎲', description: 'Gegner nimmt 5 Schaden und du erhältst 100 Gold (Ignoriert Block) oder Du nimmst 5 Schaden.', power: 5, effect: 'gamble', manaCost: 0, weight: 1, type: 'special'},
                  { id: 15, name: 'Kraft Sammeln', icon: '🔋', description: 'Heilt dich um dein gesamtes Mana.<br><br>Einmaliger Schadensboost i.H.v. Manakosten -1', power: 0, effect: 'power_surge', manaCost: 'X', weight: 1 },
-                 {id: 16, name: 'Klingenwirbel', icon: '🌀', description: 'Greift mehrere Gegner gleichzeitig an. (Ignoriert Block.)', power: 8, effect: 'whirlwind', manaCost: 3, weight: 2},
-                 {id: 17, name: 'Todesklinge', icon: '⚔️', description: 'Die stärkste aller Schwerter. 25 Schaden.', power: 25, effect: 'damage', manaCost: 4, weight: 1, tags: ['sword'], rarity: 'superrare'},
+                 {id: 16, name: 'Klingenwirbel', icon: '🌀', description: 'Greift mehrere Gegner gleichzeitig an. (Ignoriert Block.)', power: 8, effect: 'whirlwind', manaCost: 3, weight: 2, type: 'physical'},
+                 {id: 17, name: 'Todesklinge', icon: '⚔️', description: 'Die stärkste aller Schwerter. 25 Schaden.', power: 25, effect: 'damage', manaCost: 4, weight: 1, tags: ['sword'], rarity: 'superrare', type: 'physical'},
                  {id: 18, name: 'Mana Oase', icon: '🧪', description: 'Erhalte 5 Mana', power: 5, effect: 'gain_mana', manaCost: 0, weight: 1, rarity: 'superrare'},
-                 {id: 19, name: 'Blutrausch', icon: '🧛', description: '20 Schaden, heilt 12', power: 20, healAmount: 12, effect: 'lifesteal', manaCost: 7, weight: 1, rarity: 'superrare'},
+                 {id: 19, name: 'Blutrausch', icon: '🧛', description: '20 Schaden, heilt 12', power: 20, healAmount: 12, effect: 'lifesteal', manaCost: 7, weight: 1, rarity: 'superrare', type: 'physical'},
                  {id: 20, name: 'Unwetter', icon: '🌩️', description: 'Paralysiere den Gegner (Halbiert den Angriff 2 Runden)', power: 0, effect: 'paralyze', manaCost: 1, weight: 2 },
-                 {id: 21, name: 'Ansturm', icon: '🐗', description: 'Ein Rücksichtsloser Angriff, 15 schaden aber 5 Schaden Rückstoß', power: 15, selfDamage: 5, effect: 'damage_selfhit', manaCost: 3, weight: 1 },
-                 {id: 22, name: 'Tornado', icon: '🌪️', description: 'Kann 2-3x treffen je 5 Schaden. Umgeht Block', power: 5, effect: 'multi_hit', hits: 3, minHits: 2, manaCost: 3, weight: 2 },
-                 {id: 23, name: 'The Knive', icon: '🗡️', description: 'Verursacht Blutungen. The Knive doppelten Schaden bei Blutungen', power: 12, effect: 'bleed', manaCost: 4, weight: 3 },
+                 {id: 21, name: 'Ansturm', icon: '🐗', description: 'Ein Rücksichtsloser Angriff, 15 schaden aber 5 Schaden Rückstoß', power: 15, selfDamage: 5, effect: 'damage_selfhit', manaCost: 3, weight: 1, type: 'physical' },
+                 {id: 22, name: 'Tornado', icon: '🌪️', description: 'Kann 2-3x treffen je 5 Schaden. Umgeht Block', power: 5, effect: 'multi_hit', hits: 3, minHits: 2, manaCost: 3, weight: 2, type: 'special' },
+                 {id: 23, name: 'The Knive', icon: '🗡️', description: 'Verursacht Blutungen. The Knive doppelten Schaden bei Blutungen', power: 12, effect: 'bleed', manaCost: 4, weight: 3, type: 'physical' },
                  {id: 24, name: 'Biohazard', icon: '☣️', description: 'Verursacht Schwere Vergiftung.(7 Schaden, 3 Rd.)', power: 7, duration: 3, effect: 'poison', manaCost: 4, weight: 1 },
                  { id: 25, name: 'Grande Schild', icon: '🔰', description: 'Erhalte 15 Block', power: 15, effect: 'block', manaCost: 4, weight: 1 },
-                 {id: 26, name: 'Rage', icon: '💢', description: 'Kann bis zu 3-5x treffen je 5 Schaden. Umgeht Block', power: 5, effect: 'multi_hit', hits: 5, minHits: 3, manaCost: 5, weight: 2 },
-                 {id: 27, name: 'Slash', icon: '🥏', description: 'Ein schwacher aber effizienter Angriff', power: 2, effect: 'damage', manaCost: 0, weight: 2 },
-                 {id: 28, name: 'Konter', icon: '💫', description: 'Beendet deinen Zug. Kontert mit 120% des erlittenen Angriffs.', effect: 'counter', manaCost: 5, weight: 1 },
+                 {id: 26, name: 'Rage', icon: '💢', description: 'Kann bis zu 3-5x treffen je 5 Schaden. Umgeht Block', power: 5, effect: 'multi_hit', hits: 5, minHits: 3, manaCost: 5, weight: 2, type: 'physical' },
+                 {id: 27, name: 'Slash', icon: '🥏', description: 'Ein schwacher aber effizienter Angriff', power: 2, effect: 'damage', manaCost: 0, weight: 2, type: 'physical' },
+                 {id: 28, name: 'Konter', icon: '💫', description: 'Beendet den Zug bis der Gegner dir Schaden zufügt. Kontert mit 120% des erlittenen Angriffs.', effect: 'counter', manaCost: 5, weight: 1 },
+                 { id: 29, name: 'Seelenriss', icon: '👻', description: '10 Schaden. Wenn tödlich, heile 20% Max-Leben.', power: 10, effect: 'soul_rip', manaCost: 4, weight: 1, type: 'special' },
+                 { id: 30, name: 'Mewing', icon: '🧏', description: 'Du machte nächste Runde keinen schaden, aber dannach doppelten.', power: 0, effect: 'mewing', manaCost: 3, weight: 1, tags: ['buff'] },
+                 { id: 31, name: 'Sigma', icon: '🗿', description: 'Falls du in dieser Runde tödlichen Schaden erleidest, überlebst du mit 1 HP.', power: 0, effect: 'sigma', manaCost: 3, weight: 1 },
+                 { id: 32, name: 'Anomalie', icon: '🧿', description: 'Verwandelt sich in eine zufällige Karte. Diese bleibt nur für einen einzigen Einsatz.', power: 0, effect: 'anomaly', manaCost: 1, weight: 1 },
+                 { id: 33, name: 'Magie', icon: '🔮', description: 'Leichte Magie.', power: 7, effect: 'damage', manaCost: 2, weight: 5, type: 'special' },
+                 { id: 34, name: 'Manatrank', icon: '🪄', description: 'Erhalte 2 Mana.', power: 2, effect: 'gain_mana', manaCost: 0, type: 'special', weight: 1, rarity: 'superrare' },
+                 { id: 35, name: 'Heiltrank', icon: '🪄', description: 'Heilt 5 Leben.', power: 5, effect: 'heal', manaCost: 0, type: 'special', weight: 1, rarity: 'superrare' },
+                 { id: 36, name: 'Schadenstrank', icon: '🪄', description: 'Fügt 5 Schaden zu.', power: 5, effect: 'damage', manaCost: 0, type: 'special', weight: 1, rarity: 'superrare' },
         ];
+        
+        
         window.cards = CARD_TYPES;
         localStorage.setItem('allCards', JSON.stringify(CARD_TYPES));
 
@@ -2651,35 +2670,35 @@
             // ... (deine Gegnertypen bleiben hier unverändert) ...
                 { name: 'Goblin', health: 20, attack: 5, levelMin: 1, levelMax: 4, xp: 35, gold: 60, pixelImageKey: 'Goblin', gemChance: 1, description: 'Ein kleiner, flinker Goblin.', traits: ['Keine Fähigkeit'] },
                 { name: 'Schleim', health: 20, attack: 6, levelMin: 1, levelMax: 4, xp: 65, gold: 85, pixelImageKey: 'Schleim', gemChance: 1, description: 'Ein fieser Schleim.', traits: ['Teilung'] },
-                { name: 'Gepanzertes Skelett', health: 25, attack: 4, levelMin: 2, levelMax: 6, xp: 55, gold: 75, pixelImageKey: 'Gepanzertes Skelett', gemChance: 2, description: 'Ein ehmaliger stolzer Soldat.', traits: ['Rüstung'] },
+                { name: 'Gepanzertes Skelett', health: 25, attack: 4, levelMin: 2, levelMax: 6, xp: 55, gold: 75, pixelImageKey: 'Gepanzertes Skelett', gemChance: 2, description: 'Ein ehmaliger stolzer Soldat.', traits: ['Rüstung', 'Defense'] },
                 { name: 'Leecher', health: 30, attack: 6, levelMin: 2, levelMax: 6, xp: 55, gold: 75, pixelImageKey: 'Leecher', gemChance: 2, description: 'Blutsüchtiger Mini Dämonen.', traits: ['Vamp'] },
                 { name: 'Wutferkel', health: 35, attack: 8, levelMin: 3, levelMax: 6, xp: 65, gold: 80, pixelImageKey: 'Wutferkel', gemChance: 2, description: 'Ein Wildes wütendes Schwein', traits: ['Rücksichtslos'] },
                 { name: 'Ork', health: 35, attack: 5, levelMin: 3, levelMax: 7, xp: 60, gold: 65, pixelImageKey: 'Ork', gemChance: 4, description: 'Ein brutaler Ork-Krieger.', traits: ['Stark'] },
                 { name: 'Riesen Spinne', health: 40, attack: 6, levelMin: 4, levelMax: 9, xp: 65, gold: 80, pixelImageKey: 'Riesen Spinne', gemChance: 4, description: 'Spuckt lähmendes Gift.', traits: ['Giftig'] }, 
                 { name: 'Bagdos Krieger', health: 45, attack: 7, levelMin: 5, levelMax: 9, xp: 68, gold: 85, pixelImageKey: 'Bagdos Krieger', gemChance: 5, description: 'Ein Lakeie Bagods.', traits: ['Krieger'] }, 
                 { name: 'Troll', health: 47, attack: 8, levelMin: 5, levelMax: 9, xp: 70, gold: 100, pixelImageKey: 'Troll', gemChance: 5, description: 'Regeneriert 3 Leben pro Runde.', traits: ['Regeneration', 'Massiv'], regen: 3 }, 
-                { name: 'Donnerschlange', health: 45, attack: 9, levelMin: 6, levelMax: 10, xp: 120, gold: 105, pixelImageKey: 'Donnerschlange', gemChance: 5, description: 'Eine lähmende Donnerschlange', traits: ['Statisch'] },
+                { name: 'Donnerschlange', health: 45, attack: 9, levelMin: 6, levelMax: 10, xp: 120, gold: 105, pixelImageKey: 'Donnerschlange', gemChance: 5, description: 'Eine lähmende Donnerschlange', traits: ['Statisch', 'Special Defense'] },
                 { name: 'Bagdos Magier', health: 45, attack: 9, levelMin: 6, levelMax: 11, xp: 120, gold: 105, pixelImageKey: 'Bagdos Magier', gemChance: 5, description: 'Bagdos treuster Magier', traits: ['Feueratem', 'Vision'] },
                 { name: 'Nekromant', health: 50, attack: 7, levelMin: 8, levelMax: 12, xp: 80, gold: 120, pixelImageKey: 'Nekromant', gemChance: 6, description: 'Schwächt dich oder ruft Diener.', traits: ['Untotenbeschwörer'] }, // Effekte müssen implementiert werden
-                { name: 'Eiskönig', health: 65, attack: 10, levelMin: 9, levelMax: 13, xp: 100, gold: 130, pixelImageKey: 'Eiskönig', gemChance: 6, description: 'Verlangsamt dich mit Kälte.', traits: ['Eis-Elementar', 'Frost-Aura'] }, // Effekte müssen implementiert werden
+                { name: 'Eiskönig', health: 65, attack: 10, levelMin: 9, levelMax: 13, xp: 100, gold: 130, pixelImageKey: 'Eiskönig', gemChance: 6, description: 'Verlangsamt dich mit Kälte.', traits: ['Eis-Elementar', 'Frost-Aura', 'Special Defense'] }, // Effekte müssen implementiert werden
                 { name: 'Alchemie Kobold', health: 60, attack: 10, levelMin: 10, levelMax: 15, xp: 110, gold: 140, pixelImageKey: 'Alchemie Kobold', gemChance: 7, description: 'Der Albtraum jeder Medizin (fast jeder).', traits: ['Giftig', 'Antiheal'] }, // Effekte müssen implementiert werden
                 { name: 'Baby Drache', health: 65, attack: 13, levelMin: 11, levelMax: 15, xp: 130, gold: 170, pixelImageKey: 'Baby Drache', gemChance: 7, description: 'Speit Feuerstöße.', traits: ['Verspielt', 'Feueratem'] }, // Effekte müssen implementiert werden
                 { name: 'Charged Golem', health: 75, attack: 12, levelMin: 12, levelMax: 16, xp: 170, gold: 180, pixelImageKey: 'Charged Golem', gemChance: 7, description: 'Mächtiger Elementar Golem.', traits: ['Statisch', 'Regeneration'], regen: 3 }, // Effekte müssen implementiert werden
                 { name: 'Dracula', health: 68, attack: 10, levelMin: 13, levelMax: 17, xp: 190, gold: 190, pixelImageKey: 'Dracula', gemChance: 8, description: 'Dein Blut macht ihn stärker.', traits: ['Vamp', 'Stark'] }, // Effekte müssen implementiert werden
                 { name: 'Dämon', health: 85, attack: 13, levelMin: 14, levelMax: 18, xp: 280, gold: 210, pixelImageKey: 'Dämon', gemChance: 9, description: 'Feuer und Schatten. Resistent.', traits: ['Höllen Krallen'] }, // Effekte müssen implementiert werden
-                { name: 'Verfluchter Ritter', health: 85, attack: 10, levelMin: 15, levelMax: 19, xp: 360, gold: 250, pixelImageKey: 'Verfluchter Ritter', gemChance: 10, description: 'Ein wandelnde Geisterrüstung', traits: ['Rüstung', 'Krieger']}, // Effekte müssen implementiert werden
+                { name: 'Verfluchter Ritter', health: 85, attack: 10, levelMin: 15, levelMax: 19, xp: 360, gold: 250, pixelImageKey: 'Verfluchter Ritter', gemChance: 10, description: 'Ein wandelnde Geisterrüstung', traits: ['Defense', 'Rüstung', 'Krieger']}, // Effekte müssen implementiert werden
                 { name: 'Bagdos Riese', health: 120, attack: 12, levelMin: 16, levelMax: 20, xp: 400, gold: 300, pixelImageKey: 'Bagdos Riese', gemChance: 10, description: 'Ein Dummer aber leider auch starker Riese', traits: ['Stark', 'Dämlich'] }, // Effekte müssen implementiert werden
-                { name: 'Erzengel', health: 110, attack: 13, levelMin: 16, levelMax: 20, xp: 400, gold: 300, pixelImageKey: 'Erzengel', gemChance: 10, description: 'Ein mächtiger gefallener Engel.', traits: ['Segen', 'Fliegend'] }, // Effekte müssen implementiert werden
+                { name: 'Erzengel', health: 110, attack: 13, levelMin: 16, levelMax: 20, xp: 400, gold: 300, pixelImageKey: 'Erzengel', gemChance: 10, description: 'Ein mächtiger gefallener Engel.', traits: ['Segen', 'Fliegend', 'Defense'] }, // Effekte müssen implementiert werden
                 { name: 'Gargoyle', health: 105, attack: 15, levelMin: 17, levelMax: 21, xp: 450, gold: 320, pixelImageKey: 'Gargoyle', gemChance: 11, description: 'Einst da um die Menschen zu beschützen. Jetzt ein unbändiges Monster', traits: ['Gepanzerte Schuppen', 'Tank'] }, 
                 { name: 'Drache', health: 130, attack: 16, levelMin: 18, levelMax: 22, xp: 650, gold: 330, pixelImageKey: 'Drache', gemChance: 12, description: 'Ein mächtiger, alter Drache.', traits: ['Feueratem', 'Fliegend', 'Gepanzerte Schuppen'] }, 
                 { name: 'Teufel', health: 95, attack: 7, levelMin: 19, levelMax: 24, xp: 750, gold: 380, pixelImageKey: 'Teufel', gemChance: 13, description: 'Der Herrscher der Unterwelt.', traits: ['Höllenwache'] },
                 { name: 'Spinnenkönigin', health: 130, attack: 14, levelMin: 20, levelMax: 25, xp: 750, gold: 390, pixelImageKey: 'Spinnenkönigin', gemChance: 14, description: 'Eine Spinne die selbst der Teufel fürchtet.', traits: ['Antiheal', 'Giftig'] },
                 { name: 'Rainbow', health: 150, attack: 13, levelMin: 21, levelMax: 26, xp: 900, gold: 400, pixelImageKey: 'Rainbow', gemChance: 16, description: 'Meister über alle Elemente', traits: ['Frost-Aura', 'Giftig', 'Feueratem', 'Statisch'] },
-                { name: 'Bagdos Leibgarde', health: 180, attack: 17, levelMin: 21, levelMax: 26, xp: 900, gold: 400, pixelImageKey: 'Bagdos Leibgarde', gemChance: 16, description: 'Lässt seinen Meister nie im stich', traits: ['Rüstung', 'Tank'] },
+                { name: 'Bagdos Leibgarde', health: 180, attack: 17, levelMin: 21, levelMax: 26, xp: 900, gold: 400, pixelImageKey: 'Bagdos Leibgarde', gemChance: 16, description: 'Lässt seinen Meister nie im stich', traits: ['Rüstung', 'Tank', 'Defense'] },
                 { name: 'Yokai', health: 110, attack: 16, levelMin: 22, levelMax: 28, xp: 1100, gold: 450, pixelImageKey: 'Yokai', gemChance: 16, description: 'Ein hochrangiger fliegender Yokai-Demon', traits: ['Fliegend', 'Höllenkrallen','Untotenbeschwörer'] },
                 { name: 'Yagdril', health: 150, attack: 28, levelMin: 23, levelMax: 100, xp: 1200, gold: 500, pixelImageKey: 'Yagdril', gemChance: 18, description: 'Ein Wesen dessen Macht unbeschreiblich ist', traits: ['Fliegend', 'YinYang'] },
-                { name: 'Leviathan', health: 160, attack: 20, levelMin: 24, levelMax: 100, xp: 1300, gold: 520, pixelImageKey: 'Leviathan', gemChance: 23, description: 'Das Symbol des Schreckens', traits: ['Antiheal', 'Vision'] },
-                { name: 'Bagdo', health: 220, maxHealth: 200, attack: 30, levelMin: 25, levelMax: 100, xp: 1500, gold: 600, pixelImageKey: 'Bagdo', gemChance: 25, description: 'Der gefallene Lichking', traits: ['Entfesselung', 'Lichking'] },
+                { name: 'Leviathan', health: 160, attack: 20, levelMin: 24, levelMax: 100, xp: 1300, gold: 520, pixelImageKey: 'Leviathan', gemChance: 23, description: 'Das Symbol des Schreckens', traits: ['Antiheal', 'Vision', 'Special Defense'] },
+                { name: 'Bagdo', health: 220, maxHealth: 200, attack: 30, levelMin: 25, levelMax: 100, xp: 1500, gold: 600, pixelImageKey: 'Bagdo', gemChance: 25, description: 'Der gefallene Lichking', traits: ['Entfesselung', 'Lichking', 'Defense'] },
         ];
     
         // --- Upgrade-Typen ---
@@ -2693,7 +2712,6 @@
                  { type: 'upgradeMana', title: 'Max Mana +1', description: 'Erhöhe dein maximales Mana um 1.', rarity: 'rare' }, // Seltener
                  { type: 'swapCard', title: 'Kartentausch', description: 'Lösche eine Karte aus deinem Deck und wähle eine neue.', rarity: 'rare' }, 
                  { type: 'increaseHandSize', title: 'Handgröße +1', description: 'Du kannst 1 Karte mehr halten.', rarity: 'rare' },
-                 { type: 'addLifestealFlat', title: 'Lebensraub +1', description: 'Du bekommst 20% Lifesteal.', rarity: 'rare' }, // Geändert zu festem Wert pro Schadenspunkt
                  { type: 'regenManaPassive', title: 'Mana-Regen +1', description: 'Du erhältst pro Runde +1 zusätzliches Mana zurück.', rarity: 'rare' },
                  { type: 'regenManaPassive3', title: 'Mana-Regen +3', description: 'Du erhältst pro Runde +3 zusätzliches Mana zurück.', rarity: 'superrare' },
                  { type: 'newUltraCardSpecific', title: 'Eine Ultra Karte wählen', description: 'Wähle 1 von 3 Ultra Karten.', rarity: 'superrare' }, // Komplexer zu implementieren
@@ -2732,7 +2750,7 @@
         const enemyMaxHealthElem = document.getElementById('enemyMaxHealth');
         const enemyHealthBarElem = document.getElementById('enemyHealthBar').querySelector('.health-fill');
         const enemyAttackElem = document.getElementById('enemyAttack');
-        const enemyContainerElem = document.getElementById('enemyContainer');
+        window.enemyContainerElem  = document.getElementById('enemyContainer');
         const monsterImageElem = document.getElementById('monsterImage');
         const playerImageElem = document.getElementById('playerImage');
         const enemyInfoElem = document.getElementById('enemyInfo');
@@ -2897,7 +2915,7 @@
 
 
         function getThreeUniqueNewCards() {
-            const forbiddenCardIds = [17, 18, 19, 21, 22, 23, 24];
+            const forbiddenCardIds = [17, 18, 19, 21, 22, 23, 24, 34, 35, 36];
             const ownedCardIds = new Set(state.player.deck.map(card => card.id));
             const unlockedIds = state.unlockedCardIds;
 
@@ -2950,20 +2968,22 @@
 
 
          // Funktion zum Loggen von Nachrichten im Spiel
-        function logMessage(message, type = 'system') {
-            const messageDiv = document.createElement('div');
-            messageDiv.classList.add('message', type);
-            // Sicherstellen, dass nur Text eingefügt wird (Sicherheit)
-            messageDiv.textContent = message;
-            messageLogElem.appendChild(messageDiv);
-            // Automatisch nach unten scrollen
-            messageLogElem.scrollTop = messageLogElem.scrollHeight;
-        }
-    
+    window.logMessage = function(message, type = 'system') {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message', type);
+        messageDiv.textContent = message;
+
+        const messageLogElem = document.getElementById('messageLog');
+        if (!messageLogElem) return;
+
+        messageLogElem.appendChild(messageDiv);
+        messageLogElem.scrollTop = messageLogElem.scrollHeight;
+    };
     
         // --- Kern Initialisierungsfunktion ---
 function initGame() {
     console.log('Gibt es shopContainerElem?', document.getElementById('shopContainer'));
+    
 
     if (typeof upgradeContainerElem !== 'undefined') upgradeContainerElem.style.display = 'none';
     if (typeof shopContainerElem !== 'undefined') shopContainerElem.style.display = 'none';
@@ -3023,20 +3043,36 @@ function initGame() {
     state.player.deck = [];
 
     starterCardIds.forEach(id => {
-        const base = CARD_TYPES.find(c => c.id === id);
+    const base = window.cards.find(c => c.id === id);
         const count = base.weight || 1;
         for (let i = 0; i < count; i++) {
             state.player.deck.push(createCardInstance(base));
         }
     });
 
+    // Wenn Hexenmeister gewählt wurde, füge Tränke hinzu
+    if (selectedPassive === 'warlock') {
+    const bonusPotionIds = [34, 35, 36];
+    bonusPotionIds.forEach(id => {
+        const base = window.cards.find(c => c.id === id);
+        if (base) {
+        state.player.deck.push(createCardInstance(base));
+        }
+    });
+    logMessage("🧪 Hexenmeister: 3 Tränke wurden deinem Deck hinzugefügt.", "system");
+    }
 
     shuffleArray(state.player.deck);
     state.player.name = playerName;
 
     switch (selectedPassive) {
+       case 'warlock':
+            state.player.maxMana = 12;
+            state.player.mana = 12;
+            break;
         case 'swordfighter':
             state.player.swordBonus = 3;
+            state.player.isSwordmaster = true;
             break;
         case 'goldboy':
             state.player.gold = 2500;
@@ -3063,6 +3099,9 @@ function initGame() {
             break;
     }
 
+window.CARD_TYPES = window.cards.slice();
+console.log("✅ FINALER CARD_TYPES:", window.CARD_TYPES.map(c => c.id));
+
     playerImageElem.style.backgroundImage = `url(${PLAYER_PIXEL_IMAGE})`;
     playerImageElem.style.backgroundColor = '#444';
 
@@ -3083,6 +3122,7 @@ function initGame() {
 
     console.log("Spiel initialisiert. Aktueller Status:", state);
     logMessage(`🧠 Aktive Passive: ${selectedPassive}`, 'system');
+    console.log("✅ CARD_TYPES enthält IDs:", CARD_TYPES.map(c => c.id));
 
     db.collection("highscores")
         .orderBy("score", "desc")
@@ -3256,7 +3296,7 @@ function initGame() {
                 }
             }
  
-        function updateEnemyUI() {
+        window.updateEnemyUI = function() {
             if (!state.currentEnemy) {
                 enemyNameElem.textContent = 'Kein Gegner';
                 enemyHealthElem.textContent = '0';
@@ -3324,6 +3364,8 @@ function initGame() {
                 'Tank': 'Erleidet weniger Schaden, je weniger Leben er hat (bis zu 50 % Reduktion).',
                 'Entfesselung': 'Greift dich erst nach 2 Runden an',
                 'Lichking': 'Wird nach dem Tot mit 50% Leben wiederbelebt und bekommt einen Schadensboost',
+                'Defense': 'Physische Attacken machen halben Schaden und Spezielle doppelten',
+                'Special Defense': 'Spezielle Attacken machen halben Schaden und Physische doppelten',
             };
                 monsterTraitsElem.innerHTML = '';
                 if (enemy.traits?.length) {
@@ -3450,7 +3492,7 @@ function initGame() {
         }
     
         // Aktualisiert die Anzeige der Handkarten
-        function updateHandUI() {
+ window.updateHandUI = function() {
     cardHandElem.innerHTML = ''; // Alte Karten entfernen
     state.player.hand.forEach(card => {
         const cardDiv = createCardElement(card); // Eigene Funktion für Kartenerstellung
@@ -3467,6 +3509,11 @@ function createCardElement(card) {
     const cardDiv = document.createElement('div');
     cardDiv.classList.add('card', 'card-animation');
     cardDiv.dataset.uniqueId = card.uniqueId;
+    
+    // Neue Typ-Farbzuweisung
+if (card.effect === 'damage' || card.effect?.startsWith('damage')) {
+  cardDiv.classList.add(card.type === 'physical' ? 'physical' : 'special');
+}
 
     if (getEffectiveManaCost(card) > card.manaCost) {
     cardDiv.classList.add('vision-penalty');
@@ -3758,7 +3805,7 @@ function getEffectiveManaCost(card, forDisplay = false) {
         }
 
 
-        function drawCards(numCards) {
+        window.drawCards = function(numCards) {
             let drawnCount = 0;
 
             while (drawnCount < numCards) {
@@ -3877,7 +3924,27 @@ function getEffectiveManaCost(card) {
             playSingleEffect(effect, value, card);
         }
     } else {
-        executeCardEffect(card); // normale Karte
+        // Falls durch Anomalie erzeugt → einmaliger Effekt
+        if (card.generatedByAnomaly) {
+            card.oneShot = true;
+        }
+
+       executeCardEffect(card); // normale Karte
+
+    // ➕ Physischer Bonus-Schaden Schwertkämpfer
+    if (card?.type === 'physical') {
+        const bonus = 3;
+        if (state.currentEnemy?.health > 0) {
+            state.currentEnemy.health -= bonus;
+            logMessage(`⚔️ Physischer Bonus: Gegner erleidet ${bonus} Extraschaden.`, 'player');
+            enemyContainerElem.classList.add('hit');
+            setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
+        }
+    }}
+    // Spezialfall: Anomalie – Effekt hat Karte ersetzt, keine Ablage/Aktion mehr
+    if (card.effect === 'anomaly') {
+        state.turnInProgress = false;
+        return;
     }
 
     // Spezialfall: Kraft Sammeln
@@ -3905,7 +3972,7 @@ function getEffectiveManaCost(card) {
 }
 
   //Zentrale lifesteal funktion
-function applyLifesteal(damageDealt) {
+window.applyLifesteal = function(damageDealt) {
     if (!damageDealt || damageDealt <= 0) return;
 
     if (state.player.hasAntiHeal) {
@@ -3940,20 +4007,49 @@ function applyLifesteal(damageDealt) {
 }
 
 
+window.applyTankTraitReduction = function(target, incomingDamage, card = null) {
+    let damage = incomingDamage;
 
-function applyTankTraitReduction(target, incomingDamage) {
-    if (!target.traits?.includes('Tank') || !target.maxHealth) return incomingDamage;
+    // ➤ Neue Typenlogik: Defense / Special Defense
+    if (card) {
+        // Typ wird kontert – Schaden wird verdoppelt
+        if (card.type === 'special' && target.traits?.includes('Defense')) {
+            damage *= 2;
+            logMessage(`⚡ ${target.name} ist schwach gegen Spezialangriffe!`, 'enemy');
+        }
+
+        if (card.type === 'physical' && target.traits?.includes('Special Defense')) {
+            damage *= 2;
+            logMessage(`💥 ${target.name} ist schwach gegen physische Angriffe!`, 'enemy');
+        }
+
+        // Typ wird abgewehrt – Schaden wird reduziert
+        if (card.type === 'physical' && target.traits?.includes('Defense')) {
+            damage *= 0.5;
+            logMessage(`🛡️ ${target.name} reduziert physischen Schaden!`, 'enemy');
+        }
+
+        if (card.type === 'special' && target.traits?.includes('Special Defense')) {
+            damage *= 0.5;
+            logMessage(`🔮 ${target.name} reduziert Spezialschaden!`, 'enemy');
+        }
+    }
+
+    // ➤ Bestehende Tank-Logik
+    if (!target.traits?.includes('Tank') || !target.maxHealth) return Math.floor(damage);
 
     const missingPercent = 1 - (target.health / target.maxHealth);
     const reductionFactor = Math.min(0.5, missingPercent * 0.5); // max 50%
-    const reducedDamage = Math.floor(incomingDamage * (1 - reductionFactor));
+    const reducedDamage = Math.floor(damage * (1 - reductionFactor));
 
     if (reductionFactor > 0) {
-        logMessage(`🛡️ ${target.name} reduziert den Schaden um ${Math.round(reductionFactor * 100)} %.`, 'enemy');
+        logMessage(`🪖 ${target.name} reduziert den Schaden um ${Math.round(reductionFactor * 100)} %.`, 'enemy');
     }
 
     return reducedDamage;
 }
+
+
 
 
 // Refactored playSingleEffect for Fusion Effects
@@ -4183,7 +4279,7 @@ function playSingleEffect(effect, power, card) {
 
 
 
-function applyDragonScaleBurn(target) {
+window.applyDragonScaleBurn = function(target) {
     if (!target.statusEffects) target.statusEffects = [];
 
     const alreadyBurning = target.statusEffects.some(e => e.type === 'burn');
@@ -4192,553 +4288,6 @@ function applyDragonScaleBurn(target) {
         logMessage(`🔥 Drachenschuppen: ${target.name} wurde verbrannt!`, 'burn');
     }
 }
-
-    
-function executeCardEffect(card) {
-    switch (card.effect) {
-            case 'counter':
-                logMessage("🛡 Du bereitest einen Konter vor...", 'player');
-                state.player.isCountering = true;
-
-                // ✨ Sofort blockieren
-                state.turnInProgress = true;
-
-                setTimeout(() => {
-                    state.turnInProgress = false; // Optional: falls endTurn das nicht tut
-                    endTurn();
-                }, 500);
-                break;
-            case 'bleed': {
-                let rawDamage = card.power;
-
-                // Prüfe, ob der Gegner in dieser Runde bereits Schaden erlitten hat
-                const alreadyDamaged = state.currentEnemy.damagedThisTurn === true;
-
-                // Wenn ja, Schaden verdoppeln
-                if (alreadyDamaged) {
-                    rawDamage *= 2;
-                    logMessage(`🩸 Blutung! Schaden verdoppelt.`, 'effect');
-                }
-
-                // Bonus-Schaden anwenden
-                const totalDamage = applyDamageBonuses(rawDamage);
-
-                // Block abziehen
-                const blockUsed = Math.min(state.currentEnemy.block || 0, totalDamage);
-                if (blockUsed > 0) {
-                    state.currentEnemy.block -= blockUsed;
-                    logMessage(`${state.currentEnemy.name} blockt ${blockUsed} Schaden.`, 'block');
-                }
-
-                const netDamage = totalDamage - blockUsed;
-
-                if (netDamage > 0) {
-                    const adjustedDamage = applyTankTraitReduction(state.currentEnemy, netDamage);
-                    state.currentEnemy.health -= adjustedDamage;
-                    logMessage(`${state.currentEnemy.name} erleidet ${adjustedDamage} Schaden durch Blutung.`, 'enemy');
-                    applyLifesteal(adjustedDamage);
-                } else {
-                    logMessage(`${state.currentEnemy.name} blockt den gesamten Blutungsschaden!`, 'block');
-                }
-
-                // Gegner als "diese Runde verletzt" markieren
-                state.currentEnemy.damagedThisTurn = true;
-
-                // Blutungseffekt einmalig dauerhaft anwenden
-                if (!state.currentEnemy.statusEffects) {
-                    state.currentEnemy.statusEffects = [];
-                }
-                const alreadyBleeding = state.currentEnemy.statusEffects.some(e => e.type === 'bleed');
-                if (!alreadyBleeding) {
-                    state.currentEnemy.statusEffects.push({
-                        type: 'bleed',
-                        permanent: true
-                    });
-                }
-
-                // Trefferanimation
-                enemyContainerElem.classList.add('hit');
-                setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
-
-                // Drachenhaut-Effekt (wenn aktiv)
-                if (state.player.hasDragonscale) {
-                    const target = state.currentEnemy.minions?.[0] || state.currentEnemy;
-                    applyDragonScaleBurn(target);
-                }
-
-                // Lebensraub nochmal absichern
-                applyLifesteal(netDamage);
-
-                break;
-            }
-
-        case 'damage_selfhit': {
-                let damage = applyDamageBonuses(card.power);
-                let recoil = card.selfDamage || 0;
-
-                // Gegner treffen (ggf. Block berücksichtigen)
-                let blockUsed = Math.min(state.currentEnemy.block || 0, damage);
-                if (blockUsed > 0) {
-                    state.currentEnemy.block -= blockUsed;
-                    logMessage(`${state.currentEnemy.name} blockt ${blockUsed} Schaden.`, 'block');
-                }
-
-                const finalDamage = damage - blockUsed;
-                if (finalDamage > 0) {
-                    const adjustedDamage = applyTankTraitReduction(state.currentEnemy, finalDamage);
-                    state.currentEnemy.health -= adjustedDamage;
-                    logMessage(`${state.currentEnemy.name} erleidet ${adjustedDamage} Schaden durch Ansturm.`, 'enemy');
-                    applyLifesteal(adjustedDamage);
-                } else {
-                    applyLifesteal(0);
-                }
-
-                // Rückstoß-Schaden auf Spieler
-                if (recoil > 0) {
-                    state.player.health -= recoil;
-                    logMessage(`💢 Du erleidest ${recoil} Rückstoß-Schaden.`, 'player');
-                }
-
-                enemyContainerElem.classList.add('hit');
-                setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
-                            if (state.player.hasDragonscale) {
-                const target = state.currentEnemy.minions?.[0] || state.currentEnemy;
-                applyDragonScaleBurn(target);
-            }
-                
-                applyLifesteal(finalDamage);
-
-                break;
-            }
-                    case 'paralyze': {
-                        const enemy = state.currentEnemy;
-                        const alreadyParalyzed = enemy.statusEffects?.some(e => e.type === 'paralyze');
-
-                        if (alreadyParalyzed) {
-                            logMessage(`⚡ ${enemy.name} ist bereits paralysiert.`, 'effect');
-                            break;
-                        }
-
-                        if (!enemy.statusEffects) enemy.statusEffects = [];
-                        enemy.statusEffects.push({ type: 'paralyze', duration: 2 });
-                        logMessage(`⚡ ${enemy.name} wird paralysiert! (Angriff halbiert)`, 'effect');
-
-                        // ➕ Heilung bei Paralyse, falls Elementar-Amulett aktiv ist
-                        if (state.player.hasElementalLifesteal && enemy.attack > 0) {
-                            const heal = Math.floor(enemy.attack / 2);
-                            const actualHeal = Math.min(heal, state.player.maxHealth - state.player.health);
-                            state.player.health += actualHeal;
-                            logMessage(`✨ Elementar-Amulett heilt dich um ${actualHeal} Leben durch Paralyse.`, 'heal');
-                        }
-
-                        updateEnemyUI();
-                        break;
-                    }
-        case 'poison': {
-                    const enemy = state.currentEnemy;
-
-                    if (enemy.traits?.includes('Gepanzerte Schuppen') || enemy.traits?.includes('Massiv')) {
-                        logMessage(`${enemy.name} ist immun gegen Vergiftung!`, 'enemy');
-                        break;
-                    }
-
-                    const existing = enemy.statusEffects?.find(e => e.type === 'poison');
-
-                    if (existing) {
-                        existing.power = Math.max(existing.power, card.power || 4);
-                        existing.duration = Math.max(existing.duration, 3);
-                        logMessage(`☠️ ${enemy.name} ist bereits vergiftet – Effekt verstärkt/verlängert.`, 'poison');
-                    } else {
-                        if (!enemy.statusEffects) enemy.statusEffects = [];
-                        enemy.statusEffects.push({ type: 'poison', power: card.power || 4, duration: 3 });
-                        logMessage(`☠️ ${enemy.name} wird vergiftet (${card.power || 4} Schaden für 3 Runden).`, 'poison');
-                    }
-
-                    updateEnemyUI();
-                    break;
-                }
-        case 'damage_paralyze':
-                dealDamage(state.currentEnemy, card.power);
-                tryApplyParalyze(state.currentEnemy, 0.45); // 45 % Chance
-                break;
-        case 'whirlwind': {
-            let rawDamage = card.power;
-            let totalDamage = applyDamageBonuses(rawDamage);
-            let damageDealt = 0;
-
-            // Minions zuerst treffen
-            if (state.currentEnemy.minions?.length > 0) {
-                state.currentEnemy.minions.forEach((minion) => {
-                    minion.health -= totalDamage;
-                    damageDealt += totalDamage;
-                    logMessage(`🌀 ${minion.name} erleidet ${totalDamage} Schaden (ignoriert Block).`, 'enemy');
-                });
-
-                // Entferne besiegte Minions
-                state.currentEnemy.minions = state.currentEnemy.minions.filter(m => m.health > 0);
-            }
-
-            // Hauptgegner angreifen (Block ignorieren)
-            const adjustedDamage = applyTankTraitReduction(state.currentEnemy, totalDamage);
-            state.currentEnemy.health -= adjustedDamage;
-            damageDealt += adjustedDamage;
-            logMessage(`🌀 ${state.currentEnemy.name} erleidet ${adjustedDamage} Schaden durch Klingenwirbel (ignoriert Block).`, 'enemy');
-
-            // Trefferanimation
-            enemyContainerElem.classList.add('hit');
-            setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
-
-            // 🔥 Drachenschuppen-Effekt
-            if (state.player.hasDragonscale) {
-                const target = state.currentEnemy.minions?.[0] || state.currentEnemy;
-                applyDragonScaleBurn(target);
-            }
-
-                applyLifesteal(damageDealt);
-            break;
-        }
-        case 'power_surge': {
-            const spentMana = state.player.mana;
-
-            if (spentMana > 0) {
-                // Mana ausgeben
-                state.player.mana = 0;
-
-                // Heilen
-                const healAmount = Math.min(spentMana, state.player.maxHealth - state.player.health);
-                state.player.health += healAmount;
-
-                logMessage(`💚 Kraft Sammeln heilt dich um ${healAmount} Leben.`, 'heal');
-
-                // Temporärer Schadensbonus für nächste Runde
-                state.player.tempAttackBonus = (state.player.tempAttackBonus || 0) + spentMana;
-                logMessage(`⚔️ Du bekommst +${spentMana} Angriff für deine nächste Runde.`, 'buff');
-            } else {
-                logMessage(`🌀 Kein Mana verfügbar – Effekt von Kraft Sammeln entfällt.`, 'system');
-            }
-            break;
-        }
-        case 'damage':
-            let rawDamage = (typeof card.basePower === 'number' ? card.basePower : card.power);
-
-            if (card.name === 'Schwert') {
-                if (state.player.swordBonus) {
-                    rawDamage += state.player.swordBonus;
-                }
-                if (state.player.isShieldmaster) {
-                    rawDamage -= 1;
-                    logMessage('⚠️ Schildmeister: Schwert macht 1 weniger Schaden.', 'system');
-                }
-            }
-
-            let damageDealt = applyDamageBonuses(rawDamage);
-
-          // 🪓 Kritischer Treffer durch Katryns Axt
-            if (state.player.critChance && Math.random() < state.player.critChance) {
-                 const critBonus = Math.floor(damageDealt * 0.5);
-                 damageDealt += critBonus;
-                 logMessage(`💥 Kritischer Treffer! Schaden um +${critBonus} erhöht!`, 'player');
-                }            
-           let remainingDamage = 0;
-
-            if (state.currentEnemy.minions?.length > 0) {
-                const target = state.currentEnemy.minions[0];
-                target.health -= damageDealt;
-                remainingDamage = damageDealt; // Lifesteal basiert auf tatsächlichem Schaden
-                logMessage(`💀 ${target.name} erleidet ${damageDealt} Schaden.`, 'enemy');
-                if (target.health <= 0) {
-                    logMessage(`${target.name} wurde zerstört!`, 'enemy');
-                    state.currentEnemy.minions.shift();
-                }
-            } else {
-                const blockUsed = Math.min(state.currentEnemy.block || 0, damageDealt);
-                if (blockUsed > 0) {
-                    state.currentEnemy.block -= blockUsed;
-                    logMessage(`${state.currentEnemy.name} blockt ${blockUsed} Schaden.`, 'block');
-                }
-
-                remainingDamage = applyTankTraitReduction(state.currentEnemy, damageDealt - blockUsed);
-                if (remainingDamage > 0) {
-                    state.currentEnemy.health -= remainingDamage;
-                    logMessage(`${state.currentEnemy.name} erleidet ${remainingDamage} Schaden.`, 'enemy');
-                } else {
-                    logMessage(`${state.currentEnemy.name} blockt den gesamten Schaden!`, 'block');
-                }
-            }
-
-            applyLifesteal(remainingDamage);  // ✅ funktioniert jetzt korrekt
-
-
-
-            // 🔥 Drachenschuppen-Effekt: 100% Chance auf leichte Verbrennung
-            if (state.player.hasDragonscale) {
-                const target = state.currentEnemy.minions?.[0] || state.currentEnemy;
-                applyDragonScaleBurn(target);
-            }
-                
-
-                enemyContainerElem.classList.add('hit');
-                setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
-                break;
-
-          case 'multi_hit': {
-                let hits;
-                if (card.minHits != null && card.hits != null && card.minHits <= card.hits) {
-                    hits = getRandomInt(card.minHits, card.hits);
-                } else {
-                    hits = 2 + Math.floor(Math.random() * 2);
-                }
-
-                let damageDealt = 0;
-
-                // 🕰️ Zeitklinge: Einmaligen Bonus vorbereiten
-                const zeitklingeBonus = state.player.hasZeitklinge ? applyDamageBonuses(5) : 0;
-
-                for (let i = 0; i < hits; i++) {
-                    if (!state.currentEnemy || state.currentEnemy.health <= 0) break;
-
-                    const rawBase = card.power + (i === 0 ? zeitklingeBonus : 0);
-                    const baseDamage = applyDamageBonuses(rawBase);
-
-                    const block = card.ignoreBlock ? 0 : Math.min(state.currentEnemy.block || 0, baseDamage);
-                    if (block > 0 && !card.ignoreBlock) {
-                        state.currentEnemy.block -= block;
-                        logMessage(`${state.currentEnemy.name} blockt ${block} Schaden.`, 'block');
-                    }
-
-                    let raw = baseDamage - block;
-                    const final = applyTankTraitReduction(state.currentEnemy, raw);
-                    if (final > 0) {
-                        state.currentEnemy.health -= final;
-                        damageDealt += final;
-                        logMessage(`Multihit trifft (${i + 1}) – ${state.currentEnemy.name} nimmt ${final} Schaden.`, 'enemy');
-                    }
-
-                    enemyContainerElem.classList.add('hit');
-                    setTimeout(() => {
-                        enemyContainerElem.classList.remove('hit');
-                    }, 300);
-                }
-
-                // 🔥 Drachenschuppen-Effekt
-                if (state.player.hasDragonscale && state.currentEnemy) {
-                    const target = state.currentEnemy.minions?.[0] || state.currentEnemy;
-                    applyDragonScaleBurn(target);
-                }
-
-                applyLifesteal(damageDealt);
-                break;
-            }
-        
-        case 'block':
-            state.player.block += card.power;
-            logMessage(`Spieler erhält ${card.power} Block.`, 'block');
-            break;
-
-            case 'heal':
-                if (state.player.hasAntiHeal) {
-                    logMessage(`❌ Deine Heilung wird durch Anti-Heilung blockiert!`, 'debuff');
-                    break;
-                }
-
-                const healFromCard = Math.min(card.power, state.player.maxHealth - state.player.health);
-                if (healFromCard > 0) {
-                    state.player.health += healFromCard;
-                    logMessage(`Spieler heilt ${healFromCard} Leben.`, 'heal');
-                } else {
-                    logMessage(`Spieler ist bereits bei vollem Leben.`, 'heal');
-                }
-                break;
-        case 'full_heal': {
-            const amount = state.player.maxHealth - state.player.health;
-            if (amount > 0) {
-                state.player.health = state.player.maxHealth;
-                logMessage(`🌸 Lotus Trank heilt dich vollständig (${amount} Leben).`, 'heal');
-            } else {
-                logMessage(`🌸 Lotus Trank: Du bist bereits voll geheilt.`, 'system');
-            }
-            break;
-        }
-
-        if (!state.currentEnemy.statusEffects) {
-            state.currentEnemy.statusEffects = [];
-                    }
-
-         switch (effectType) {
-                case 'poison':
-                case 'burn':
-                case 'paralyze': {
-                    const immunityTraits = {
-                        poison: ['Gepanzerte Schuppen', 'Massiv'],
-                        burn: ['Gepanzerte Schuppen'],
-                        paralyze: ['Gepanzerte Schuppen']
-                    };
-
-                    const immune = immunityTraits[effectType]?.some(trait =>
-                        state.currentEnemy.traits?.includes(trait)
-                    );
-
-                    if (immune) {
-                        logMessage(`${state.currentEnemy.name} ist immun gegen ${effectType}.`, 'enemy');
-                        return;
-                    }
-
-                    const power = card.power || 4;
-                    const duration = card.duration || 3;
-
-                    const existing = state.currentEnemy.statusEffects?.find(e => e.type === effectType);
-                    if (existing) {
-                        existing.power = Math.max(existing.power, power);
-                        existing.duration = Math.max(existing.duration, duration);
-                        logMessage(`🌀 ${state.currentEnemy.name} ist bereits betroffen – ${effectType} verstärkt/verlängert.`, 'effect');
-                    } else {
-                        if (!state.currentEnemy.statusEffects) state.currentEnemy.statusEffects = [];
-                        state.currentEnemy.statusEffects.push({ type: effectType, power, duration });
-                        logMessage(`🌀 ${state.currentEnemy.name} ist nun betroffen: ${effectType} (${power}, ${duration} Runden).`, 'effect');
-                    }
-
-                    updateEnemyUI();
-                    break;
-                }
-            }
-
-                case 'lifesteal': {
-                    let rawLifestealDamage = card.power;
-
-                    // Anwenden aller temporären Schadenboni (Kraft sammeln, Märtyrer, etc.)
-                    let lsDamage = applyDamageBonuses(rawLifestealDamage);
-
-                    logMessage(`${state.currentEnemy.name} erleidet ${lsDamage} Schaden.`, 'enemy');
-
-                    let enemyBlockUsed = Math.min(state.currentEnemy.block || 0, lsDamage);
-                    if (enemyBlockUsed > 0) {
-                        state.currentEnemy.block -= enemyBlockUsed;
-                        logMessage(`${state.currentEnemy.name} blockt ${enemyBlockUsed} Schaden.`, 'block');
-                    }
-                    const remainingDamage = lsDamage - enemyBlockUsed;
-                    if (remainingDamage > 0) {
-                        const finalDamage = applyTankTraitReduction(state.currentEnemy, remainingDamage);
-                        state.currentEnemy.health -= finalDamage;
-                    }
-
-                    // Lifesteal der Karte (unabhängig von Upgrade)
-                    if (!state.player.hasAntiHeal) {
-                        const heal = Math.min(card.healAmount || 0, state.player.maxHealth - state.player.health);
-                        if (heal > 0) {
-                            state.player.health += heal;
-                            logMessage(`🧛 Du heilst ${heal} Leben durch Vampirbiss.`, 'lifesteal');
-                        }
-                    } else {
-                        logMessage(`❌ Vampirbiss wird durch Anti-Heilung blockiert.`, 'debuff');
-                    }
-
-
-                    enemyContainerElem.classList.add('hit');
-                    setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
-                    break;
-                }
-
-                case 'firearrow': {
-                    let baseFireDamage = card.power;
-
-                    // Doppelter Schaden bei Eis-Gegner
-                    if (state.currentEnemy.traits?.includes('Eis-Elementar')) {
-                        baseFireDamage *= 2;
-                        logMessage(`🔥 Effektiv! ${state.currentEnemy.name} erhält doppelten Schaden durch Feuer.`, 'system');
-                    }
-
-                    // Bonus-Effekte anwenden
-                    let fireDamage = applyDamageBonuses(baseFireDamage);
-
-                    // Block berücksichtigen
-                    const enemyBlock = state.currentEnemy.block || 0;
-                    const blockUsed = Math.min(enemyBlock, fireDamage);
-                    const damageAfterBlock = Math.max(0, fireDamage - blockUsed);
-
-                    if (blockUsed > 0) {
-                        state.currentEnemy.block -= blockUsed;
-                        logMessage(`🛡️ ${state.currentEnemy.name} blockt ${blockUsed} Schaden.`, 'block');
-                    }
-
-                    const finalFireDamage = applyTankTraitReduction(state.currentEnemy, damageAfterBlock);
-                    state.currentEnemy.health -= finalFireDamage;
-                    logMessage(`${state.currentEnemy.name} erleidet ${finalFireDamage} Schaden durch Feuerpfeil.`, 'enemy');
-
-                    // 🧛 Lifesteal (aus Upgrades)
-                    applyLifesteal(damageAfterBlock);
-
-                    enemyContainerElem.classList.add('hit');
-                    setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
-
-                    // 50% Verbrennungs-Chance
-                    if (Math.random() < 0.5) {
-                        const alreadyBurning = state.currentEnemy.statusEffects?.some(e => e.type === 'burn');
-                        if (!alreadyBurning) {
-                            state.currentEnemy.statusEffects.push({
-                                type: 'burn',
-                                power: 5,
-                                duration: 2
-                            });
-                            logMessage(`${state.currentEnemy.name} wird verbrannt! (5 Schaden für 2 Runden)`, 'burn');
-                        } else {
-                            logMessage(`${state.currentEnemy.name} ist bereits verbrannt.`, 'system');
-                        }
-                        updateEnemyUI();
-                    }
-
-                    break;
-                }
-
-
-
-         case 'gamble':
-                if (Math.random() < 0.5) {
-                    // Negativer Effekt
-                    state.player.health -= card.power;
-                    logMessage(`💥 Pech gehabt! Du verlierst ${card.power} Leben.`, 'player');
-                } else {
-                    // Positiver Effekt → Schaden am Gegner mit Boni
-                    let gambleDamage = applyDamageBonuses(card.power);
-
-                    state.currentEnemy.health -= gambleDamage;
-                    state.player.gold += 100;
-                    logMessage(`🍀 Glück gehabt! Gegner erleidet ${gambleDamage} Schaden und du erhältst 100 Gold.`, 'system');
-
-                    enemyContainerElem.classList.add('hit');
-                    setTimeout(() => enemyContainerElem.classList.remove('hit'), 300);
-                }
-                break;
-
-        case 'draw':
-            const drawn = drawCards(card.power);
-            if (drawn > 0) {
-                logMessage(`Ziehe ${drawn} Karte(n).`, 'system');
-            } else {
-                logMessage(`Keine Karten gezogen – Hand ist voll oder Deck leer.`, 'discard');
-            }
-            updateHandUI();
-            break;
-
-        case 'gain_mana':
-            const manaGained = Math.min(card.power, state.player.maxMana - state.player.mana);
-            if (manaGained > 0) {
-                state.player.mana += manaGained;
-                logMessage(`Erhalte ${manaGained} Mana.`, 'mana');
-            } else {
-                logMessage(`Mana ist bereits voll.`, 'mana');
-            }
-            break;
-
-        default:
-            logMessage(`Unbekannter Effekt: ${card.effect}`, 'system');
-        }
-    }
-
-
-
-
-
-
 
 
 
@@ -4789,7 +4338,7 @@ function executeCardEffect(card) {
 
 
 
-        function applyDamageBonuses(baseDamage) {
+        window.applyDamageBonuses = function(baseDamage) {
             let damage = baseDamage;
 
             if (state.player.tempAttackBonus) {
@@ -4809,6 +4358,16 @@ function executeCardEffect(card) {
                 const cappedBonus = Math.min(state.player.zeitklingeBonus, 13);
                 damage += cappedBonus;
                 logMessage(`🕰️ Zeitklingen-Bonus: +${cappedBonus} Schaden.`, 'buff');
+            }
+
+                        // Prüfe Mewing-Zustand
+            if (state.player.mewingStage === 2) {
+                damage = 0;
+                logMessage(`😼 Mewing-Effekt aktiv: Diese Runde kein Schaden.`, 'system');
+            } else if (state.player.mewingStage === 3) {
+                damage *= 2;
+                logMessage(`💪 Mewing-Effekt entfaltet sich: DOPPELTER Schaden!`, 'buff');
+                state.player.mewingStage = 0; // Effekt verbraucht
             }
 
             return damage;
@@ -5259,9 +4818,16 @@ function executeCardEffect(card) {
                 updateUIDisplay();
 
                 if (state.player.health <= 0) {
-                    gameOver();
+                    if (state.player.hasSigmaShield) {
+                        state.player.health = 1;
+                        state.player.hasSigmaShield = false;
+                        logMessage(`🛡 SIGMA schützt dich vor dem Tod! Du überlebst mit 1 HP.`, 'system');
+                        setTimeout(startNewTurn, 800);
+                    } else {
+                        gameOver();
+                    }
                 } else {
-                    setTimeout(startNewTurn, 800); // Immer neue Runde einleiten, wenn nicht tot
+                    setTimeout(startNewTurn, 800);
                 }
             }
 
@@ -5343,7 +4909,18 @@ function applyEnemyStatusEffectsAfterTurn() {
             if (state.gameOver) return; // Kein neuer Zug, wenn Spiel vorbei ist
             state.turnInProgress = false;
 
-            
+            //Sigma
+             if (state.player.hasSigmaShield) {
+             state.player.hasSigmaShield = false;
+             }
+
+            //Mewing
+            if (state.player.mewingStage === 1) {
+            state.player.mewingStage = 2;
+            } else if (state.player.mewingStage === 2) {
+            state.player.mewingStage = 3;
+            }
+
             //Block erst jetzt zurücksetzen
             if (state.player.block > 0) {
                     logMessage(`Block (${state.player.block}) verschwindet.`, 'block');
@@ -5747,15 +5324,17 @@ if (state.currentEnemy && state.currentEnemy.health <= 0) {
 
             // Führt einen Level Up durch
             function levelUp() {
-                state.player.level++;
-                state.player.xp -= state.player.xpToNextLevel;
-                state.player.xpToNextLevel = Math.floor(BASE_XP_TO_LEVEL_UP * Math.pow(LEVEL_UP_FACTOR, state.player.level - 1));
-                logMessage(`*** Level Up! Spieler erreicht Level ${state.player.level}! ***`, 'system');
+            state.player.level ++; 
+            state.player.maxHealth += 1; // 🎉 +1 Max-Leben bei jedem Level-Up
+            state.player.xp -= state.player.xpToNextLevel;
+            state.player.xpToNextLevel = Math.floor(BASE_XP_TO_LEVEL_UP * Math.pow(LEVEL_UP_FACTOR, state.player.level - 1));
+            logMessage(`*** Level Up! Spieler erreicht Level ${state.player.level}! Max-Leben erhöht auf ${state.player.maxHealth}! ***`, 'system');
+            updateUIDisplay();
 
-                setTimeout(() => {
-                    showUpgradeScreen();
-                }, 500); // kurze Verzögerung für saubere UX
-            }
+            setTimeout(() => {
+                showUpgradeScreen(); // z.B. Kartenwahl oder Bonuswahl
+            }, 500);
+        }
 
     
             function showUpgradeScreen() {
@@ -5960,8 +5539,8 @@ if (state.currentEnemy && state.currentEnemy.health <= 0) {
                         logMessage(`❌ ${card.name} wurde dauerhaft aus deinem Deck entfernt.`, 'discard');
 
                         // Jetzt neue Karten anbieten (nicht besessen + nicht verboten)
-                        const forbiddenCardIdsAdd = [17, 18, 19, 21, 22, 23, 24]; // keine Ultra-Karten
-                        const addableCards = CARD_TYPES.filter(c =>
+                        const forbiddenCardIdsAdd = [17, 18, 19, 21, 22, 23, 24, 34, 35, 36]; // keine Ultra-Karten
+                        const addableCards = window.cards.filter(c =>
                             !forbiddenCardIdsAdd.includes(c.id) &&
                             !state.unlockedCardIds.has(c.id)
                         );
@@ -6215,12 +5794,29 @@ if (state.currentEnemy && state.currentEnemy.health <= 0) {
             }, 500); // Erhöht für Debug-Zwecke
         }
 
-
-
     </script>
+
     <script src="shop.js"></script>
     <script src="fusion.js"></script>
     <script src="lootbox.js"></script>
     <script src="achievements.js"></script>
+<script type="module">
+  import { cardEffects } from './cardEffects.js';
+
+window.executeCardEffect = function(card) {
+  console.log("🧪 Karte wird gespielt:", card); // ✅ Debug-Ausgabe
+  const effect = card.effect;
+  const handler = cardEffects[effect];
+
+  if (typeof handler === 'function') {
+    console.log("➡️ Effekt gefunden:", effect); // ✅ Debug-Ausgabe
+    handler(card, state);
+  } else {
+    console.warn(`❓ Unbekannter Effekt: ${effect}`);
+    logMessage(`Unbekannter Effekt: ${effect}`, 'system');
+  }
+};
+
+</script>
 </body>
 </html>

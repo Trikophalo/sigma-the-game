@@ -4,7 +4,7 @@ const SHOP_ITEMS = [
     {
       id: 'blut',
       name: 'Doanels Blutrüstung',
-      cost: 1500,
+      cost: 2000,
       description: 'Regeneriert jede Runde 3 Leben.',
       icon: 'images/blutrüstung.png',
       effect: 'regen'
@@ -28,7 +28,7 @@ const SHOP_ITEMS = [
     {
       id: 'dornenhelm',
       name: 'Stachelkappe',
-      cost: 1500,
+      cost: 2000,
       description: 'Der Gegner erleidet 30 % seines Schadens als Rückstoß.',
       icon: 'images/dornenhelm.png',
       effect: 'thorns'
@@ -44,7 +44,7 @@ const SHOP_ITEMS = [
     {
       id: 'Titanhose',
       name: 'Titan Hose',
-      cost: 2500,
+      cost: 3000,
       description: 'Du erleidest 20 % weniger Schaden.',
       icon: 'images/titan.png',
       effect: 'reduce_damage'
@@ -57,6 +57,14 @@ const SHOP_ITEMS = [
       icon: 'images/elementar-amulett.png',
       effect: 'elemental_lifesteal'
     },
+     {
+      id: 'leechblade',
+      name: 'Leechklinge',
+      cost: 4500,
+      description: 'Erhöht deinen Lebensraub um +20 %.',
+      icon: 'images/leechblade.png',
+      effect: 'addLifestealFlat'
+    },  
     {
       id: 'lotus',
       name: 'Lotus Trank',
@@ -88,8 +96,7 @@ const SHOP_ITEMS = [
       description: '🐾 Cassa macht 1 Schaden und gibt 3 Block pro Runde. Kaufst du ein neues wird dein altes Pet ersetzt!',
       icon: 'images/cassa.png',
       effect: 'pet_cassa'
-    }    
-    
+    },
   ];
   
   const playerInventory = new Set(); // Gekaufte Items speichern
@@ -250,6 +257,16 @@ window.addEventListener('DOMContentLoaded', () => {
 
   function applyShopItemEffect(item) {
     switch (item.effect) {
+      case 'addLifestealFlat': {
+        if (state.player.lifestealFlat >= 0.20) {
+          logMessage('🛡️ Du hast bereits 20 % Lebensraub.', 'system');
+          break;
+        }
+
+        state.player.lifestealFlat = 0.20;
+        logMessage(`🧛 Lebensraub gesetzt auf 20 %.`, 'lifesteal');
+        break;
+      }
       case 'reduce_damage':
           state.player.damageReduction = 0.20; // 20 % weniger Schaden
           break;
@@ -365,7 +382,14 @@ window.addEventListener('DOMContentLoaded', () => {
         </span>
     `);
   }
-    
+    if (playerInventory.has('leechblade')) {
+    icons.push(`
+      <span class="item-icon-wrapper" data-tooltip="🩸 Leechklinge: 20 % Lifesteal">
+        <img src="images/leechblade.png" alt="Leechklinge" class="item-icon" />
+      </span>
+    `);
+  }
+
     if (state.player.hasBloodArmor) {
         icons.push(`
             <span class="item-icon-wrapper" data-tooltip="Regeneriert jede Runde 3 Leben.">
